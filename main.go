@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	. "github.com/akiyosi/qframelesswindow"
+	. "github.com/akiyosi/goqtframelesswindow/qframelesswindow"
         "github.com/therecipe/qt/widgets"
 )
 
