@@ -1,12 +1,15 @@
 package qframelesswindow
 
 import (
+	"fmt"
+
         "github.com/therecipe/qt/core"
         "github.com/therecipe/qt/gui"
         "github.com/therecipe/qt/widgets"
 )
 
 type QFramelessWindow struct {
+	Window         *widgets.QMainWindow
 	Widget         *widgets.QWidget
 	Layout         *widgets.QVBoxLayout
 
@@ -30,17 +33,19 @@ type QFramelessWindow struct {
 
 func NewQFramelessWindow() *QFramelessWindow {
 	f := &QFramelessWindow{}
-	f.setupUI()
+	f.Window = widgets.NewQMainWindow(nil, 0)
+	f.Widget = widgets.NewQWidget(nil, 0)
+	f.Window.SetCentralWidget(f.Widget)
+	f.setupUI(f.Widget)
 	f.setWindowFlags()
 	f.setAttribute()
 
 	return f
 }
 
-func (f *QFramelessWindow) setupUI() {
-	f.Widget = widgets.NewQWidget(nil, 0)
-        f.Layout = widgets.NewQVBoxLayout2(f.Widget)
-        f.Layout.SetContentsMargins(0, 0, 0, 0)
+func (f *QFramelessWindow) setupUI(widget *widgets.QWidget) {
+        f.Layout = widgets.NewQVBoxLayout2(widget)
+        f.Layout.SetContentsMargins(1, 1, 1, 1)
 
         f.WindowWidget = widgets.NewQWidget(nil, 0)
         f.WindowWidget.SetObjectName("windowWidget")
@@ -119,7 +124,10 @@ func (f *QFramelessWindow) setAttribute() {
 }
 
 func (f *QFramelessWindow) setWindowFlags() {
-	f.Widget.SetWindowFlags(core.Qt__Window | core.Qt__FramelessWindowHint | core.Qt__WindowSystemMenuHint)
+	//f.Widget.Window().SetWindowFlags(core.Qt__Window | core.Qt__FramelessWindowHint | core.Qt__WindowSystemMenuHint)
+	f.Widget.Window().SetWindowFlag(core.Qt__Window, true)
+	f.Widget.Window().SetWindowFlag(core.Qt__FramelessWindowHint, true)
+	f.Widget.Window().SetWindowFlag(core.Qt__WindowSystemMenuHint, true)
 }
 
 func (f *QFramelessWindow) SetTitle(title string) {
@@ -132,6 +140,11 @@ func (f *QFramelessWindow) SetContent(layout widgets.QLayout_ITF) {
 
 func (f *QFramelessWindow) setTitleBarActions() {
 	t := f.TitleBar
+
+	f.Widget.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
+		f.Widget.Raise()
+		fmt.Println("yeah!")
+	})
 
 	// TitleBar Actions
 	t.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
