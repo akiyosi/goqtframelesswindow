@@ -72,7 +72,7 @@ func (f *QFramelessWindow) setupUI(widget *widgets.QWidget) {
 	lefttop.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0); width: 4px; height: 4px;}")
 	top.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0); height: 4px;}")
 	righttop.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0); width: 4px; height: 4px;}")
-	left.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0.01); width: 4px; }")
+	left.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0); width: 4px; }")
 	right.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0); width: 4px; }")
 	leftbottom.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0); width: 4px; height: 4px;}")
 	bottom.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0); height: 4px;}")
