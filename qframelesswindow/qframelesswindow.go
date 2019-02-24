@@ -80,6 +80,8 @@ func (f *QFramelessWindow) setupUI() {
 	f.titleBar = widgets.NewQWidget(f.windowWidget, 0)
         f.titleBar.setObjectName("titleBar")
         f.titleBar.setSizePolicy(widgets.QSizePolicy(widgets.QSizePolicy__Preferred, widgets.QSizePolicy__Fixed))
+	f.titleBar.InstallEventFilter(f.widget)
+	f.titleBar.ConnectEventFilter(f.eventFilter)
 
 	// titleBarLayout is the following structure layout
 	// +--+--+--+--+
@@ -145,13 +147,18 @@ func (f *QFramelessWindow) setTitleTitle(title string) {
 	f.titleLabel.SetText(title)
 }
 
+func (f *QFramelessWindow) SetContent(layout widgets.QLayout_ITF) {
+	f.content.SetLayout(layout)
+}
 
 func (f *QFramelessWindow) connectTitleBarActions(w widgets.QWidget, parent widgets.Qwidget) {
 	t := f.titleBar
 
 	t.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
+		f.widget.Raise()
 	 	f.isMousePressed = true
 	 	f.mousePos = event.GlobalPos()
+
 	})
 
 	t.ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
@@ -159,6 +166,11 @@ func (f *QFramelessWindow) connectTitleBarActions(w widgets.QWidget, parent widg
 	})
 
 	t.ConnectMoveEvent(func(e *gui.QMoveEvent) {
+		x := event.GlocalPos().X() - f.widget.pos.X()
+		y := event.GlobalPos().Y() - f.widget.pos.Y()
+		newPos := core.NewQPoint2(x, y)
+		trans := f.widget.MapToParent(newPos)
+		f.widget.Move(trans)
 	})
 
 	t.ConnectMouseDoubleClickEvent(func(e *gui.QmouseEvent) {
