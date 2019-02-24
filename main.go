@@ -22,6 +22,8 @@ func main() {
 	a.fw.SetContent(layout)
 	a.fw.SetTitle("frameless test")
 
+	//a.fw.SetWindowResizable(a.app)
+
 	a.win.Show()
 	a.fw.Widget.SetFocus2()
 	widgets.QApplication_Exec()
