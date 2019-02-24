@@ -1,69 +1,49 @@
 package qframelesswindow
 
 import (
-	"fmt"
-
         "github.com/therecipe/qt/core"
         "github.com/therecipe/qt/gui"
         "github.com/therecipe/qt/widgets"
 )
 
-type QFramalessWindow struct {
-	widget         *widgets.QWidget
-	layout         *widgets.QVBoxLayout
+type QFramelessWindow struct {
+	Widget         *widgets.QWidget
+	Layout         *widgets.QVBoxLayout
 
-	windowWidget   *widgets.QWidget
-	windowVLayout  *widgets.QVBoxLayout
+	WindowWidget   *widgets.QWidget
+	WindowVLayout  *widgets.QVBoxLayout
 
-	titleBar       *widgets.QWidget
-	titleBarLayout *widgets.QHBoxLayout
-	titleLabel     *widgets.QLabel
-	btnMinimize    *widgets.QToolButton
-	btnMaximize    *widgets.QToolButton
-	btnRestore     *widgets.QToolButton
-	btnClose       *widgets.QToolButton
+	TitleBar       *widgets.QWidget
+	TitleBarLayout *widgets.QHBoxLayout
+	TitleLabel     *widgets.QLabel
+	BtnMinimize    *widgets.QToolButton
+	BtnMaximize    *widgets.QToolButton
+	BtnRestore     *widgets.QToolButton
+	BtnClose       *widgets.QToolButton
 
-	content        *widgets.QWidget
+	Content        *widgets.QWidget
 
-	pos            *core.QPoint
-	mousePos       *core.QPoint
-	isMousePressed bool
+	Pos            *core.QPoint
+	MousePos       *core.QPoint
+	IsMousePressed bool
 }
 
-
-// func (d *WindowDragger) mousePressEvent(event *gui.QMouseEvent) {
-// 	d.isMousePressed = true
-// 	d.mousePos = event.GlobalPos()
-// }
-// 
-// func (d *WindowDragger) mouseReleaseEvent(event *gui.QMouseEvent) {
-// 	d.isMousePressed = false
-// }
-// 
-// func (d *WindowDragger) moveEvent(event *gui.QMoveEvent) {
-// }
-// 
-// func (d *WindowDragger) doubleClickEvent(event *gui.QMouseEvent) {
-// }
-// 
-// func (d *WindowDragger) paintEvent(event *gui.QPaintEvent) {
-// }
-
-func NewQFramelessWindow() *FramelessWindow {
+func NewQFramelessWindow() *QFramelessWindow {
 	f := &QFramelessWindow{}
 	f.setupUI()
 	f.setWindowFlags()
 	f.setAttribute()
+
+	return f
 }
 
 func (f *QFramelessWindow) setupUI() {
-	f.widget = widgets.NewQWidget(nil, 0)
-        f.layout = widgets.NewQVBoxLayout2(f.widget)
-        f.layout.setContentsMargins(0, 0, 0, 0)
+	f.Widget = widgets.NewQWidget(nil, 0)
+        f.Layout = widgets.NewQVBoxLayout2(f.Widget)
+        f.Layout.SetContentsMargins(0, 0, 0, 0)
 
-
-        f.windowWidget = widgets.NewQWidget(nil, 0)
-        f.windowWidget.setObjectName("windowWidget")
+        f.WindowWidget = widgets.NewQWidget(nil, 0)
+        f.WindowWidget.SetObjectName("windowWidget")
 
 	// windowVLayout is the following structure layout
 	// +-----------+
@@ -73,110 +53,145 @@ func (f *QFramelessWindow) setupUI() {
 	// +-----------+
 	// |           |
 	// +-----------+
-        f.windowVLayout = widgets.NewQVBoxLayout2(f.windowWidget)
-        f.windowVLayout.setContentsMargins(0, 0, 0, 0)
+        f.WindowVLayout = widgets.NewQVBoxLayout2(f.WindowWidget)
+        f.WindowVLayout.SetContentsMargins(0, 0, 0, 0)
 
 	// create titlebar widget
-	f.titleBar = widgets.NewQWidget(f.windowWidget, 0)
-        f.titleBar.setObjectName("titleBar")
-        f.titleBar.setSizePolicy(widgets.QSizePolicy(widgets.QSizePolicy__Preferred, widgets.QSizePolicy__Fixed))
-	f.titleBar.InstallEventFilter(f.widget)
-	f.titleBar.ConnectEventFilter(f.eventFilter)
+	f.TitleBar = widgets.NewQWidget(f.WindowWidget, 0)
+        f.TitleBar.SetObjectName("titleBar")
+	titlebarSizePolicy := widgets.NewQSizePolicy2(widgets.QSizePolicy__Preferred, widgets.QSizePolicy__Fixed, widgets.QSizePolicy__DefaultType)
+        f.TitleBar.SetSizePolicy(titlebarSizePolicy)
+	f.TitleBar.InstallEventFilter(f.Widget)
+	//f.TitleBar.ConnectEventFilter(f.EventFilter)
 
 	// titleBarLayout is the following structure layout
 	// +--+--+--+--+
 	// |  |  |  |  |
 	// +--+--+--+--+
-        f.titleBarLayout = widgets.NewQHBoxLayout2(f.titleBar.widget)
-        f.titleBarLayout.setContentsMargins(0, 0, 0, 0)
-        f.titleBarLayout.setSpacing(0)
+        f.TitleBarLayout = widgets.NewQHBoxLayout2(f.TitleBar)
+        f.TitleBarLayout.SetContentsMargins(0, 0, 0, 0)
+        f.TitleBarLayout.SetSpacing(0)
 
-        f.titleLabel = QLabel("Title")
-        f.titleLabel.setObjectName("titleLabel")
-        f.titleLabel.setAlignment(Qt.AlignCenter)
-        f.titleBarLayout.addWidget(f.titleLabel)
+        f.TitleLabel = widgets.NewQLabel(nil, 0)
+        f.TitleLabel.SetObjectName("titleLabel")
+        f.TitleLabel.SetAlignment(core.Qt__AlignCenter)
+        f.TitleBarLayout.AddWidget(f.TitleLabel, 0, 0)
 
-        btnSizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+	btnSizePolicy := widgets.NewQSizePolicy2(widgets.QSizePolicy__Fixed, widgets.QSizePolicy__Fixed, widgets.QSizePolicy__ToolButton)
 
-        f.btnMinimize = widgets.NewQToolButton(f.titleBar.widget)
-        f.btnMinimize.setObjectName("btnMinimize")
-        f.btnMinimize.setSizePolicy(btnSizePolicy)
-        f.titleBarLayout.addWidget(f.btnMinimize)
+        f.BtnMinimize = widgets.NewQToolButton(f.TitleBar)
+        f.BtnMinimize.SetObjectName("btnMinimize")
+        f.BtnMinimize.SetSizePolicy(btnSizePolicy)
+        f.TitleBarLayout.AddWidget(f.BtnMinimize, 0, 0)
 
-        f.btnRestore = widgets.NewQToolButton(f.titleBar.widget)
-        f.btnRestore.setObjectName("btnRestore")
-        f.btnRestore.setSizePolicy(btnSizePolicy)
-        f.btnRestore.setVisible(False)
-        f.titleBarLayout.addWidget(f.btnRestore)
+        f.BtnRestore = widgets.NewQToolButton(f.TitleBar)
+        f.BtnRestore.SetObjectName("btnRestore")
+        f.BtnRestore.SetSizePolicy(btnSizePolicy)
+        f.BtnRestore.SetVisible(false)
+        f.TitleBarLayout.AddWidget(f.BtnRestore, 0, 0)
 
-        f.btnMaximize = widgets.NewQToolButton(f.titleBar.widget)
-        f.btnMaximize.setObjectName("btnMaximize")
-        f.btnMaximize.setSizePolicy(btnSizePolicy)
-        f.titleBarLayout.addWidget(f.btnMaximize)
+        f.BtnMaximize = widgets.NewQToolButton(f.TitleBar)
+        f.BtnMaximize.SetObjectName("btnMaximize")
+        f.BtnMaximize.SetSizePolicy(btnSizePolicy)
+        f.TitleBarLayout.AddWidget(f.BtnMaximize, 0, 0)
 
-        f.btnClose = widgets.NewQToolButton(f.titleBar.widget)
-        f.btnClose.setObjectName("btnClose")
-        f.btnClose.setSizePolicy(btnSizePolicy)
-        f.titleBarLayout.addWidget(f.btnClose)
+        f.BtnClose = widgets.NewQToolButton(f.TitleBar)
+        f.BtnClose.SetObjectName("btnClose")
+        f.BtnClose.SetSizePolicy(btnSizePolicy)
+        f.TitleBarLayout.AddWidget(f.BtnClose, 0, 0)
 
 	// titleBar connect actions
-        f.connectTitleBarActions(titleBar, f.windowWidget)
+        f.setTitleBarActions()
 
 	// create window content
-        f.content = widgets.NewQWidget(f.windowWidget, 0)
+        f.Content = widgets.NewQWidget(f.WindowWidget, 0)
 
 	// set widget to layout
-        f.windowVLayout.addWidget(f.titleBar.widget)
-        f.windowVLayout.addWidget(f.content)
+        f.WindowVLayout.AddWidget(f.TitleBar, 0, 0)
+        f.WindowVLayout.AddWidget(f.Content, 0, 0)
 
-        f.layout.addWidget(f.windowWidget)
+        f.Layout.AddWidget(f.WindowWidget, 0, 0)
 }
 
 func (f *QFramelessWindow) setAttribute() {
-	f.widget.SetAttribute(core.Qt__WA_TranslucentBackground, true)
-	f.widget.SetAttribute(core.Qt__WA_NoSystemBackground, true)
+	f.Widget.SetAttribute(core.Qt__WA_TranslucentBackground, true)
+	f.Widget.SetAttribute(core.Qt__WA_NoSystemBackground, true)
 }
 
 func (f *QFramelessWindow) setWindowFlags() {
-	f.widget.SetWindowFlags(core.Qt__Window, true)
-	f.widget.SetWindowFlags(core.Qt__FramelessWindowHint, true)
-	f.widget.SetWindowFlags(core.Qt__WindowSystemMenuHint, true)
+	f.Widget.SetWindowFlags(core.Qt__Window | core.Qt__FramelessWindowHint | core.Qt__WindowSystemMenuHint)
 }
 
-func (f *QFramelessWindow) setTitleTitle(title string) {
-	f.titleLabel.SetText(title)
+func (f *QFramelessWindow) SetTitle(title string) {
+	f.TitleLabel.SetText(title)
 }
 
 func (f *QFramelessWindow) SetContent(layout widgets.QLayout_ITF) {
-	f.content.SetLayout(layout)
+	f.Content.SetLayout(layout)
 }
 
-func (f *QFramelessWindow) connectTitleBarActions(w widgets.QWidget, parent widgets.Qwidget) {
-	t := f.titleBar
+func (f *QFramelessWindow) setTitleBarActions() {
+	t := f.TitleBar
 
+	// TitleBar Actions
 	t.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
-		f.widget.Raise()
-	 	f.isMousePressed = true
-	 	f.mousePos = event.GlobalPos()
-
+		f.Widget.Raise()
+	 	f.IsMousePressed = true
+	 	f.MousePos = e.GlobalPos()
+		f.Pos = f.Widget.Window().Pos()
 	})
 
 	t.ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
-	 	f.isMousePressed = false
+	 	f.IsMousePressed = false
 	})
 
-	t.ConnectMoveEvent(func(e *gui.QMoveEvent) {
-		x := event.GlocalPos().X() - f.widget.pos.X()
-		y := event.GlobalPos().Y() - f.widget.pos.Y()
+	t.ConnectMouseMoveEvent(func(e *gui.QMouseEvent) {
+		if !f.IsMousePressed {
+			return
+		}
+		x := f.Pos.X() + e.GlobalPos().X() - f.MousePos.X()
+		y := f.Pos.Y() + e.GlobalPos().Y() - f.MousePos.Y()
 		newPos := core.NewQPoint2(x, y)
-		trans := f.widget.MapToParent(newPos)
-		f.widget.Move(trans)
+		f.Widget.Window().Move(newPos)
 	})
 
-	t.ConnectMouseDoubleClickEvent(func(e *gui.QmouseEvent) {
+	t.ConnectMouseDoubleClickEvent(func(e *gui.QMouseEvent) {
+		if f.BtnMaximize.IsVisible() {
+			f.windowMaximize()
+		} else {
+			f.windowRestore()
+		}
 	})
 
 	t.ConnectPaintEvent(func(e *gui.QPaintEvent) {
 	})
 
+	// Button Actions
+	f.BtnMinimize.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
+		f.Widget.Window().SetWindowState(core.Qt__WindowMinimized)
+	})
+
+	f.BtnMaximize.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
+		f.windowMaximize()
+	})
+
+	f.BtnRestore.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
+		f.windowRestore()
+	})
+
+	f.BtnClose.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
+	})
 }
+
+func(f *QFramelessWindow) windowMaximize() {
+	f.BtnMaximize.SetVisible(false)
+	f.BtnRestore.SetVisible(true)
+	f.Widget.Window().SetWindowState(core.Qt__WindowMaximized)
+}
+
+func(f *QFramelessWindow) windowRestore() {
+	f.BtnMaximize.SetVisible(true)
+	f.BtnRestore.SetVisible(false)
+	f.Widget.Window().SetWindowState(core.Qt__WindowNoState)
+}
+
