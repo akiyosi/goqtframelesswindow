@@ -44,15 +44,6 @@ type QFramelessWindow struct {
 	BtnRestore     *widgets.QToolButton
 	BtnClose       *widgets.QToolButton
 
-	// lefttop        *widgets.QSizeGrip
-	// top            *widgets.QSizeGrip
-	// righttop       *widgets.QSizeGrip
-	// left           *widgets.QSizeGrip
-	// right          *widgets.QSizeGrip
-	// leftbottom     *widgets.QSizeGrip
-	// bottom         *widgets.QSizeGrip
-	// rightbottom    *widgets.QSizeGrip
-
 	dragStart      bool
 	dragPos        *core.QPoint
 	mousePress     Edge
@@ -161,31 +152,6 @@ func (f *QFramelessWindow) setupUI(widget *widgets.QWidget) {
         f.WindowVLayout.AddWidget(f.TitleBar, 0, 0)
         f.WindowVLayout.AddWidget(f.Content, 0, 0)
 
-	// // prepare sizegrip
-	// f.lefttop = widgets.NewQSizeGrip(widget)
-	// f.top = widgets.NewQSizeGrip(widget)
-	// f.righttop = widgets.NewQSizeGrip(widget)
-	// f.left = widgets.NewQSizeGrip(widget)
-	// f.right = widgets.NewQSizeGrip(widget)
-	// f.leftbottom = widgets.NewQSizeGrip(widget)
-	// f.bottom = widgets.NewQSizeGrip(widget)
-	// f.rightbottom = widgets.NewQSizeGrip(widget)
-
-	// f.top.SetSizePolicy2(widgets.QSizePolicy__Expanding, widgets.QSizePolicy__Fixed)
-	// f.left.SetSizePolicy2(widgets.QSizePolicy__Fixed, widgets.QSizePolicy__Expanding)
-	// f.right.SetSizePolicy2(widgets.QSizePolicy__Fixed, widgets.QSizePolicy__Expanding)
-	// f.bottom.SetSizePolicy2(widgets.QSizePolicy__Expanding, widgets.QSizePolicy__Fixed)
-
-        // f.Layout.AddWidget(f.lefttop, 0, 0, core.Qt__AlignLeft | core.Qt__AlignTop)
-        // f.Layout.AddWidget(f.top, 0, 1, core.Qt__AlignTop)
-        // f.Layout.AddWidget(f.righttop, 0, 2, core.Qt__AlignRight | core.Qt__AlignTop)
-        // f.Layout.AddWidget(f.left, 1, 0, core.Qt__AlignLeft)
-        // f.Layout.AddWidget(f.WindowWidget, 1, 1, 0)
-        // f.Layout.AddWidget(f.right, 1, 2, core.Qt__AlignRight)
-        // f.Layout.AddWidget(f.leftbottom, 2, 0, core.Qt__AlignLeft | core.Qt__AlignBottom)
-        // f.Layout.AddWidget(f.bottom, 2, 1, core.Qt__AlignBottom)
-        // f.Layout.AddWidget(f.rightbottom, 2, 2, core.Qt__AlignRight | core.Qt__AlignBottom)
-
         f.Layout.AddWidget(f.WindowWidget, 0, 0)
 }
 
@@ -197,14 +163,6 @@ func (f *QFramelessWindow) setAttribute() {
 func (f *QFramelessWindow) SetStyles(color string) {
 	style := fmt.Sprintf("background-color: %s", color)
 	f.Widget.SetStyleSheet(fmt.Sprintf(" .QFramelessWindow { border: 2px solid #ccc; border-radius: 11px; %s}", style))
-	// f.lefttop.SetStyleSheet(fmt.Sprintf("             * { width: 4px; height: 4px; %s}", style))
-	// f.top.SetStyleSheet(fmt.Sprintf("                 * { height: 4px; %s}", style))
-	// f.righttop.SetStyleSheet(fmt.Sprintf("            * { width: 4px; height: 4px; %s}", style))
-	// f.left.SetStyleSheet(fmt.Sprintf("                * { width: 4px;  %s}", style))
-	// f.right.SetStyleSheet(fmt.Sprintf("               * { width: 4px;  %s}", style))
-	// f.leftbottom.SetStyleSheet(fmt.Sprintf("          * { width: 4px; height: 4px; %s}", style))
-	// f.bottom.SetStyleSheet(fmt.Sprintf("              * { height: 4px; %s}", style))
-	// f.rightbottom.SetStyleSheet(fmt.Sprintf("         * { width: 4px; height: 4px; %s}", style))
 
 	f.WindowWidget.SetStyleSheet(fmt.Sprintf(" .QWidget { %s}", style))
 
@@ -277,7 +235,6 @@ func (f *QFramelessWindow) SetStyles(color string) {
 }
 
 func (f *QFramelessWindow) setWindowFlags() {
-	//f.Widget.Window().SetWindowFlags(core.Qt__Window | core.Qt__FramelessWindowHint | core.Qt__WindowSystemMenuHint)
 	f.Widget.Window().SetWindowFlag(core.Qt__Window, true)
 	f.Widget.Window().SetWindowFlag(core.Qt__FramelessWindowHint, true)
 	f.Widget.Window().SetWindowFlag(core.Qt__WindowSystemMenuHint, true)
@@ -359,22 +316,19 @@ func(f *QFramelessWindow) windowRestore() {
 
 func (f *QFramelessWindow) setWindowActions(borderSize int) {
 	// Ref: https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341#37507341
-
 	f.Widget.Window().ConnectMousePressEvent(func(e *gui.QMouseEvent) {
 		f.mousePress = f.calcCursorPos(e.GlobalPos(), f.Widget.Window().FrameGeometry(), borderSize)
-		fmt.Println("mousepressed:", f.mousePress)
 		if f.mousePress == None {
 			return
 		}
 		margins := core.NewQMargins2(borderSize, borderSize, borderSize, borderSize)
 		if f.Widget.Window().Rect().MarginsRemoved(margins).Contains3(e.Pos().X(), e.Pos().Y()) {
-			f.dragStart= true
+			f.dragStart = true
 			f.dragPos = e.Pos()
 		}
 	})
 
 	f.Widget.Window().ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
-		fmt.Println("mousereleased")
 		f.dragStart = false
 		f.mousePress = None
 	})
@@ -382,55 +336,62 @@ func (f *QFramelessWindow) setWindowActions(borderSize int) {
 	f.Widget.Window().ConnectMouseMoveEvent(func(e *gui.QMouseEvent) {
 		if f.dragStart {
 			startPos := f.Widget.Window().FrameGeometry().TopLeft()
-			movePoint := core.NewQPoint2(
-				startPos.X() + e.Pos().X() - f.dragPos.X(),
-				startPos.Y() + e.Pos().Y() - f.dragPos.Y(),
-			)
-			f.Widget.Window().Move(movePoint)
+			newX :=startPos.X() + e.Pos().X() - f.dragPos.X()
+			newY :=startPos.Y() + e.Pos().Y() - f.dragPos.Y()
+			newPoint := core.NewQPoint2(newX, newY)
+			f.Widget.Window().Move(newPoint)
 		}
-		if f.mousePress == None {
-			return
-		}
-		fmt.Println("mousemove")
-		var left, top, right, bottom int
-		switch f.mousePress {
-		case Top:
-			top = e.GlobalPos().Y()
-		case Bottom:
-			bottom = e.GlobalPos().Y()
-		case Left:
-			left = e.GlobalPos().X()
-		case Right:
-			right = e.GlobalPos().X()
-		case TopLeft:
-			top = e.GlobalPos().Y()
-			left = e.GlobalPos().X()
-		case TopRight:
-			top = e.GlobalPos().Y()
-			right = e.GlobalPos().X()
-		case BottomLeft:
-			bottom = e.GlobalPos().Y()
-			left = e.GlobalPos().X()
-		case BottomRight:
-			bottom = e.GlobalPos().Y()
-			right = e.GlobalPos().X()
-		default:
-		}
+		if f.mousePress != None {
 
-		// func NewQRect2(topLeft QPoint_ITF, bottomRight QPoint_ITF) *QRect {
-		topLeftPoint := core.NewQPoint2(left, top)
-		rightBottomPoint := core.NewQPoint2(right, bottom)
-		newRect := core.NewQRect2(topLeftPoint, rightBottomPoint)
+			left := f.Widget.Window().FrameGeometry().Left()
+			top := f.Widget.Window().FrameGeometry().Top()
+			right := f.Widget.Window().FrameGeometry().Right()
+			bottom := f.Widget.Window().FrameGeometry().Bottom()
 
-		f.Widget.Window().SetGeometry(newRect)
+			switch f.mousePress {
+			case Top:
+				top = e.GlobalPos().Y()
+			case Bottom:
+				bottom = e.GlobalPos().Y()
+			case Left:
+				left = e.GlobalPos().X()
+			case Right:
+				right = e.GlobalPos().X()
+			case TopLeft:
+				top = e.GlobalPos().Y()
+				left = e.GlobalPos().X()
+			case TopRight:
+				top = e.GlobalPos().Y()
+				right = e.GlobalPos().X()
+			case BottomLeft:
+				bottom = e.GlobalPos().Y()
+				left = e.GlobalPos().X()
+			case BottomRight:
+				bottom = e.GlobalPos().Y()
+				right = e.GlobalPos().X()
+			default:
+			}
+
+			topLeftPoint := core.NewQPoint2(left, top)
+			rightBottomPoint := core.NewQPoint2(right, bottom)
+			newRect := core.NewQRect2(topLeftPoint, rightBottomPoint)
+			if newRect.Width() < f.Widget.Window().MinimumWidth() {
+				left = f.Widget.Window().FrameGeometry().X()
+			}
+			if newRect.Height() < f.Widget.Window().MinimumHeight() {
+				top = f.Widget.Window().FrameGeometry().Y()
+			}
+			topLeftPoint = core.NewQPoint2(left, top)
+			rightBottomPoint = core.NewQPoint2(right, bottom)
+			newRect = core.NewQRect2(topLeftPoint, rightBottomPoint)
+
+			f.Widget.Window().SetGeometry(newRect)
+		}
 	})
 
 }
 
 func (f *QFramelessWindow) calcCursorPos(pos *core.QPoint, rect *core.QRect, borderSize int) Edge {
-	fmt.Println("pos:", pos.X(), pos.Y())
-	fmt.Println("rect:", rect.X(), rect.Y())
-
 	var onLeft, onRight, onBottom, onTop, onBottomLeft, onBottomRight, onTopRight, onTopLeft bool
 	onLeft = (pos.X() >= (rect.X() - borderSize)) && (pos.X() <= (rect.X() + borderSize)) &&
 	         (pos.Y() <= (rect.Y() + rect.Height() - borderSize)) &&
