@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/Close.png</file>
+        <file>icons/CloseHover.png</file>
+        <file>icons/Maximize.png</file>
+        <file>icons/MaximizeHover.png</file>
+        <file>icons/Minimize.png</file>
+        <file>icons/MinimizeHover.png</file>
+        <file>icons/Restore.png</file>
+        <file>icons/RestoreHover.png</file>
+    </qresource>
+</RCC>

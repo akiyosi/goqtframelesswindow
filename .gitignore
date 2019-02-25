@@ -1,0 +1,6 @@
+.go-version
+tags*
+moc*
+deploy/*
+deploy*
+rcc*
