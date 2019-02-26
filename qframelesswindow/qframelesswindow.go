@@ -315,7 +315,6 @@ func(f *QFramelessWindow) windowRestore() {
 	f.Widget.Window().SetWindowState(core.Qt__WindowNoState)
 }
 
-
 func (f *QFramelessWindow) setWindowActions(borderSize int) {
 	// Ref: https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341#37507341
 	f.Widget.Window().ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
@@ -399,81 +398,6 @@ func (f *QFramelessWindow) setWindowActions(borderSize int) {
 
 		return f.Widget.EventFilter(watched, event)
 	})
-
-
-	///////////////////////////////
-	// f.Widget.Window().ConnectMousePressEvent(func(e *gui.QMouseEvent) {
-	// 	f.pressedEdge = f.calcCursorPos(e.GlobalPos(), f.Widget.Window().FrameGeometry(), borderSize)
-	// 	if f.pressedEdge == None {
-	// 		return
-	// 	}
-	// 	margins := core.NewQMargins2(borderSize, borderSize, borderSize, borderSize)
-	// 	if f.Widget.Window().Rect().MarginsRemoved(margins).Contains3(e.Pos().X(), e.Pos().Y()) {
-	// 		f.isDragStart = true
-	// 		f.dragPos = e.Pos()
-	// 	}
-	// })
-
-	// f.Widget.Window().ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
-	// 	f.isDragStart = false
-	// 	f.pressedEdge  = None
-	// })
-	// f.Widget.Window().ConnectMouseMoveEvent(func(e *gui.QMouseEvent) {
-	// 	if f.isDragStart {
-	// 		startPos := f.Widget.Window().FrameGeometry().TopLeft()
-	// 		newX :=startPos.X() + e.Pos().X() - f.dragPos.X()
-	// 		newY :=startPos.Y() + e.Pos().Y() - f.dragPos.Y()
-	// 		newPoint := core.NewQPoint2(newX, newY)
-	// 		f.Widget.Window().Move(newPoint)
-	// 	}
-	// 	if f.pressedEdge != None {
-
-	// 		left := f.Widget.Window().FrameGeometry().Left()
-	// 		top := f.Widget.Window().FrameGeometry().Top()
-	// 		right := f.Widget.Window().FrameGeometry().Right()
-	// 		bottom := f.Widget.Window().FrameGeometry().Bottom()
-
-	// 		switch f.pressedEdge {
-	// 		case Top:
-	// 			top = e.GlobalPos().Y()
-	// 		case Bottom:
-	// 			bottom = e.GlobalPos().Y()
-	// 		case Left:
-	// 			left = e.GlobalPos().X()
-	// 		case Right:
-	// 			right = e.GlobalPos().X()
-	// 		case TopLeft:
-	// 			top = e.GlobalPos().Y()
-	// 			left = e.GlobalPos().X()
-	// 		case TopRight:
-	// 			top = e.GlobalPos().Y()
-	// 			right = e.GlobalPos().X()
-	// 		case BottomLeft:
-	// 			bottom = e.GlobalPos().Y()
-	// 			left = e.GlobalPos().X()
-	// 		case BottomRight:
-	// 			bottom = e.GlobalPos().Y()
-	// 			right = e.GlobalPos().X()
-	// 		default:
-	// 		}
-
-	// 		topLeftPoint := core.NewQPoint2(left, top)
-	// 		rightBottomPoint := core.NewQPoint2(right, bottom)
-	// 		newRect := core.NewQRect2(topLeftPoint, rightBottomPoint)
-	// 		if newRect.Width() < f.Widget.Window().MinimumWidth() {
-	// 			left = f.Widget.Window().FrameGeometry().X()
-	// 		}
-	// 		if newRect.Height() < f.Widget.Window().MinimumHeight() {
-	// 			top = f.Widget.Window().FrameGeometry().Y()
-	// 		}
-	// 		topLeftPoint = core.NewQPoint2(left, top)
-	// 		rightBottomPoint = core.NewQPoint2(right, bottom)
-	// 		newRect = core.NewQRect2(topLeftPoint, rightBottomPoint)
-
-	// 		f.Widget.Window().SetGeometry(newRect)
-	// 	}
-	// })
-
 }
 
 func (f *QFramelessWindow) updateCursorShape(pos *core.QPoint, borderSize int) {
