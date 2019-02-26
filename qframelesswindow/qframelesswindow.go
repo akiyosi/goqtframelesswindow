@@ -44,9 +44,10 @@ type QFramelessWindow struct {
 	BtnRestore     *widgets.QToolButton
 	BtnClose       *widgets.QToolButton
 
-	dragStart      bool
-	dragPos        *core.QPoint
-	mousePress     Edge
+	isCursorChanged bool
+	isDragStart     bool
+	dragPos         *core.QPoint
+	pressedEdge     Edge
 
 	Content        *widgets.QWidget
 
@@ -74,7 +75,8 @@ func (f *QFramelessWindow) setupUI(widget *widgets.QWidget) {
         //f.Layout = widgets.NewQVBoxLayout2(widget)
 
 	widget.SetObjectName("QFramelessWindow")
-	widget.SetAttribute(core.Qt__WA_TranslucentBackground, true)
+	window := widget.Window()
+	window.InstallEventFilter(window)
 
         // f.Layout = widgets.NewQGridLayout(widget)
         f.Layout = widgets.NewQVBoxLayout2(widget)
@@ -158,6 +160,9 @@ func (f *QFramelessWindow) setupUI(widget *widgets.QWidget) {
 func (f *QFramelessWindow) setAttribute() {
 	f.Widget.Window().SetAttribute(core.Qt__WA_TranslucentBackground, true)
 	f.Widget.Window().SetAttribute(core.Qt__WA_NoSystemBackground, true)
+	f.Widget.Window().SetAttribute(core.Qt__WA_Hover, true)
+	f.Widget.Window().SetMouseTracking(true)
+	f.Widget.SetAttribute(core.Qt__WA_TranslucentBackground, true)
 }
 
 func (f *QFramelessWindow) SetStyles(color string) {
@@ -281,9 +286,6 @@ func (f *QFramelessWindow) setTitleBarActions() {
 		}
 	})
 
-	t.ConnectPaintEvent(func(e *gui.QPaintEvent) {
-	})
-
 	// Button Actions
 	f.BtnMinimize.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
 		f.Widget.Window().SetWindowState(core.Qt__WindowMinimized)
@@ -316,79 +318,191 @@ func(f *QFramelessWindow) windowRestore() {
 
 func (f *QFramelessWindow) setWindowActions(borderSize int) {
 	// Ref: https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341#37507341
-	f.Widget.Window().ConnectMousePressEvent(func(e *gui.QMouseEvent) {
-		f.mousePress = f.calcCursorPos(e.GlobalPos(), f.Widget.Window().FrameGeometry(), borderSize)
-		if f.mousePress == None {
-			return
+	f.Widget.Window().ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
+		e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
+		switch event.Type() {
+		case core.QEvent__HoverMove :
+	 		f.updateCursorShape(e.GlobalPos(), borderSize)
+
+		case core.QEvent__Leave :
+			f.Widget.Window().UnsetCursor()
+
+		case core.QEvent__MouseMove :
+			if f.isDragStart {
+				startPos := f.Widget.Window().FrameGeometry().TopLeft()
+				newX :=startPos.X() + e.Pos().X() - f.dragPos.X()
+				newY :=startPos.Y() + e.Pos().Y() - f.dragPos.Y()
+				newPoint := core.NewQPoint2(newX, newY)
+				f.Widget.Window().Move(newPoint)
+			}
+			if f.pressedEdge != None {
+
+				left := f.Widget.Window().FrameGeometry().Left()
+				top := f.Widget.Window().FrameGeometry().Top()
+				right := f.Widget.Window().FrameGeometry().Right()
+				bottom := f.Widget.Window().FrameGeometry().Bottom()
+
+				switch f.pressedEdge {
+				case Top:
+					top = e.GlobalPos().Y()
+				case Bottom:
+					bottom = e.GlobalPos().Y()
+				case Left:
+					left = e.GlobalPos().X()
+				case Right:
+					right = e.GlobalPos().X()
+				case TopLeft:
+					top = e.GlobalPos().Y()
+					left = e.GlobalPos().X()
+				case TopRight:
+					top = e.GlobalPos().Y()
+					right = e.GlobalPos().X()
+				case BottomLeft:
+					bottom = e.GlobalPos().Y()
+					left = e.GlobalPos().X()
+				case BottomRight:
+					bottom = e.GlobalPos().Y()
+					right = e.GlobalPos().X()
+				default:
+				}
+
+				topLeftPoint := core.NewQPoint2(left, top)
+				rightBottomPoint := core.NewQPoint2(right, bottom)
+				newRect := core.NewQRect2(topLeftPoint, rightBottomPoint)
+				if newRect.Width() < f.Widget.Window().MinimumWidth() {
+					left = f.Widget.Window().FrameGeometry().X()
+				}
+				if newRect.Height() < f.Widget.Window().MinimumHeight() {
+					top = f.Widget.Window().FrameGeometry().Y()
+				}
+				topLeftPoint = core.NewQPoint2(left, top)
+				rightBottomPoint = core.NewQPoint2(right, bottom)
+				newRect = core.NewQRect2(topLeftPoint, rightBottomPoint)
+
+				f.Widget.Window().SetGeometry(newRect)
+			}
+		case core.QEvent__MouseButtonPress :
+			f.pressedEdge = f.calcCursorPos(e.GlobalPos(), f.Widget.Window().FrameGeometry(), borderSize)
+			if f.pressedEdge != None {
+				margins := core.NewQMargins2(borderSize, borderSize, borderSize, borderSize)
+				if f.Widget.Window().Rect().MarginsRemoved(margins).Contains3(e.Pos().X(), e.Pos().Y()) {
+					f.isDragStart = true
+					f.dragPos = e.Pos()
+				}
+			}
+		case core.QEvent__MouseButtonRelease :
+			f.isDragStart = false
+			f.pressedEdge  = None
+
+		default:
 		}
-		margins := core.NewQMargins2(borderSize, borderSize, borderSize, borderSize)
-		if f.Widget.Window().Rect().MarginsRemoved(margins).Contains3(e.Pos().X(), e.Pos().Y()) {
-			f.dragStart = true
-			f.dragPos = e.Pos()
-		}
+
+		return true
 	})
 
-	f.Widget.Window().ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
-		f.dragStart = false
-		f.mousePress = None
-	})
 
-	f.Widget.Window().ConnectMouseMoveEvent(func(e *gui.QMouseEvent) {
-		if f.dragStart {
-			startPos := f.Widget.Window().FrameGeometry().TopLeft()
-			newX :=startPos.X() + e.Pos().X() - f.dragPos.X()
-			newY :=startPos.Y() + e.Pos().Y() - f.dragPos.Y()
-			newPoint := core.NewQPoint2(newX, newY)
-			f.Widget.Window().Move(newPoint)
+
+	///////////////////////////////
+	// f.Widget.Window().ConnectMousePressEvent(func(e *gui.QMouseEvent) {
+	// 	f.pressedEdge = f.calcCursorPos(e.GlobalPos(), f.Widget.Window().FrameGeometry(), borderSize)
+	// 	if f.pressedEdge == None {
+	// 		return
+	// 	}
+	// 	margins := core.NewQMargins2(borderSize, borderSize, borderSize, borderSize)
+	// 	if f.Widget.Window().Rect().MarginsRemoved(margins).Contains3(e.Pos().X(), e.Pos().Y()) {
+	// 		f.isDragStart = true
+	// 		f.dragPos = e.Pos()
+	// 	}
+	// })
+
+	// f.Widget.Window().ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
+	// 	f.isDragStart = false
+	// 	f.pressedEdge  = None
+	// })
+	// f.Widget.Window().ConnectMouseMoveEvent(func(e *gui.QMouseEvent) {
+	// 	if f.isDragStart {
+	// 		startPos := f.Widget.Window().FrameGeometry().TopLeft()
+	// 		newX :=startPos.X() + e.Pos().X() - f.dragPos.X()
+	// 		newY :=startPos.Y() + e.Pos().Y() - f.dragPos.Y()
+	// 		newPoint := core.NewQPoint2(newX, newY)
+	// 		f.Widget.Window().Move(newPoint)
+	// 	}
+	// 	if f.pressedEdge != None {
+
+	// 		left := f.Widget.Window().FrameGeometry().Left()
+	// 		top := f.Widget.Window().FrameGeometry().Top()
+	// 		right := f.Widget.Window().FrameGeometry().Right()
+	// 		bottom := f.Widget.Window().FrameGeometry().Bottom()
+
+	// 		switch f.pressedEdge {
+	// 		case Top:
+	// 			top = e.GlobalPos().Y()
+	// 		case Bottom:
+	// 			bottom = e.GlobalPos().Y()
+	// 		case Left:
+	// 			left = e.GlobalPos().X()
+	// 		case Right:
+	// 			right = e.GlobalPos().X()
+	// 		case TopLeft:
+	// 			top = e.GlobalPos().Y()
+	// 			left = e.GlobalPos().X()
+	// 		case TopRight:
+	// 			top = e.GlobalPos().Y()
+	// 			right = e.GlobalPos().X()
+	// 		case BottomLeft:
+	// 			bottom = e.GlobalPos().Y()
+	// 			left = e.GlobalPos().X()
+	// 		case BottomRight:
+	// 			bottom = e.GlobalPos().Y()
+	// 			right = e.GlobalPos().X()
+	// 		default:
+	// 		}
+
+	// 		topLeftPoint := core.NewQPoint2(left, top)
+	// 		rightBottomPoint := core.NewQPoint2(right, bottom)
+	// 		newRect := core.NewQRect2(topLeftPoint, rightBottomPoint)
+	// 		if newRect.Width() < f.Widget.Window().MinimumWidth() {
+	// 			left = f.Widget.Window().FrameGeometry().X()
+	// 		}
+	// 		if newRect.Height() < f.Widget.Window().MinimumHeight() {
+	// 			top = f.Widget.Window().FrameGeometry().Y()
+	// 		}
+	// 		topLeftPoint = core.NewQPoint2(left, top)
+	// 		rightBottomPoint = core.NewQPoint2(right, bottom)
+	// 		newRect = core.NewQRect2(topLeftPoint, rightBottomPoint)
+
+	// 		f.Widget.Window().SetGeometry(newRect)
+	// 	}
+	// })
+
+}
+
+func (f *QFramelessWindow) updateCursorShape(pos *core.QPoint, borderSize int) {
+	if f.Widget.Window().IsFullScreen() || f.Widget.Window().IsMaximized() {
+		if f.isCursorChanged {
+			f.Widget.Window().UnsetCursor()
 		}
-		if f.mousePress != None {
-
-			left := f.Widget.Window().FrameGeometry().Left()
-			top := f.Widget.Window().FrameGeometry().Top()
-			right := f.Widget.Window().FrameGeometry().Right()
-			bottom := f.Widget.Window().FrameGeometry().Bottom()
-
-			switch f.mousePress {
-			case Top:
-				top = e.GlobalPos().Y()
-			case Bottom:
-				bottom = e.GlobalPos().Y()
-			case Left:
-				left = e.GlobalPos().X()
-			case Right:
-				right = e.GlobalPos().X()
-			case TopLeft:
-				top = e.GlobalPos().Y()
-				left = e.GlobalPos().X()
-			case TopRight:
-				top = e.GlobalPos().Y()
-				right = e.GlobalPos().X()
-			case BottomLeft:
-				bottom = e.GlobalPos().Y()
-				left = e.GlobalPos().X()
-			case BottomRight:
-				bottom = e.GlobalPos().Y()
-				right = e.GlobalPos().X()
-			default:
-			}
-
-			topLeftPoint := core.NewQPoint2(left, top)
-			rightBottomPoint := core.NewQPoint2(right, bottom)
-			newRect := core.NewQRect2(topLeftPoint, rightBottomPoint)
-			if newRect.Width() < f.Widget.Window().MinimumWidth() {
-				left = f.Widget.Window().FrameGeometry().X()
-			}
-			if newRect.Height() < f.Widget.Window().MinimumHeight() {
-				top = f.Widget.Window().FrameGeometry().Y()
-			}
-			topLeftPoint = core.NewQPoint2(left, top)
-			rightBottomPoint = core.NewQPoint2(right, bottom)
-			newRect = core.NewQRect2(topLeftPoint, rightBottomPoint)
-
-			f.Widget.Window().SetGeometry(newRect)
-		}
-	})
-
+	}
+	hoverEdge := f.calcCursorPos(pos, f.Widget.Window().FrameGeometry(), borderSize)
+	f.isCursorChanged = true
+	cursor := gui.NewQCursor()
+	switch hoverEdge {
+	case Top, Bottom:
+		cursor.SetShape(core.Qt__SizeVerCursor)
+		f.Widget.Window().SetCursor(cursor)
+	case Left, Right:
+		cursor.SetShape(core.Qt__SizeHorCursor)
+		f.Widget.Window().SetCursor(cursor)
+	case TopLeft, BottomRight:
+		cursor.SetShape(core.Qt__SizeFDiagCursor)
+		f.Widget.Window().SetCursor(cursor)
+	case TopRight, BottomLeft:
+		cursor.SetShape(core.Qt__SizeBDiagCursor)
+		f.Widget.Window().SetCursor(cursor)
+	default:
+		f.Widget.Window().UnsetCursor()
+		f.isCursorChanged = false
+	}
 }
 
 func (f *QFramelessWindow) calcCursorPos(pos *core.QPoint, rect *core.QRect, borderSize int) Edge {
