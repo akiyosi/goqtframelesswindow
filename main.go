@@ -20,6 +20,7 @@ func main() {
 	a.win = a.fw.Window
 	layout := widgets.NewQVBoxLayout()
 	a.fw.SetContent(layout)
+	a.fw.SetStyles("#333")
 	a.fw.SetTitle("frameless test")
 
 	//a.fw.SetWindowResizable(a.app)
