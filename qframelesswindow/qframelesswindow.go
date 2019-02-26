@@ -397,9 +397,8 @@ func (f *QFramelessWindow) setWindowActions(borderSize int) {
 		default:
 		}
 
-		return true
+		return f.Widget.EventFilter(watched, event)
 	})
-
 
 
 	///////////////////////////////
