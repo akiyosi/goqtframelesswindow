@@ -6,6 +6,8 @@ import (
         "github.com/therecipe/qt/core"
         "github.com/therecipe/qt/gui"
         "github.com/therecipe/qt/widgets"
+
+	"github.com/lxn/win"
 )
 
 type Edge int
@@ -326,6 +328,22 @@ func(f *QFramelessWindow) windowRestore() {
 }
 
 func (f *QFramelessWindow) setWindowActions() {
+
+
+	// Install eventFilter
+	filterObj := core.NewQAbstractNativeEventFilter()
+	f.Widget.Window().InstallEventFilter(filterObj)
+	filterObj.ConnectNativeEventFilter(func(eventType *QByteArray, message unsafe.Pointer, result int) bool {
+		msg := (win.MSG)(message)
+		switch msg.Message {
+		case win.WM_NCCALCSIZE:
+			style := win.GetWindowLong(f.Widget.Window().WinId(), win.GWL_STYLE)
+			style = style | win.WS_THICKFRAME | win.WS_CAPTION
+			win.SetWindowLong(f.Widget.Window().WinId(), win.GWL_STYLE, style)
+		}
+
+
+	})
 
 
 	// Ref: https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341#37507341
