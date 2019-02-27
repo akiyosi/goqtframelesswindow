@@ -22,6 +22,7 @@ func main() {
 	a.fw.SetContent(layout)
 	a.fw.SetStyles("#333")
 	a.fw.SetTitle("frameless test")
+	a.fw.SetTitleStyle(" * {color: #eee}")
 
 	//a.fw.SetWindowResizable(a.app)
 

@@ -255,6 +255,10 @@ func (f *QFramelessWindow) SetTitle(title string) {
 	f.TitleLabel.SetText(title)
 }
 
+func (f *QFramelessWindow) SetTitleStyle(style string) {
+	f.TitleLabel.SetStyleSheet(style)
+}
+
 func (f *QFramelessWindow) SetContent(layout widgets.QLayout_ITF) {
 	f.Content.SetLayout(layout)
 }
