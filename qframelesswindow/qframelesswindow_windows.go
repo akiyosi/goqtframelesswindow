@@ -2,6 +2,7 @@ package qframelesswindow
 
 import (
 	"fmt"
+	"unsafe"
 
         "github.com/therecipe/qt/core"
         "github.com/therecipe/qt/gui"
@@ -251,6 +252,11 @@ func (f *QFramelessWindow) setWindowFlags() {
 	f.Widget.Window().SetWindowFlag(core.Qt__Window, true)
 	f.Widget.Window().SetWindowFlag(core.Qt__FramelessWindowHint, true)
 	f.Widget.Window().SetWindowFlag(core.Qt__WindowSystemMenuHint, true)
+
+	winid := (*win.HWND)(unsafe.Pointer(f.Widget.Window().WinId()))
+	style := win.GetWindowLong(*winid, win.GWL_STYLE)
+	style = style | win.WS_MAXIMIZEBOX | win.WS_THICKFRAME | win.WS_CAPTION
+	win.SetWindowLong(*winid, win.GWL_STYLE, style)
 }
 
 func (f *QFramelessWindow) SetTitle(title string) {
@@ -315,36 +321,41 @@ func (f *QFramelessWindow) setTitleBarActions() {
 	})
 }
 
-func(f *QFramelessWindow) windowMaximize() {
+func (f *QFramelessWindow) windowMaximize() {
 	f.BtnMaximize.SetVisible(false)
 	f.BtnRestore.SetVisible(true)
 	f.Widget.Window().SetWindowState(core.Qt__WindowMaximized)
 }
 
-func(f *QFramelessWindow) windowRestore() {
+func (f *QFramelessWindow) windowRestore() {
 	f.BtnMaximize.SetVisible(true)
 	f.BtnRestore.SetVisible(false)
 	f.Widget.Window().SetWindowState(core.Qt__WindowNoState)
 }
 
-func (f *QFramelessWindow) setWindowActions() {
-
-
+func (f *QFramelessWindow) SetNativeEvent(app *widgets.QApplication) {
 	// Install eventFilter
 	filterObj := core.NewQAbstractNativeEventFilter()
-	f.Widget.Window().InstallEventFilter(filterObj)
-	filterObj.ConnectNativeEventFilter(func(eventType *QByteArray, message unsafe.Pointer, result int) bool {
-		msg := (win.MSG)(message)
+	filterObj.ConnectNativeEventFilter(func(eventType *core.QByteArray, message unsafe.Pointer, result int) bool {
+		msg := (*win.MSG)(message)
 		switch msg.Message {
-		case win.WM_NCCALCSIZE:
-			style := win.GetWindowLong(f.Widget.Window().WinId(), win.GWL_STYLE)
-			style = style | win.WS_THICKFRAME | win.WS_CAPTION
-			win.SetWindowLong(f.Widget.Window().WinId(), win.GWL_STYLE, style)
+		// case win.WM_NCCALCSIZE:
+		// 	winid := (*win.HWND)(unsafe.Pointer(f.Widget.Window().WinId()))
+		// 	style := win.GetWindowLong(*winid, win.GWL_STYLE)
+		// 	style = style | win.WS_THICKFRAME | win.WS_CAPTION
+		// 	win.SetWindowLong(*winid, win.GWL_STYLE, style)
+		case win.WM_NCHITTEST:
+			var winrect *win.RECT
+		 	winid := (*win.HWND)(unsafe.Pointer(f.Widget.Window().WinId()))
+			win.GetWindowRect(*winid, winrect)
+			fmt.Println(winrect.Left, winrect.Bottom)
 		}
-
-
+		return filterObj.NativeEventFilter(eventType, message, result)
 	})
+	app.InstallNativeEventFilter(filterObj)
+}
 
+func (f *QFramelessWindow) setWindowActions() {
 
 	// Ref: https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341#37507341
 	f.Widget.Window().ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
