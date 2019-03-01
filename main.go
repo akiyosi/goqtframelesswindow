@@ -24,8 +24,6 @@ func main() {
 	a.fw.SetTitle("frameless test")
 	a.fw.SetTitleStyle(" * {color: #eee}")
 
-	//a.fw.SetWindowResizable(a.app)
-
 	a.win.Show()
 	a.fw.Widget.SetFocus2()
 	widgets.QApplication_Exec()
