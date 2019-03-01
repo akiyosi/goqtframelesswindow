@@ -2,6 +2,7 @@ package qframelesswindow
 
 import (
 	"fmt"
+	"runtime"
 
         "github.com/therecipe/qt/core"
         "github.com/therecipe/qt/gui"
@@ -123,32 +124,41 @@ func (f *QFramelessWindow) setupUI(widget *widgets.QWidget) {
         f.TitleLabel = widgets.NewQLabel(nil, 0)
         f.TitleLabel.SetObjectName("TitleLabel")
         f.TitleLabel.SetAlignment(core.Qt__AlignCenter)
-        f.TitleBarLayout.AddWidget(f.TitleLabel, 0, 0)
 
 	btnSizePolicy := widgets.NewQSizePolicy2(widgets.QSizePolicy__Fixed, widgets.QSizePolicy__Fixed, widgets.QSizePolicy__ToolButton)
-
-        f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignRight)
 
         f.BtnMinimize = widgets.NewQToolButton(f.TitleBar)
         f.BtnMinimize.SetObjectName("BtnMinimize")
         f.BtnMinimize.SetSizePolicy(btnSizePolicy)
-        f.TitleBarLayout.AddWidget(f.BtnMinimize, 0, 0)
 
         f.BtnMaximize = widgets.NewQToolButton(f.TitleBar)
         f.BtnMaximize.SetObjectName("BtnMaximize")
         f.BtnMaximize.SetSizePolicy(btnSizePolicy)
-        f.TitleBarLayout.AddWidget(f.BtnMaximize, 0, 0)
 
         f.BtnRestore = widgets.NewQToolButton(f.TitleBar)
         f.BtnRestore.SetObjectName("BtnRestore")
         f.BtnRestore.SetSizePolicy(btnSizePolicy)
         f.BtnRestore.SetVisible(false)
-        f.TitleBarLayout.AddWidget(f.BtnRestore, 0, 0)
 
         f.BtnClose = widgets.NewQToolButton(f.TitleBar)
         f.BtnClose.SetObjectName("BtnClose")
         f.BtnClose.SetSizePolicy(btnSizePolicy)
-        f.TitleBarLayout.AddWidget(f.BtnClose, 0, 0)
+
+	if runtime.GOOS == "darwin" {
+        	f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignLeft)
+        	f.TitleBarLayout.AddWidget(f.BtnClose, 0, 0)
+        	f.TitleBarLayout.AddWidget(f.BtnMinimize, 0, 0)
+        	f.TitleBarLayout.AddWidget(f.BtnMaximize, 0, 0)
+        	f.TitleBarLayout.AddWidget(f.BtnRestore, 0, 0)
+        	f.TitleBarLayout.AddWidget(f.TitleLabel, 0, 0)
+	} else {
+        	f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignRight)
+        	f.TitleBarLayout.AddWidget(f.TitleLabel, 0, 0)
+        	f.TitleBarLayout.AddWidget(f.BtnMinimize, 0, 0)
+        	f.TitleBarLayout.AddWidget(f.BtnMaximize, 0, 0)
+        	f.TitleBarLayout.AddWidget(f.BtnRestore, 0, 0)
+        	f.TitleBarLayout.AddWidget(f.BtnClose, 0, 0)
+	}
 
 
 	// create window content
@@ -177,72 +187,106 @@ func (f *QFramelessWindow) SetStyles(color string) {
 	// f.WindowWidget.SetStyleSheet(fmt.Sprintf(" .QWidget { %s}", style))
 	f.WindowWidget.SetStyleSheet(fmt.Sprintf(" .QFrame { border: 2px solid %s; border-radius: 6px; %s }", color, style))
 
-	f.BtnMinimize.SetStyleSheet(`
-	#BtnMinimize { 
-		background-color:none;
-		border:none;
-		background-image: url(":/icons/Minimize.png"); 
-		background-repeat: no-repeat; 
-		background-position: center center; 
-	}
-	#BtnMinimize:hover { 
-		background-color:none;
-		border:none;
-		background-image: url(":/icons/MinimizeHover.png"); 
-		background-repeat: no-repeat; 
-		background-position: center center;
-	}
-	`)
-	f.BtnMaximize.SetStyleSheet(`
-	#BtnMaximize { 
-		background-color:none;
-		border:none;
-		background-image: url(":/icons/Maximize.png");
-		background-repeat: no-repeat; 
-		background-position: center center; 
-	}
-	#BtnMaximize:hover { 
-		background-color:none;
-		border:none;
-		background-image: url(":/icons/MaximizeHover.png"); 
-		background-repeat: no-repeat; 
-		background-position: center center; 
-	}
-	`)
+	// padding titlebar
+	f.TitleLabel.SetStyleSheet(" *{padding-right: 60px}")
 
-	f.BtnRestore.SetStyleSheet(`
-	#BtnRestore { 
-		background-color:none;
-		border:none;
-		background-image: url(":/icons/Restore.png");
-		background-repeat: no-repeat; 
-		background-position: center center; 
-	}
-	#BtnRestore:hover { 
-		background-color:none;
-		border:none;
-		background-image: url(":/icons/RestoreHover.png"); 
-		background-repeat: no-repeat; 
-		background-position: center center; 
-	}
-	`)
+	if runtime.GOOS == "darwin" {
+		baseStyle := ` #BtnMinimize, #BtnMaximize, #BtnRestore, #BtnClose {
+			min-width: 12px;
+			min-height: 12px;
+			max-width: 12px;
+			max-height: 12px;
+			border-radius: 6px;
+			margin: 4px;
+		}`
+		restoreAndMaximizeColor := `
+			#BtnRestore, #BtnMaximize {
+				background-color: hsv(123, 204, 198);
+			}
+		`
+		minimizeColor := `
+			#BtnMinimize {
+				background-color: hsv(38, 218, 253);
+			}
+		`
+		closeColor := `
+			#BtnClose {
+				background-color: hsv(0, 182, 252);
+			}
+		`
+		f.BtnMinimize.SetStyleSheet(baseStyle+minimizeColor)
+		f.BtnMaximize.SetStyleSheet(baseStyle+restoreAndMaximizeColor)
+		f.BtnRestore.SetStyleSheet(baseStyle+restoreAndMaximizeColor)
+		f.BtnClose.SetStyleSheet(baseStyle+closeColor)
 
-	f.BtnClose.SetStyleSheet(`
-	#BtnClose { 
-		background-color:none;
-		border:none;
-		background-image: url(":/icons/Close.png");
-		background-repeat: no-repeat; 
-		background-position: center center; 
+	} else {
+		f.BtnMinimize.SetStyleSheet(`
+		#BtnMinimize { 
+			background-color:none;
+			border:none;
+			background-image: url(":/icons/Minimize.png"); 
+			background-repeat: no-repeat; 
+			background-position: center center; 
+		}
+		#BtnMinimize:hover { 
+			background-color:none;
+			border:none;
+			background-image: url(":/icons/MinimizeHover.png"); 
+			background-repeat: no-repeat; 
+			background-position: center center;
+		}
+		`)
+		f.BtnMaximize.SetStyleSheet(`
+		#BtnMaximize { 
+			background-color:none;
+			border:none;
+			background-image: url(":/icons/Maximize.png");
+			background-repeat: no-repeat; 
+			background-position: center center; 
+		}
+		#BtnMaximize:hover { 
+			background-color:none;
+			border:none;
+			background-image: url(":/icons/MaximizeHover.png"); 
+			background-repeat: no-repeat; 
+			background-position: center center; 
+		}
+		`)
+
+		f.BtnRestore.SetStyleSheet(`
+		#BtnRestore { 
+			background-color:none;
+			border:none;
+			background-image: url(":/icons/Restore.png");
+			background-repeat: no-repeat; 
+			background-position: center center; 
+		}
+		#BtnRestore:hover { 
+			background-color:none;
+			border:none;
+			background-image: url(":/icons/RestoreHover.png"); 
+			background-repeat: no-repeat; 
+			background-position: center center; 
+		}
+		`)
+
+		f.BtnClose.SetStyleSheet(`
+		#BtnClose { 
+			background-color:none;
+			border:none;
+			background-image: url(":/icons/Close.png");
+			background-repeat: no-repeat; 
+			background-position: center center; 
+		}
+		#BtnClose:hover { 
+			background-color:none;
+			border:none;
+			background-image: url(":/icons/CloseHover.png");
+			background-repeat: no-repeat;
+			background-position: center center; 
+		}
+		`)
 	}
-	#BtnClose:hover { 
-		background-color:none;
-		border:none;
-		background-image: url(":/icons/CloseHover.png");
-		background-repeat: no-repeat;
-		background-position: center center; 
-	}
-	`)
 }
 
 func (f *QFramelessWindow) setWindowFlags() {
@@ -256,7 +300,7 @@ func (f *QFramelessWindow) SetTitle(title string) {
 }
 
 func (f *QFramelessWindow) SetTitleStyle(style string) {
-	f.TitleLabel.SetStyleSheet(style)
+	f.TitleLabel.SetStyleSheet(style+" *{padding-right: 60px}")
 }
 
 func (f *QFramelessWindow) SetContent(layout widgets.QLayout_ITF) {
@@ -395,7 +439,7 @@ func (f *QFramelessWindow) setWindowActions() {
 		case core.QEvent__MouseButtonPress :
 			f.pressedEdge = f.calcCursorPos(e.GlobalPos(), f.Widget.Window().FrameGeometry())
 			if f.pressedEdge != None {
-				margins := core.NewQMargins2(f.borderSize, f.borderSize, f.borderSize, f.borderSize)
+				margins := core.NewQMargins2(f.borderSize*2, f.borderSize, f.borderSize*2, f.borderSize*2)
 				if f.Widget.Window().Rect().MarginsRemoved(margins).Contains3(e.Pos().X(), e.Pos().Y()) {
 					f.isDragStart = true
 					f.dragPos = e.Pos()
@@ -441,56 +485,61 @@ func (f *QFramelessWindow) updateCursorShape(pos *core.QPoint) {
 }
 
 func (f *QFramelessWindow) calcCursorPos(pos *core.QPoint, rect *core.QRect) Edge {
+	borderSize := f.borderSize + 1
+	doubleBorderSize := borderSize * 2
+	tripleBorderSize := borderSize * 3
 	var onLeft, onRight, onBottom, onTop, onBottomLeft, onBottomRight, onTopRight, onTopLeft bool
-	onLeft = (pos.X() >= (rect.X() - f.borderSize)) && (pos.X() <= (rect.X() + f.borderSize)) &&
-	         (pos.Y() <= (rect.Y() + rect.Height() - f.borderSize)) &&
-		 (pos.Y() >= rect.Y() + f.borderSize)
-	if onLeft {
-		return Left
-	}
 
-	onRight = (pos.X() >= (rect.X() + rect.Width() - f.borderSize)) &&
-	          (pos.X() <= (rect.X() + rect.Width())) &&
-		  (pos.Y() >= (rect.Y() + f.borderSize)) && (pos.Y() <= (rect.Y() + rect.Height() - f.borderSize))
-	if onRight {
-		return Right
-	}
-	
-	onBottom = (pos.X() >= (rect.X() + f.borderSize)) && (pos.X() <= (rect.X() + rect.Width() - f.borderSize)) &&
-	           (pos.Y() >= (rect.Y() + rect.Height() - f.borderSize)) && (pos.Y() <= (rect.Y() + rect.Height()))
-	if onBottom {
-		return Bottom
-	}
-
-	onTop = (pos.X() >= (rect.X() + f.borderSize)) && (pos.X() <= (rect.X() + rect.Width() - f.borderSize)) &&
-		(pos.Y() >= rect.Y()) && (pos.Y() <= (rect.Y() + f.borderSize))
-	if onTop {
-		return Top
-	}
-	
-	onBottomLeft = (pos.X() <= (rect.X() + f.borderSize)) && pos.X() >= rect.X() &&
-		       (pos.Y() <= (rect.Y() + rect.Height())) && (pos.Y() >= (rect.Y() + rect.Height() - f.borderSize))
+	onBottomLeft = (pos.X() <= (rect.X() + tripleBorderSize)) && pos.X() >= rect.X() &&
+		       (pos.Y() <= (rect.Y() + rect.Height())) && (pos.Y() >= (rect.Y() + rect.Height() - tripleBorderSize))
 	if onBottomLeft {
 		return BottomLeft
 	}
 	
-	onBottomRight = (pos.X() >= (rect.X() + rect.Width() - f.borderSize)) && (pos.X() <= (rect.X() + rect.Width())) &&
-	                (pos.Y() >= (rect.Y() + rect.Height() - f.borderSize)) && (pos.Y() <= (rect.Y() + rect.Height()))
+	onBottomRight = (pos.X() >= (rect.X() + rect.Width() - tripleBorderSize)) && (pos.X() <= (rect.X() + rect.Width())) &&
+	                (pos.Y() >= (rect.Y() + rect.Height() - tripleBorderSize)) && (pos.Y() <= (rect.Y() + rect.Height()))
 	if onBottomRight {
 		return BottomRight
 	}
 	
-	onTopRight = (pos.X() >= (rect.X() + rect.Width() - f.borderSize)) && (pos.X() <= (rect.X() + rect.Width())) &&
-		     (pos.Y() >= rect.Y()) && (pos.Y() <= (rect.Y() + f.borderSize))
+	onTopRight = (pos.X() >= (rect.X() + rect.Width() - tripleBorderSize)) && (pos.X() <= (rect.X() + rect.Width())) &&
+		     (pos.Y() >= rect.Y()) && (pos.Y() <= (rect.Y() + tripleBorderSize))
 	if onTopRight {
 		return TopRight
 	}
 	
-	onTopLeft = pos.X() >= rect.X() && (pos.X() <= (rect.X() + f.borderSize)) &&
-		    pos.Y() >= rect.Y() && (pos.Y() <= (rect.Y() + f.borderSize))
+	onTopLeft = pos.X() >= rect.X() && (pos.X() <= (rect.X() + tripleBorderSize)) &&
+		    pos.Y() >= rect.Y() && (pos.Y() <= (rect.Y() + tripleBorderSize))
 	if onTopLeft {
 		return TopLeft
 	}
+
+	onLeft = (pos.X() >= (rect.X() - doubleBorderSize)) && (pos.X() <= (rect.X() + doubleBorderSize)) &&
+	         (pos.Y() <= (rect.Y() + rect.Height() - doubleBorderSize)) &&
+		 (pos.Y() >= rect.Y() + doubleBorderSize)
+	if onLeft {
+		return Left
+	}
+
+	onRight = (pos.X() >= (rect.X() + rect.Width() - doubleBorderSize)) &&
+	          (pos.X() <= (rect.X() + rect.Width())) &&
+		  (pos.Y() >= (rect.Y() + doubleBorderSize)) && (pos.Y() <= (rect.Y() + rect.Height() - doubleBorderSize))
+	if onRight {
+		return Right
+	}
+	
+	onBottom = (pos.X() >= (rect.X() + doubleBorderSize)) && (pos.X() <= (rect.X() + rect.Width() - doubleBorderSize)) &&
+	           (pos.Y() >= (rect.Y() + rect.Height() - doubleBorderSize)) && (pos.Y() <= (rect.Y() + rect.Height()))
+	if onBottom {
+		return Bottom
+	}
+
+	onTop = (pos.X() >= (rect.X() + borderSize)) && (pos.X() <= (rect.X() + rect.Width() - borderSize)) &&
+		(pos.Y() >= rect.Y()) && (pos.Y() <= (rect.Y() + borderSize))
+	if onTop {
+		return Top
+	}
+	
 	
 	return None
 }
