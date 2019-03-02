@@ -413,14 +413,20 @@ func (f *QFramelessWindow) setTitleBarActions() {
 	// Button Actions
 	f.BtnMinimize.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
 		f.Widget.Window().SetWindowState(core.Qt__WindowMinimized)
+		f.Widget.Hide()
+		f.Widget.Show()
 	})
 
 	f.BtnMaximize.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
 		f.windowMaximize()
+		f.Widget.Hide()
+		f.Widget.Show()
 	})
 
 	f.BtnRestore.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
 		f.windowRestore()
+		f.Widget.Hide()
+		f.Widget.Show()
 	})
 
 	f.BtnClose.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
