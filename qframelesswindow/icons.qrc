@@ -10,6 +10,7 @@
         <file>icons/MinimizeHoverDarwin.png</file>
         <file>icons/Restore.png</file>
         <file>icons/RestoreHover.png</file>
-        <file>icons/RestoreMaximizeHoverDarwin.png</file>
+        <file>icons/RestoreHoverDarwin.png</file>
+        <file>icons/MaximizeHoverDarwin.png</file>
     </qresource>
 </RCC>

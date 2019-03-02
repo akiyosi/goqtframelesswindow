@@ -317,11 +317,20 @@ func (f *QFramelessWindow) setWindowButtonColorInDarwin() {
 			}
 		`
 	}
-	restoreAndMaximizeColorHover := `
-		#BtnRestore:hover, #BtnMaximize:hover {
+	MaximizeColorHover := `
+		#BtnMaximize:hover {
 			background-color: rgb(53, 202, 74);
 			border-color: rgb(34, 182, 52);
-			background-image: url(":/icons/RestoreMaximizeHoverDarwin.png");
+			background-image: url(":/icons/MaximizeHoverDarwin.png");
+			background-repeat: no-repeat;
+			background-position: center center; 
+		}
+	`
+	RestoreColorHover := `
+		#BtnRestore:hover {
+			background-color: rgb(53, 202, 74);
+			border-color: rgb(34, 182, 52);
+			background-image: url(":/icons/RestoreHoverDarwin.png");
 			background-repeat: no-repeat;
 			background-position: center center; 
 		}
@@ -345,8 +354,8 @@ func (f *QFramelessWindow) setWindowButtonColorInDarwin() {
 		}
 	`
 	f.BtnMinimize.SetStyleSheet(baseStyle+minimizeColor+minimizeColorHover)
-	f.BtnMaximize.SetStyleSheet(baseStyle+restoreAndMaximizeColor+restoreAndMaximizeColorHover)
-	f.BtnRestore.SetStyleSheet(baseStyle+restoreAndMaximizeColor+restoreAndMaximizeColorHover)
+	f.BtnMaximize.SetStyleSheet(baseStyle+restoreAndMaximizeColor+MaximizeColorHover)
+	f.BtnRestore.SetStyleSheet(baseStyle+restoreAndMaximizeColor+RestoreColorHover)
 	f.BtnClose.SetStyleSheet(baseStyle+closeColor+closeColorHover)
 }
 
@@ -551,29 +560,28 @@ func (f *QFramelessWindow) updateCursorShape(pos *core.QPoint) {
 func (f *QFramelessWindow) calcCursorPos(pos *core.QPoint, rect *core.QRect) Edge {
 	borderSize := f.borderSize + 1
 	doubleBorderSize := borderSize * 2
-	tripleBorderSize := borderSize * 3
 	var onLeft, onRight, onBottom, onTop, onBottomLeft, onBottomRight, onTopRight, onTopLeft bool
 
-	onBottomLeft = (pos.X() <= (rect.X() + tripleBorderSize)) && pos.X() >= rect.X() &&
-		       (pos.Y() <= (rect.Y() + rect.Height())) && (pos.Y() >= (rect.Y() + rect.Height() - tripleBorderSize))
+	onBottomLeft = (pos.X() <= (rect.X() + doubleBorderSize)) && pos.X() >= rect.X() &&
+		       (pos.Y() <= (rect.Y() + rect.Height())) && (pos.Y() >= (rect.Y() + rect.Height() - doubleBorderSize))
 	if onBottomLeft {
 		return BottomLeft
 	}
 	
-	onBottomRight = (pos.X() >= (rect.X() + rect.Width() - tripleBorderSize)) && (pos.X() <= (rect.X() + rect.Width())) &&
-	                (pos.Y() >= (rect.Y() + rect.Height() - tripleBorderSize)) && (pos.Y() <= (rect.Y() + rect.Height()))
+	onBottomRight = (pos.X() >= (rect.X() + rect.Width() - doubleBorderSize)) && (pos.X() <= (rect.X() + rect.Width())) &&
+	                (pos.Y() >= (rect.Y() + rect.Height() - doubleBorderSize)) && (pos.Y() <= (rect.Y() + rect.Height()))
 	if onBottomRight {
 		return BottomRight
 	}
 	
-	onTopRight = (pos.X() >= (rect.X() + rect.Width() - tripleBorderSize)) && (pos.X() <= (rect.X() + rect.Width())) &&
-		     (pos.Y() >= rect.Y()) && (pos.Y() <= (rect.Y() + tripleBorderSize))
+	onTopRight = (pos.X() >= (rect.X() + rect.Width() - doubleBorderSize)) && (pos.X() <= (rect.X() + rect.Width())) &&
+		     (pos.Y() >= rect.Y()) && (pos.Y() <= (rect.Y() + doubleBorderSize))
 	if onTopRight {
 		return TopRight
 	}
 	
-	onTopLeft = pos.X() >= rect.X() && (pos.X() <= (rect.X() + tripleBorderSize)) &&
-		    pos.Y() >= rect.Y() && (pos.Y() <= (rect.Y() + tripleBorderSize))
+	onTopLeft = pos.X() >= rect.X() && (pos.X() <= (rect.X() + doubleBorderSize)) &&
+		    pos.Y() >= rect.Y() && (pos.Y() <= (rect.Y() + doubleBorderSize))
 	if onTopLeft {
 		return TopLeft
 	}
