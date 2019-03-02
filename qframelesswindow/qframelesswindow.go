@@ -27,6 +27,8 @@ type QFramelessWindow struct {
 	Window         *widgets.QMainWindow
 	Widget         *widgets.QWidget
 
+	windowColor    string
+
 	borderSize     int
 	Layout         *widgets.QVBoxLayout
 	// Layout         *widgets.QGridLayout
@@ -180,6 +182,7 @@ func (f *QFramelessWindow) setAttribute() {
 }
 
 func (f *QFramelessWindow) SetStyles(color string) {
+	f.windowColor = color
 	style := fmt.Sprintf("background-color: %s", color)
 	// f.Widget.SetStyleSheet(fmt.Sprintf(" .QFramelessWindow { border: 2px solid #ccc; border-radius: 11px; %s}", style))
 	f.Widget.SetStyleSheet("* { background-color: rgba(0, 0, 0, 0); }")
@@ -191,34 +194,7 @@ func (f *QFramelessWindow) SetStyles(color string) {
 	f.TitleLabel.SetStyleSheet(" *{padding-right: 60px}")
 
 	if runtime.GOOS == "darwin" {
-		baseStyle := ` #BtnMinimize, #BtnMaximize, #BtnRestore, #BtnClose {
-			min-width: 12px;
-			min-height: 12px;
-			max-width: 12px;
-			max-height: 12px;
-			border-radius: 6px;
-			margin: 4px;
-		}`
-		restoreAndMaximizeColor := `
-			#BtnRestore, #BtnMaximize {
-				background-color: hsv(123, 204, 198);
-			}
-		`
-		minimizeColor := `
-			#BtnMinimize {
-				background-color: hsv(38, 218, 253);
-			}
-		`
-		closeColor := `
-			#BtnClose {
-				background-color: hsv(0, 182, 252);
-			}
-		`
-		f.BtnMinimize.SetStyleSheet(baseStyle+minimizeColor)
-		f.BtnMaximize.SetStyleSheet(baseStyle+restoreAndMaximizeColor)
-		f.BtnRestore.SetStyleSheet(baseStyle+restoreAndMaximizeColor)
-		f.BtnClose.SetStyleSheet(baseStyle+closeColor)
-
+		f.setWindowButtonColorInDarwin()
 	} else {
 		f.BtnMinimize.SetStyleSheet(`
 		#BtnMinimize { 
@@ -287,6 +263,91 @@ func (f *QFramelessWindow) SetStyles(color string) {
 		}
 		`)
 	}
+}
+
+func (f *QFramelessWindow) setWindowButtonColorInDarwin() {
+	window := f.Widget.Window()
+	var baseStyle, restoreAndMaximizeColor, minimizeColor, closeColor string
+	baseStyle = ` #BtnMinimize, #BtnMaximize, #BtnRestore, #BtnClose {
+		min-width: 10px;
+		min-height: 10px;
+		max-width: 10px;
+		max-height: 10px;
+		border-radius: 6px;
+		border-width: 1px;
+		border-style: solid;
+		margin: 4px;
+	}`
+	if window.IsActiveWindow() {
+		restoreAndMaximizeColor = `
+			#BtnRestore, #BtnMaximize {
+				background-color: rgb(53, 202, 74);
+				border-color: rgb(34, 182, 52);
+			}
+		`
+		minimizeColor = `
+			#BtnMinimize {
+				background-color: rgb(253, 190, 65);
+				border-color: rgb(239, 170, 47);
+			}
+		`
+		closeColor = `
+			#BtnClose {
+				background-color: rgb(252, 98, 93);
+				border-color: rgb(239, 75, 71);
+			}
+		`
+	} else {
+		restoreAndMaximizeColor = `
+			#BtnRestore, #BtnMaximize {
+				background-color: rgba(128, 128, 128, 0.3);
+				border-color: rgb(128, 128, 128, 0.2);
+			}
+		`
+		minimizeColor = `
+			#BtnMinimize {
+				background-color: rgba(128, 128, 128, 0.3);
+				border-color: rgb(128, 128, 128, 0.2);
+			}
+		`
+		closeColor = `
+			#BtnClose {
+				background-color: rgba(128, 128, 128, 0.3);
+				border-color: rgb(128, 128, 128, 0.2);
+			}
+		`
+	}
+	restoreAndMaximizeColorHover := `
+		#BtnRestore:hover, #BtnMaximize:hover {
+			background-color: rgb(53, 202, 74);
+			border-color: rgb(34, 182, 52);
+			background-image: url(":/icons/RestoreMaximizeHoverDarwin.png");
+			background-repeat: no-repeat;
+			background-position: center center; 
+		}
+	`
+	minimizeColorHover := `
+		#BtnMinimize:hover {
+			background-color: rgb(253, 190, 65);
+			border-color: rgb(239, 170, 47);
+			background-image: url(":/icons/MinimizeHoverDarwin.png");
+			background-repeat: no-repeat;
+			background-position: center center; 
+		}
+	`
+	closeColorHover := `
+		#BtnClose:hover {
+			background-color: rgb(252, 98, 93);
+			border-color: rgb(239, 75, 71);
+			background-image: url(":/icons/CloseHoverDarwin.png");
+			background-repeat: no-repeat;
+			background-position: center center; 
+		}
+	`
+	f.BtnMinimize.SetStyleSheet(baseStyle+minimizeColor+minimizeColorHover)
+	f.BtnMaximize.SetStyleSheet(baseStyle+restoreAndMaximizeColor+restoreAndMaximizeColorHover)
+	f.BtnRestore.SetStyleSheet(baseStyle+restoreAndMaximizeColor+restoreAndMaximizeColorHover)
+	f.BtnClose.SetStyleSheet(baseStyle+closeColor+closeColorHover)
 }
 
 func (f *QFramelessWindow) setWindowFlags() {
@@ -376,6 +437,9 @@ func (f *QFramelessWindow) setWindowActions() {
 	f.Widget.Window().ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
 		e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 		switch event.Type() {
+		case core.QEvent__ActivationChange :
+			f.setWindowButtonColorInDarwin()
+
 		case core.QEvent__HoverMove :
 	 		f.updateCursorShape(e.GlobalPos())
 
