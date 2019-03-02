@@ -20,7 +20,7 @@ func main() {
 	a.win = a.fw.Window
 	layout := widgets.NewQVBoxLayout()
 	a.fw.SetContent(layout)
-	a.fw.SetStyles("#333")
+	a.fw.SetWidgetColor("rgba(30, 30, 30, 1.0)")
 	a.fw.SetTitle("frameless test")
 	a.fw.SetTitleStyle(" * {color: #eee}")
 	//a.fw.SetNativeEvent(a.app)

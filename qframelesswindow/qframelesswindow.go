@@ -92,6 +92,9 @@ func (f *QFramelessWindow) setupUI(widget *widgets.QWidget) {
 	f.Layout.SetSpacing(0)
 
         f.WindowWidget = widgets.NewQFrame(widget, 0)
+	// f.WindowWidget.InstallEventFilter(f.WindowWidget)
+	// f.WindowWidget.InstallEventFilter(window)
+	// window.InstallEventFilter(f.WindowWidget)
         // f.WindowWidget = widgets.NewQWidget(widget, 0)
 
         //f.WindowWidget.SetObjectName("QFramelessWidget")
@@ -107,6 +110,8 @@ func (f *QFramelessWindow) setupUI(widget *widgets.QWidget) {
 	// +-----------+
         f.WindowVLayout = widgets.NewQVBoxLayout2(f.WindowWidget)
         f.WindowVLayout.SetContentsMargins(f.borderSize, f.borderSize, f.borderSize, 0)
+        f.WindowVLayout.SetContentsMargins(0, 0, 0, 0)
+	f.WindowVLayout.SetSpacing(0)
 	f.WindowWidget.SetLayout(f.WindowVLayout)
 
 	// create titlebar widget
@@ -181,17 +186,20 @@ func (f *QFramelessWindow) setAttribute() {
 	f.Widget.SetAttribute(core.Qt__WA_TranslucentBackground, true)
 }
 
-func (f *QFramelessWindow) SetStyles(color string) {
+func (f *QFramelessWindow) SetWidgetColor(color string) {
 	f.windowColor = color
 	style := fmt.Sprintf("background-color: %s", color)
 	// f.Widget.SetStyleSheet(fmt.Sprintf(" .QFramelessWindow { border: 2px solid #ccc; border-radius: 11px; %s}", style))
+	// f.Widget.Window().SetStyleSheet("* { background-color: rgba(0, 0, 0, 0); }")
 	f.Widget.SetStyleSheet("* { background-color: rgba(0, 0, 0, 0); }")
 
 	// f.WindowWidget.SetStyleSheet(fmt.Sprintf(" .QWidget { %s}", style))
-	f.WindowWidget.SetStyleSheet(fmt.Sprintf(" .QFrame { border: 2px solid %s; border-radius: 6px; %s }", color, style))
+	// f.WindowWidget.SetStyleSheet(fmt.Sprintf(" .QFrame { border: 2px solid %s; border-radius: 6px; background-color: rgba(0, 0, 0, 0); }", color))
+	f.WindowWidget.SetStyleSheet(fmt.Sprintf(" .QFrame { border: 1px solid %s; padding: 6px; border-radius: 6px; %s; }", color, style))
+	// f.TitleBar.SetStyleSheet(fmt.Sprintf(" .QWidget { %s; }", style))
 
 	// padding titlebar
-	f.TitleLabel.SetStyleSheet(" *{padding-right: 60px}")
+	f.TitleLabel.SetStyleSheet(" * {padding-right: 60px}")
 
 	if runtime.GOOS == "darwin" {
 		f.setWindowButtonColorInDarwin()
@@ -450,6 +458,7 @@ func (f *QFramelessWindow) setWindowActions() {
 
 	// Ref: https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341#37507341
 	f.Widget.Window().ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
+	// f.WindowWidget.ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
 		e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 		switch event.Type() {
 		case core.QEvent__ActivationChange :
@@ -529,6 +538,7 @@ func (f *QFramelessWindow) setWindowActions() {
 			f.pressedEdge  = None
 
 		default:
+			//fmt.Println(event.Type())
 		}
 
 		return f.Widget.EventFilter(watched, event)
