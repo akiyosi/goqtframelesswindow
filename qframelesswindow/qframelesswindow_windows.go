@@ -10,29 +10,22 @@ import (
 	"github.com/lxn/win"
 )
 
-func (f *QFramelessWindow) setWindowLong() {
-	winid := (*win.HWND)(unsafe.Pointer(f.Widget.Window().WinId()))
-	style := win.GetWindowLong(*winid, win.GWL_STYLE)
-	style = style | win.WS_MAXIMIZEBOX | win.WS_THICKFRAME | win.WS_CAPTION
-	win.SetWindowLong(*winid, win.GWL_STYLE, style)
-}
-
 func (f *QFramelessWindow) SetNativeEvent(app *widgets.QApplication) {
-	// Install eventFilter
 	filterObj := core.NewQAbstractNativeEventFilter()
 	filterObj.ConnectNativeEventFilter(func(eventType *core.QByteArray, message unsafe.Pointer, result int) bool {
 		msg := (*win.MSG)(message)
 		switch msg.Message {
-		// case win.WM_NCCALCSIZE:
-		// 	winid := (*win.HWND)(unsafe.Pointer(f.Widget.Window().WinId()))
-		// 	style := win.GetWindowLong(*winid, win.GWL_STYLE)
-		// 	style = style | win.WS_THICKFRAME | win.WS_CAPTION
-		// 	win.SetWindowLong(*winid, win.GWL_STYLE, style)
-		case win.WM_NCHITTEST:
-			var winrect *win.RECT
-		 	winid := (*win.HWND)(unsafe.Pointer(f.Widget.Window().WinId()))
-			win.GetWindowRect(*winid, winrect)
-			fmt.Println(winrect.Left, winrect.Bottom)
+		case win.WM_NCCALCSIZE:
+		 	fmt.Println("debug")
+			winid := (*win.HWND)(unsafe.Pointer(f.Widget.Window().WinId()))
+			style := win.GetWindowLong(*winid, win.GWL_STYLE)
+			style = style | win.WS_MAXIMIZEBOX | win.WS_THICKFRAME | win.WS_CAPTION
+			win.SetWindowLong(*winid, win.GWL_STYLE, style)
+		// case win.WM_NCHITTEST:
+		// 	var winrect *win.RECT
+		//  	winid := (*win.HWND)(unsafe.Pointer(f.Widget.Window().WinId()))
+		// 	win.GetWindowRect(*winid, winrect)
+		// 	fmt.Println(winrect.Left, winrect.Bottom)
 		}
 		return filterObj.NativeEventFilter(eventType, message, result)
 	})

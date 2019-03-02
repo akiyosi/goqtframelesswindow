@@ -23,6 +23,7 @@ func main() {
 	a.fw.SetStyles("#333")
 	a.fw.SetTitle("frameless test")
 	a.fw.SetTitleStyle(" * {color: #eee}")
+	a.fw.SetNativeEvent(a.app)
 
 	a.win.Show()
 	a.fw.Widget.SetFocus2()
