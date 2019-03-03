@@ -453,6 +453,12 @@ func(f *QFramelessWindow) windowRestore() {
 	f.Widget.Window().SetWindowState(core.Qt__WindowNoState)
 }
 
+
+func (f *QFramelessWindow) UpdateWidget() {
+	f.Widget.Update()
+	f.Widget.Window().Update()
+}
+
 func (f *QFramelessWindow) setWindowActions() {
 
 
