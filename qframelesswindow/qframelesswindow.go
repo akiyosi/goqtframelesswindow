@@ -6,6 +6,7 @@ import (
 
         "github.com/therecipe/qt/core"
         "github.com/therecipe/qt/gui"
+        "github.com/therecipe/qt/svg"
         "github.com/therecipe/qt/widgets"
 )
 
@@ -43,10 +44,17 @@ type QFramelessWindow struct {
 	TitleBarBtnWidget *widgets.QWidget
 	TitleBarBtnLayout *widgets.QHBoxLayout
 
+	// for darwin
 	BtnMinimize    *widgets.QToolButton
 	BtnMaximize    *widgets.QToolButton
 	BtnRestore     *widgets.QToolButton
 	BtnClose       *widgets.QToolButton
+
+	// for windows, linux
+	IconMinimize    *svg.QSvgWidget
+	IconMaximize    *svg.QSvgWidget
+	IconRestore     *svg.QSvgWidget
+	IconClose       *svg.QSvgWidget
 
 	isCursorChanged bool
 	isDragStart     bool
@@ -64,22 +72,22 @@ func NewQFramelessWindow() *QFramelessWindow {
 	f := &QFramelessWindow{}
 	f.Window = widgets.NewQMainWindow(nil, 0)
 	f.Widget = widgets.NewQWidget(nil, 0)
-	f.setborderSize(4)
+	f.SetborderSize(4)
 	f.Window.SetCentralWidget(f.Widget)
-	f.setupUI(f.Widget)
-	f.setWindowFlags()
-	f.setAttribute()
-        f.setTitleBarActions()
-	f.setWindowActions()
+	f.SetupUI(f.Widget)
+	f.SetWindowFlags()
+	f.SetAttribute()
+	f.SetWindowActions()
+        f.SetTitleBarActions()
 
 	return f
 }
 
-func (f *QFramelessWindow) setborderSize(size int) {
+func (f *QFramelessWindow) SetborderSize(size int) {
 	f.borderSize = size
 }
 
-func (f *QFramelessWindow) setupUI(widget *widgets.QWidget) {
+func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
         //f.Layout = widgets.NewQVBoxLayout2(widget)
 
 	widget.SetObjectName("QFramelessWindow")
@@ -126,59 +134,85 @@ func (f *QFramelessWindow) setupUI(widget *widgets.QWidget) {
 	// +--+--+--+--+
         f.TitleBarLayout = widgets.NewQHBoxLayout2(f.TitleBar)
         f.TitleBarLayout.SetContentsMargins(0, 0, 0, 0)
-        f.TitleBarLayout.SetSpacing(0)
 
         f.TitleLabel = widgets.NewQLabel(nil, 0)
         f.TitleLabel.SetObjectName("TitleLabel")
         f.TitleLabel.SetAlignment(core.Qt__AlignCenter)
 
-	btnSizePolicy := widgets.NewQSizePolicy2(widgets.QSizePolicy__Fixed, widgets.QSizePolicy__Fixed, widgets.QSizePolicy__ToolButton)
-
-        f.BtnMinimize = widgets.NewQToolButton(f.TitleBar)
-        f.BtnMinimize.SetObjectName("BtnMinimize")
-        f.BtnMinimize.SetSizePolicy(btnSizePolicy)
-
-        f.BtnMaximize = widgets.NewQToolButton(f.TitleBar)
-        f.BtnMaximize.SetObjectName("BtnMaximize")
-        f.BtnMaximize.SetSizePolicy(btnSizePolicy)
-
-        f.BtnRestore = widgets.NewQToolButton(f.TitleBar)
-        f.BtnRestore.SetObjectName("BtnRestore")
-        f.BtnRestore.SetSizePolicy(btnSizePolicy)
-        f.BtnRestore.SetVisible(false)
-
-        f.BtnClose = widgets.NewQToolButton(f.TitleBar)
-        f.BtnClose.SetObjectName("BtnClose")
-        f.BtnClose.SetSizePolicy(btnSizePolicy)
-
 	if runtime.GOOS == "darwin" {
-        	f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignLeft)
-        	f.TitleBarLayout.AddWidget(f.BtnClose, 0, 0)
-        	f.TitleBarLayout.AddWidget(f.BtnMinimize, 0, 0)
-        	f.TitleBarLayout.AddWidget(f.BtnMaximize, 0, 0)
-        	f.TitleBarLayout.AddWidget(f.BtnRestore, 0, 0)
-        	f.TitleBarLayout.AddWidget(f.TitleLabel, 0, 0)
+		f.SetTitleBarButtonsForDarwin()
 	} else {
-        	f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignRight)
-        	f.TitleBarLayout.AddWidget(f.TitleLabel, 0, 0)
-        	f.TitleBarLayout.AddWidget(f.BtnMinimize, 0, 0)
-        	f.TitleBarLayout.AddWidget(f.BtnMaximize, 0, 0)
-        	f.TitleBarLayout.AddWidget(f.BtnRestore, 0, 0)
-        	f.TitleBarLayout.AddWidget(f.BtnClose, 0, 0)
+		f.SetTitleBarButtons()
 	}
 
 
 	// create window content
         f.Content = widgets.NewQWidget(f.WindowWidget, 0)
 
-	// set widget to layout
+	// Set widget to layout
         f.WindowVLayout.AddWidget(f.TitleBar, 0, 0)
         f.WindowVLayout.AddWidget(f.Content, 0, 0)
 
         f.Layout.AddWidget(f.WindowWidget, 0, 0)
 }
 
-func (f *QFramelessWindow) setAttribute() {
+func (f *QFramelessWindow) SetTitleBarButtons() {
+	iconSize := 14
+        f.TitleBarLayout.SetSpacing(iconSize/2)
+	f.IconMinimize = svg.NewQSvgWidget(nil)
+	f.IconMinimize.SetFixedSize2(iconSize, iconSize)
+	f.IconMinimize.SetObjectName("IconMinimize")
+	f.IconMaximize = svg.NewQSvgWidget(nil)
+	f.IconMaximize.SetFixedSize2(iconSize, iconSize)
+	f.IconMaximize.SetObjectName("IconMaximize")
+	f.IconRestore = svg.NewQSvgWidget(nil)
+	f.IconRestore.SetFixedSize2(iconSize, iconSize)
+	f.IconRestore.SetObjectName("IconRestore")
+	f.IconClose = svg.NewQSvgWidget(nil)
+	f.IconClose.SetFixedSize2(iconSize, iconSize)
+	f.IconClose.SetObjectName("IconClose")
+
+	f.IconMinimize.Hide()
+	f.IconMaximize.Hide()
+	f.IconRestore.Hide()
+	f.IconClose.Hide()
+
+        f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignRight)
+        f.TitleBarLayout.AddWidget(f.TitleLabel, 0, 0)
+        f.TitleBarLayout.AddWidget(f.IconMinimize, 0, 0)
+        f.TitleBarLayout.AddWidget(f.IconMaximize, 0, 0)
+        f.TitleBarLayout.AddWidget(f.IconRestore, 0, 0)
+        f.TitleBarLayout.AddWidget(f.IconClose, 0, 0)
+}
+
+func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
+	btnSizePolicy := widgets.NewQSizePolicy2(widgets.QSizePolicy__Fixed, widgets.QSizePolicy__Fixed, widgets.QSizePolicy__ToolButton)
+	f.BtnMinimize = widgets.NewQToolButton(f.TitleBar)
+	f.BtnMinimize.SetObjectName("BtnMinimize")
+	f.BtnMinimize.SetSizePolicy(btnSizePolicy)
+	
+	f.BtnMaximize = widgets.NewQToolButton(f.TitleBar)
+	f.BtnMaximize.SetObjectName("BtnMaximize")
+	f.BtnMaximize.SetSizePolicy(btnSizePolicy)
+	
+	f.BtnRestore = widgets.NewQToolButton(f.TitleBar)
+	f.BtnRestore.SetObjectName("BtnRestore")
+	f.BtnRestore.SetSizePolicy(btnSizePolicy)
+	f.BtnRestore.SetVisible(false)
+	
+	f.BtnClose = widgets.NewQToolButton(f.TitleBar)
+	f.BtnClose.SetObjectName("BtnClose")
+	f.BtnClose.SetSizePolicy(btnSizePolicy)
+	
+	f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignLeft)
+	f.TitleBarLayout.AddWidget(f.BtnClose, 0, 0)
+	f.TitleBarLayout.AddWidget(f.BtnMinimize, 0, 0)
+	f.TitleBarLayout.AddWidget(f.BtnMaximize, 0, 0)
+	f.TitleBarLayout.AddWidget(f.BtnRestore, 0, 0)
+	f.TitleBarLayout.AddWidget(f.TitleLabel, 0, 0)
+}
+
+func (f *QFramelessWindow) SetAttribute() {
 	f.Widget.Window().SetAttribute(core.Qt__WA_TranslucentBackground, true)
 	f.Widget.Window().SetAttribute(core.Qt__WA_NoSystemBackground, true)
 	f.Widget.Window().SetAttribute(core.Qt__WA_Hover, true)
@@ -201,80 +235,56 @@ func (f *QFramelessWindow) SetWidgetColor(color string) {
 	if runtime.GOOS == "darwin" {
 		// padding titlebar
 		f.TitleLabel.SetStyleSheet(" * {padding-right: 60px}")
-		f.setWindowButtonColorInDarwin()
+		f.SetWindowButtonColorInDarwin()
 	} else {
 		// padding titlebar
-		f.TitleLabel.SetStyleSheet(" * {padding-left: 60px}")
-		f.BtnMinimize.SetStyleSheet(`
-		#BtnMinimize { 
+		f.TitleLabel.SetStyleSheet(" * {padding-left: 70px}")
+		f.IconMinimize.SetStyleSheet(`
+		#IconMinimize { 
 			background-color:none;
 			border:none;
-			background-image: url(":/icons/Minimize.png"); 
-			background-repeat: no-repeat; 
-			background-position: center center; 
 		}
-		#BtnMinimize:hover { 
+		#IconMinimize:hover { 
 			background-color:none;
 			border:none;
-			background-image: url(":/icons/MinimizeHover.png"); 
-			background-repeat: no-repeat; 
-			background-position: center center;
 		}
 		`)
-		f.BtnMaximize.SetStyleSheet(`
-		#BtnMaximize { 
+		f.IconMaximize.SetStyleSheet(`
+		#IconMaximize { 
 			background-color:none;
 			border:none;
-			background-image: url(":/icons/Maximize.png");
-			background-repeat: no-repeat; 
-			background-position: center center; 
 		}
-		#BtnMaximize:hover { 
+		#IconMaximize:hover { 
 			background-color:none;
 			border:none;
-			background-image: url(":/icons/MaximizeHover.png"); 
-			background-repeat: no-repeat; 
-			background-position: center center; 
 		}
 		`)
 
-		f.BtnRestore.SetStyleSheet(`
-		#BtnRestore { 
+		f.IconRestore.SetStyleSheet(`
+		#IconRestore { 
 			background-color:none;
 			border:none;
-			background-image: url(":/icons/Restore.png");
-			background-repeat: no-repeat; 
-			background-position: center center; 
 		}
-		#BtnRestore:hover { 
+		#IconRestore:hover { 
 			background-color:none;
 			border:none;
-			background-image: url(":/icons/RestoreHover.png"); 
-			background-repeat: no-repeat; 
-			background-position: center center; 
 		}
 		`)
 
-		f.BtnClose.SetStyleSheet(`
-		#BtnClose { 
+		f.IconClose.SetStyleSheet(`
+		#IconClose { 
 			background-color:none;
 			border:none;
-			background-image: url(":/icons/Close.png");
-			background-repeat: no-repeat; 
-			background-position: center center; 
 		}
-		#BtnClose:hover { 
+		#IconClose:hover { 
 			background-color:none;
 			border:none;
-			background-image: url(":/icons/CloseHover.png");
-			background-repeat: no-repeat;
-			background-position: center center; 
 		}
 		`)
 	}
 }
 
-func (f *QFramelessWindow) setWindowButtonColorInDarwin() {
+func (f *QFramelessWindow) SetWindowButtonColorInDarwin() {
 	window := f.Widget.Window()
 	var baseStyle, restoreAndMaximizeColor, minimizeColor, closeColor string
 	baseStyle = ` #BtnMinimize, #BtnMaximize, #BtnRestore, #BtnClose {
@@ -368,7 +378,7 @@ func (f *QFramelessWindow) setWindowButtonColorInDarwin() {
 	f.BtnClose.SetStyleSheet(baseStyle+closeColor+closeColorHover)
 }
 
-func (f *QFramelessWindow) setWindowFlags() {
+func (f *QFramelessWindow) SetWindowFlags() {
 	f.Widget.Window().SetWindowFlag(core.Qt__Window, true)
 	f.Widget.Window().SetWindowFlag(core.Qt__FramelessWindowHint, true)
 	f.Widget.Window().SetWindowFlag(core.Qt__WindowSystemMenuHint, true)
@@ -378,89 +388,56 @@ func (f *QFramelessWindow) SetTitle(title string) {
 	f.TitleLabel.SetText(title)
 }
 
-func (f *QFramelessWindow) SetTitleStyle(style string) {
-	f.TitleLabel.SetStyleSheet(style+" *{padding-right: 60px}")
+func (f *QFramelessWindow) SetTitleColor(color string) {
+	f.TitleLabel.SetStyleSheet(fmt.Sprintf(" *{padding-right: 60px; color: %s; }", color))
+
+	if runtime.GOOS != "darwin" {
+		SvgMinimize := fmt.Sprintf(`
+		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+		<path fill="%s" d="M20,14H4V10H20" />
+		</svg>
+		`, color) 
+		f.IconMinimize.Load2(core.NewQByteArray2(SvgMinimize, len(SvgMinimize)))
+
+		SvgMaximize := fmt.Sprintf(`
+		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+		<path fill="%s" d="M4,4H20V20H4V4M6,8V18H18V8H6Z" />
+		</svg>
+		`, color) 
+		f.IconMaximize.Load2(core.NewQByteArray2(SvgMaximize, len(SvgMaximize)))
+
+		SvgRestore := fmt.Sprintf(`
+		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+		<path fill="%s" d="M4,8H8V4H20V16H16V20H4V8M16,8V14H18V6H10V8H16M6,12V18H14V12H6Z" />
+		</svg>
+		`, color) 
+		f.IconRestore.Load2(core.NewQByteArray2(SvgRestore, len(SvgRestore)))
+
+		SvgClose := fmt.Sprintf(`
+		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+		<path fill="%s" d="M13.46,12L19,17.54V19H17.54L12,13.46L6.46,19H5V17.54L10.54,12L5,6.46V5H6.46L12,10.54L17.54,5H19V6.46L13.46,12Z" />
+		</svg>
+		`, color) 
+		f.IconClose.Load2(core.NewQByteArray2(SvgClose, len(SvgClose)))
+
+		f.IconMinimize.Show()
+		f.IconMaximize.Show()
+		f.IconRestore.Show()
+		f.IconRestore.SetVisible(false)
+		f.IconClose.Show()
+	}
 }
 
 func (f *QFramelessWindow) SetContent(layout widgets.QLayout_ITF) {
 	f.Content.SetLayout(layout)
 }
 
-func (f *QFramelessWindow) setTitleBarActions() {
-	t := f.TitleBar
-
-	// TitleBar Actions
-	t.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
-		f.Widget.Raise()
-	 	f.IsMousePressed = true
-	 	f.MousePos = e.GlobalPos()
-		f.Pos = f.Widget.Window().Pos()
-	})
-
-	t.ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
-	 	f.IsMousePressed = false
-	})
-
-	t.ConnectMouseMoveEvent(func(e *gui.QMouseEvent) {
-		if !f.IsMousePressed {
-			return
-		}
-		x := f.Pos.X() + e.GlobalPos().X() - f.MousePos.X()
-		y := f.Pos.Y() + e.GlobalPos().Y() - f.MousePos.Y()
-		newPos := core.NewQPoint2(x, y)
-		f.Widget.Window().Move(newPos)
-	})
-
-	t.ConnectMouseDoubleClickEvent(func(e *gui.QMouseEvent) {
-		if f.BtnMaximize.IsVisible() {
-			f.windowMaximize()
-		} else {
-			f.windowRestore()
-		}
-	})
-
-	// Button Actions
-	f.BtnMinimize.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
-		f.Widget.Window().SetWindowState(core.Qt__WindowMinimized)
-		f.Widget.Hide()
-		f.Widget.Show()
-	})
-
-	f.BtnMaximize.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
-		f.windowMaximize()
-		f.Widget.Hide()
-		f.Widget.Show()
-	})
-
-	f.BtnRestore.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
-		f.windowRestore()
-		f.Widget.Hide()
-		f.Widget.Show()
-	})
-
-	f.BtnClose.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
-	})
-}
-
-func(f *QFramelessWindow) windowMaximize() {
-	f.BtnMaximize.SetVisible(false)
-	f.BtnRestore.SetVisible(true)
-	f.Widget.Window().SetWindowState(core.Qt__WindowMaximized)
-}
-
-func(f *QFramelessWindow) windowRestore() {
-	f.BtnMaximize.SetVisible(true)
-	f.BtnRestore.SetVisible(false)
-	f.Widget.Window().SetWindowState(core.Qt__WindowNoState)
-}
-
-
 func (f *QFramelessWindow) UpdateWidget() {
 	f.Widget.Update()
 	f.Widget.Window().Update()
 }
 
-func (f *QFramelessWindow) setWindowActions() {
+func (f *QFramelessWindow) SetWindowActions() {
 
 
 	// Ref: https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341#37507341
@@ -470,7 +447,7 @@ func (f *QFramelessWindow) setWindowActions() {
 		switch event.Type() {
 		case core.QEvent__ActivationChange :
 			if runtime.GOOS == "darwin" {
-				f.setWindowButtonColorInDarwin()
+				f.SetWindowButtonColorInDarwin()
 			}
 
 		case core.QEvent__HoverMove :

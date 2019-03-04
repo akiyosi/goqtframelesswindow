@@ -24,7 +24,7 @@ func main() {
 	a.fw.SetContent(layout)
 	a.fw.SetWidgetColor("rgba(30, 30, 30, 0.5)")
 	a.fw.SetTitle("frameless test")
-	a.fw.SetTitleStyle(" * {color: #eee}")
+	a.fw.SetTitleColor("#eee")
 
 
 	label := widgets.NewQLabel(nil, 0)
