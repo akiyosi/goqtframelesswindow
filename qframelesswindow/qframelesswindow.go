@@ -198,12 +198,13 @@ func (f *QFramelessWindow) SetWidgetColor(color string) {
 	f.WindowWidget.SetStyleSheet(fmt.Sprintf(" .QFrame { border: 1px solid %s; padding: 6px; border-radius: 6px; %s; }", color, style))
 	// f.TitleBar.SetStyleSheet(fmt.Sprintf(" .QWidget { %s; }", style))
 
-	// padding titlebar
-	f.TitleLabel.SetStyleSheet(" * {padding-right: 60px}")
-
 	if runtime.GOOS == "darwin" {
+		// padding titlebar
+		f.TitleLabel.SetStyleSheet(" * {padding-right: 60px}")
 		f.setWindowButtonColorInDarwin()
 	} else {
+		// padding titlebar
+		f.TitleLabel.SetStyleSheet(" * {padding-left: 60px}")
 		f.BtnMinimize.SetStyleSheet(`
 		#BtnMinimize { 
 			background-color:none;
@@ -468,7 +469,9 @@ func (f *QFramelessWindow) setWindowActions() {
 		e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 		switch event.Type() {
 		case core.QEvent__ActivationChange :
-			f.setWindowButtonColorInDarwin()
+			if runtime.GOOS == "darwin" {
+				f.setWindowButtonColorInDarwin()
+			}
 
 		case core.QEvent__HoverMove :
 	 		f.updateCursorShape(e.GlobalPos())
