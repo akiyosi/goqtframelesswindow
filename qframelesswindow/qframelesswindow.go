@@ -204,6 +204,7 @@ func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
 	f.BtnClose.SetObjectName("BtnClose")
 	f.BtnClose.SetSizePolicy(btnSizePolicy)
 	
+        f.TitleBarLayout.SetSpacing(0)
 	f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignLeft)
 	f.TitleBarLayout.AddWidget(f.BtnClose, 0, 0)
 	f.TitleBarLayout.AddWidget(f.BtnMinimize, 0, 0)
@@ -217,7 +218,6 @@ func (f *QFramelessWindow) SetAttribute() {
 	f.Widget.Window().SetAttribute(core.Qt__WA_NoSystemBackground, true)
 	f.Widget.Window().SetAttribute(core.Qt__WA_Hover, true)
 	f.Widget.Window().SetMouseTracking(true)
-	f.Widget.SetAttribute(core.Qt__WA_TranslucentBackground, true)
 }
 
 func (f *QFramelessWindow) SetWidgetColor(color string) {
