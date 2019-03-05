@@ -24,11 +24,17 @@ const (
         BottomRight Edge = 0x80
 )
 
+type RGB struct {
+	R uint16
+	G uint16
+	B uint16
+}
+
 type QFramelessWindow struct {
 	Window         *widgets.QMainWindow
 	Widget         *widgets.QWidget
 
-	windowColor    string
+	WindowColor    *RGB
 
 	borderSize     int
 	Layout         *widgets.QVBoxLayout
@@ -43,6 +49,7 @@ type QFramelessWindow struct {
 	TitleLabel     *widgets.QLabel
 	TitleBarBtnWidget *widgets.QWidget
 	TitleBarBtnLayout *widgets.QHBoxLayout
+	TitleColor     *RGB
 
 	// for darwin
 	BtnMinimize    *widgets.QToolButton
@@ -76,7 +83,7 @@ func NewQFramelessWindow() *QFramelessWindow {
 	f.Window.SetCentralWidget(f.Widget)
 	f.SetupUI(f.Widget)
 	f.SetWindowFlags()
-	f.SetAttribute()
+	f.SetAttributes()
 	f.SetWindowActions()
         f.SetTitleBarActions()
 
@@ -171,6 +178,32 @@ func (f *QFramelessWindow) SetTitleBarButtons() {
 	f.IconClose = svg.NewQSvgWidget(nil)
 	f.IconClose.SetFixedSize2(iconSize, iconSize)
 	f.IconClose.SetObjectName("IconClose")
+	f.IconMinimize.SetStyleSheet(`
+	#IconMinimize { 
+		background-color:none;
+		border:none;
+	}
+	`)
+	f.IconMaximize.SetStyleSheet(`
+	#IconMaximize { 
+		background-color:none;
+		border:none;
+	}
+	`)
+
+	f.IconRestore.SetStyleSheet(`
+	#IconRestore { 
+		background-color:none;
+		border:none;
+	}
+	`)
+
+	f.IconClose.SetStyleSheet(`
+	#IconClose { 
+		background-color:none;
+		border:none;
+	}
+	`)
 
 	f.IconMinimize.Hide()
 	f.IconMaximize.Hide()
@@ -213,79 +246,258 @@ func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
 	f.TitleBarLayout.AddWidget(f.TitleLabel, 0, 0)
 }
 
-func (f *QFramelessWindow) SetAttribute() {
+func (f *QFramelessWindow) SetAttributes() {
 	f.Widget.Window().SetAttribute(core.Qt__WA_TranslucentBackground, true)
 	f.Widget.Window().SetAttribute(core.Qt__WA_NoSystemBackground, true)
 	f.Widget.Window().SetAttribute(core.Qt__WA_Hover, true)
 	f.Widget.Window().SetMouseTracking(true)
 }
 
-func (f *QFramelessWindow) SetWidgetColor(color string) {
-	f.windowColor = color
-	style := fmt.Sprintf("background-color: %s", color)
-	// f.Widget.SetStyleSheet(fmt.Sprintf(" .QFramelessWindow { border: 2px solid #ccc; border-radius: 11px; %s}", style))
-	// f.Widget.Window().SetStyleSheet("* { background-color: rgba(0, 0, 0, 0); }")
+func (f *QFramelessWindow) SetWidgetColor(red uint16, green uint16, blue uint16, alpha float64) {
+	f.WindowColor = &RGB{
+		R: red,
+		G: green,
+		B: blue,
+	}
+	color := f.WindowColor
+	style := fmt.Sprintf("background-color: rgba(%d, %d, %d, %f);", color.R, color.G, color.B, alpha)
 	f.Widget.SetStyleSheet("* { background-color: rgba(0, 0, 0, 0); }")
 
-	// f.WindowWidget.SetStyleSheet(fmt.Sprintf(" .QWidget { %s}", style))
-	// f.WindowWidget.SetStyleSheet(fmt.Sprintf(" .QFrame { border: 2px solid %s; border-radius: 6px; background-color: rgba(0, 0, 0, 0); }", color))
-	f.WindowWidget.SetStyleSheet(fmt.Sprintf(" .QFrame { border: 1px solid %s; padding: 6px; border-radius: 6px; %s; }", color, style))
-	// f.TitleBar.SetStyleSheet(fmt.Sprintf(" .QWidget { %s; }", style))
+	f.WindowWidget.SetStyleSheet(fmt.Sprintf(" .QFrame { border: 0px solid %s; padding: 6px; border-radius: 6px; %s; }", color.Hex(), style))
+}
 
-	if runtime.GOOS == "darwin" {
-		// padding titlebar
-		f.TitleLabel.SetStyleSheet(" * {padding-right: 60px}")
-		f.SetWindowButtonColorInDarwin()
+// func (f *QFramelessWindow) SetTitleBarButtonColor() {
+// 	color := f.TitleColor
+// 	window := f.Widget.Window()
+// 	if window.IsActiveWindow() {
+// 		SvgMinimize := fmt.Sprintf(`
+// 		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+// 		<path fill="%s" d="M20,14H4V10H20" />
+// 		</svg>
+// 		`, color.Hex()) 
+// 		f.IconMinimize.Load2(core.NewQByteArray2(SvgMinimize, len(SvgMinimize)))
+// 
+// 		SvgMaximize := fmt.Sprintf(`
+// 		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+// 		<path fill="%s" d="M4,4H20V20H4V4M6,8V18H18V8H6Z" />
+// 		</svg>
+// 		`, color.Hex()) 
+// 		f.IconMaximize.Load2(core.NewQByteArray2(SvgMaximize, len(SvgMaximize)))
+// 
+// 		SvgRestore := fmt.Sprintf(`
+// 		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+// 		<path fill="%s" d="M4,8H8V4H20V16H16V20H4V8M16,8V14H18V6H10V8H16M6,12V18H14V12H6Z" />
+// 		</svg>
+// 		`, color.Hex()) 
+// 		f.IconRestore.Load2(core.NewQByteArray2(SvgRestore, len(SvgRestore)))
+// 
+// 		SvgClose := fmt.Sprintf(`
+// 		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+// 		<path fill="%s" d="M13.46,12L19,17.54V19H17.54L12,13.46L6.46,19H5V17.54L10.54,12L5,6.46V5H6.46L12,10.54L17.54,5H19V6.46L13.46,12Z" />
+// 		</svg>
+// 		`, color.Hex()) 
+// 		f.IconClose.Load2(core.NewQByteArray2(SvgClose, len(SvgClose)))
+// 	} else {
+// 	}
+// 
+// 	f.IconMinimize.Show()
+// 	f.IconMaximize.Show()
+// 	f.IconRestore.Show()
+// 	f.IconRestore.SetVisible(false)
+// 	f.IconClose.Show()
+// }
+
+// func (f *QFramelessWindow) SetTitleBarButtonColorInDarwin() {
+// 	window := f.Widget.Window()
+// 	var baseStyle, restoreAndMaximizeColor, minimizeColor, closeColor string
+// 	baseStyle = ` #BtnMinimize, #BtnMaximize, #BtnRestore, #BtnClose {
+// 		min-width: 10px;
+// 		min-height: 10px;
+// 		max-width: 10px;
+// 		max-height: 10px;
+// 		border-radius: 6px;
+// 		border-width: 1px;
+// 		border-style: solid;
+// 		margin: 4px;
+// 	}`
+// 	if window.IsActiveWindow() {
+// 		restoreAndMaximizeColor = `
+// 			#BtnRestore, #BtnMaximize {
+// 				background-color: rgb(53, 202, 74);
+// 				border-color: rgb(34, 182, 52);
+// 			}
+// 		`
+// 		minimizeColor = `
+// 			#BtnMinimize {
+// 				background-color: rgb(253, 190, 65);
+// 				border-color: rgb(239, 170, 47);
+// 			}
+// 		`
+// 		closeColor = `
+// 			#BtnClose {
+// 				background-color: rgb(252, 98, 93);
+// 				border-color: rgb(239, 75, 71);
+// 			}
+// 		`
+// 	} else {
+// 		restoreAndMaximizeColor = `
+// 			#BtnRestore, #BtnMaximize {
+// 				background-color: rgba(128, 128, 128, 0.3);
+// 				border-color: rgb(128, 128, 128, 0.2);
+// 			}
+// 		`
+// 		minimizeColor = `
+// 			#BtnMinimize {
+// 				background-color: rgba(128, 128, 128, 0.3);
+// 				border-color: rgb(128, 128, 128, 0.2);
+// 			}
+// 		`
+// 		closeColor = `
+// 			#BtnClose {
+// 				background-color: rgba(128, 128, 128, 0.3);
+// 				border-color: rgb(128, 128, 128, 0.2);
+// 			}
+// 		`
+// 	}
+// 	MaximizeColorHover := `
+// 		#BtnMaximize:hover {
+// 			background-color: rgb(53, 202, 74);
+// 			border-color: rgb(34, 182, 52);
+// 			background-image: url(":/icons/MaximizeHoverDarwin.png");
+// 			background-repeat: no-repeat;
+// 			background-position: center center; 
+// 		}
+// 	`
+// 	RestoreColorHover := `
+// 		#BtnRestore:hover {
+// 			background-color: rgb(53, 202, 74);
+// 			border-color: rgb(34, 182, 52);
+// 			background-image: url(":/icons/RestoreHoverDarwin.png");
+// 			background-repeat: no-repeat;
+// 			background-position: center center; 
+// 		}
+// 	`
+// 	minimizeColorHover := `
+// 		#BtnMinimize:hover {
+// 			background-color: rgb(253, 190, 65);
+// 			border-color: rgb(239, 170, 47);
+// 			background-image: url(":/icons/MinimizeHoverDarwin.png");
+// 			background-repeat: no-repeat;
+// 			background-position: center center; 
+// 		}
+// 	`
+// 	closeColorHover := `
+// 		#BtnClose:hover {
+// 			background-color: rgb(252, 98, 93);
+// 			border-color: rgb(239, 75, 71);
+// 			background-image: url(":/icons/CloseHoverDarwin.png");
+// 			background-repeat: no-repeat;
+// 			background-position: center center; 
+// 		}
+// 	`
+// 	f.BtnMinimize.SetStyleSheet(baseStyle+minimizeColor+minimizeColorHover)
+// 	f.BtnMaximize.SetStyleSheet(baseStyle+restoreAndMaximizeColor+MaximizeColorHover)
+// 	f.BtnRestore.SetStyleSheet(baseStyle+restoreAndMaximizeColor+RestoreColorHover)
+// 	f.BtnClose.SetStyleSheet(baseStyle+closeColor+closeColorHover)
+// }
+
+func (f *QFramelessWindow) SetWindowFlags() {
+	f.Widget.Window().SetWindowFlag(core.Qt__Window, true)
+	f.Widget.Window().SetWindowFlag(core.Qt__FramelessWindowHint, true)
+	f.Widget.Window().SetWindowFlag(core.Qt__WindowSystemMenuHint, true)
+}
+
+func (f *QFramelessWindow) SetTitle(title string) {
+	f.TitleLabel.SetText(title)
+}
+
+func (f *QFramelessWindow) SetTitleColor(red uint16, green uint16, blue uint16) {
+	f.TitleColor = &RGB{
+		R: red,
+		G: green,
+		B: blue,
+	}
+	f.SetTitleBarColor()
+}
+
+func (f *QFramelessWindow) SetTitleBarColor() {
+	var color, labelColor *RGB
+	window := f.Widget.Window()
+	if window.IsActiveWindow() {
+		color = f.TitleColor
 	} else {
-		// padding titlebar
-		f.TitleLabel.SetStyleSheet(" * {padding-left: 70px}")
-		f.IconMinimize.SetStyleSheet(`
-		#IconMinimize { 
-			background-color:none;
-			border:none;
+		color = nil
+	}
+	labelColor = color
+	if labelColor == nil {
+		labelColor = &RGB{
+			R: 128,
+			G: 128,
+			B: 128,
 		}
-		#IconMinimize:hover { 
-			background-color:none;
-			border:none;
-		}
-		`)
-		f.IconMaximize.SetStyleSheet(`
-		#IconMaximize { 
-			background-color:none;
-			border:none;
-		}
-		#IconMaximize:hover { 
-			background-color:none;
-			border:none;
-		}
-		`)
-
-		f.IconRestore.SetStyleSheet(`
-		#IconRestore { 
-			background-color:none;
-			border:none;
-		}
-		#IconRestore:hover { 
-			background-color:none;
-			border:none;
-		}
-		`)
-
-		f.IconClose.SetStyleSheet(`
-		#IconClose { 
-			background-color:none;
-			border:none;
-		}
-		#IconClose:hover { 
-			background-color:none;
-			border:none;
-		}
-		`)
+	}
+	if runtime.GOOS != "darwin" {
+		f.TitleLabel.SetStyleSheet(fmt.Sprintf(" *{padding-left: 60px; color: rgb(%d, %d, %d); }", labelColor.R, labelColor.G, labelColor.B))
+	 	f.SetTitleBarColorForNotDarwin(color)
+	} else {
+		f.TitleLabel.SetStyleSheet(fmt.Sprintf(" *{padding-right: 60px; color: rgb(%d, %d, %d); }", labelColor.R, labelColor.G, labelColor.B))
+	 	f.SetTitleBarColorForDarwin(color)
 	}
 }
 
-func (f *QFramelessWindow) SetWindowButtonColorInDarwin() {
+func (f *QFramelessWindow) SetTitleBarColorForNotDarwin(color *RGB) {
+	if color == nil {
+		color = &RGB{
+			R: 128,
+			G: 128,
+			B: 128,
+		}
+	}
 	window := f.Widget.Window()
+	if window.IsActiveWindow() {
+		SvgMinimize := fmt.Sprintf(`
+		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+		<path fill="%s" d="M20,14H4V10H20" />
+		</svg>
+		`, color.Hex()) 
+		f.IconMinimize.Load2(core.NewQByteArray2(SvgMinimize, len(SvgMinimize)))
+
+		SvgMaximize := fmt.Sprintf(`
+		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+		<path fill="%s" d="M4,4H20V20H4V4M6,8V18H18V8H6Z" />
+		</svg>
+		`, color.Hex()) 
+		f.IconMaximize.Load2(core.NewQByteArray2(SvgMaximize, len(SvgMaximize)))
+
+		SvgRestore := fmt.Sprintf(`
+		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+		<path fill="%s" d="M4,8H8V4H20V16H16V20H4V8M16,8V14H18V6H10V8H16M6,12V18H14V12H6Z" />
+		</svg>
+		`, color.Hex()) 
+		f.IconRestore.Load2(core.NewQByteArray2(SvgRestore, len(SvgRestore)))
+
+		SvgClose := fmt.Sprintf(`
+		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+		<path fill="%s" d="M13.46,12L19,17.54V19H17.54L12,13.46L6.46,19H5V17.54L10.54,12L5,6.46V5H6.46L12,10.54L17.54,5H19V6.46L13.46,12Z" />
+		</svg>
+		`, color.Hex()) 
+		f.IconClose.Load2(core.NewQByteArray2(SvgClose, len(SvgClose)))
+	} else {
+	}
+	f.IconMinimize.Hide()
+	f.IconMaximize.Hide()
+	f.IconRestore.Hide()
+	f.IconRestore.SetVisible(false)
+	f.IconClose.Hide()
+
+	f.IconMinimize.Show()
+	f.IconMaximize.Show()
+	f.IconRestore.Show()
+	f.IconRestore.SetVisible(false)
+	f.IconClose.Show()
+}
+
+func (f *QFramelessWindow) SetTitleBarColorForDarwin(color *RGB) {
 	var baseStyle, restoreAndMaximizeColor, minimizeColor, closeColor string
 	baseStyle = ` #BtnMinimize, #BtnMaximize, #BtnRestore, #BtnClose {
 		min-width: 10px;
@@ -297,7 +509,7 @@ func (f *QFramelessWindow) SetWindowButtonColorInDarwin() {
 		border-style: solid;
 		margin: 4px;
 	}`
-	if window.IsActiveWindow() {
+	if color != nil {
 		restoreAndMaximizeColor = `
 			#BtnRestore, #BtnMaximize {
 				background-color: rgb(53, 202, 74);
@@ -378,56 +590,6 @@ func (f *QFramelessWindow) SetWindowButtonColorInDarwin() {
 	f.BtnClose.SetStyleSheet(baseStyle+closeColor+closeColorHover)
 }
 
-func (f *QFramelessWindow) SetWindowFlags() {
-	f.Widget.Window().SetWindowFlag(core.Qt__Window, true)
-	f.Widget.Window().SetWindowFlag(core.Qt__FramelessWindowHint, true)
-	f.Widget.Window().SetWindowFlag(core.Qt__WindowSystemMenuHint, true)
-}
-
-func (f *QFramelessWindow) SetTitle(title string) {
-	f.TitleLabel.SetText(title)
-}
-
-func (f *QFramelessWindow) SetTitleColor(color string) {
-	f.TitleLabel.SetStyleSheet(fmt.Sprintf(" *{padding-right: 60px; color: %s; }", color))
-
-	if runtime.GOOS != "darwin" {
-		SvgMinimize := fmt.Sprintf(`
-		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-		<path fill="%s" d="M20,14H4V10H20" />
-		</svg>
-		`, color) 
-		f.IconMinimize.Load2(core.NewQByteArray2(SvgMinimize, len(SvgMinimize)))
-
-		SvgMaximize := fmt.Sprintf(`
-		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-		<path fill="%s" d="M4,4H20V20H4V4M6,8V18H18V8H6Z" />
-		</svg>
-		`, color) 
-		f.IconMaximize.Load2(core.NewQByteArray2(SvgMaximize, len(SvgMaximize)))
-
-		SvgRestore := fmt.Sprintf(`
-		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-		<path fill="%s" d="M4,8H8V4H20V16H16V20H4V8M16,8V14H18V6H10V8H16M6,12V18H14V12H6Z" />
-		</svg>
-		`, color) 
-		f.IconRestore.Load2(core.NewQByteArray2(SvgRestore, len(SvgRestore)))
-
-		SvgClose := fmt.Sprintf(`
-		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-		<path fill="%s" d="M13.46,12L19,17.54V19H17.54L12,13.46L6.46,19H5V17.54L10.54,12L5,6.46V5H6.46L12,10.54L17.54,5H19V6.46L13.46,12Z" />
-		</svg>
-		`, color) 
-		f.IconClose.Load2(core.NewQByteArray2(SvgClose, len(SvgClose)))
-
-		f.IconMinimize.Show()
-		f.IconMaximize.Show()
-		f.IconRestore.Show()
-		f.IconRestore.SetVisible(false)
-		f.IconClose.Show()
-	}
-}
-
 func (f *QFramelessWindow) SetContent(layout widgets.QLayout_ITF) {
 	f.Content.SetLayout(layout)
 }
@@ -446,9 +608,7 @@ func (f *QFramelessWindow) SetWindowActions() {
 		e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 		switch event.Type() {
 		case core.QEvent__ActivationChange :
-			if runtime.GOOS == "darwin" {
-				f.SetWindowButtonColorInDarwin()
-			}
+			f.SetTitleBarColor()
 
 		case core.QEvent__HoverMove :
 	 		f.updateCursorShape(e.GlobalPos())
@@ -616,4 +776,9 @@ func (f *QFramelessWindow) calcCursorPos(pos *core.QPoint, rect *core.QRect) Edg
 	
 	
 	return None
+}
+
+
+func (c *RGB) Hex() string {
+	return fmt.Sprintf("#%02x%02x%02x", uint8(c.R), uint8(c.G), uint8(c.B))
 }
