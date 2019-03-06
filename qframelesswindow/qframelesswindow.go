@@ -266,141 +266,6 @@ func (f *QFramelessWindow) SetWidgetColor(red uint16, green uint16, blue uint16,
 	f.WindowWidget.SetStyleSheet(fmt.Sprintf(" .QFrame { border: 0px solid %s; padding: 6px; border-radius: 6px; %s; }", color.Hex(), style))
 }
 
-// func (f *QFramelessWindow) SetTitleBarButtonColor() {
-// 	color := f.TitleColor
-// 	window := f.Widget.Window()
-// 	if window.IsActiveWindow() {
-// 		SvgMinimize := fmt.Sprintf(`
-// 		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-// 		<path fill="%s" d="M20,14H4V10H20" />
-// 		</svg>
-// 		`, color.Hex()) 
-// 		f.IconMinimize.Load2(core.NewQByteArray2(SvgMinimize, len(SvgMinimize)))
-// 
-// 		SvgMaximize := fmt.Sprintf(`
-// 		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-// 		<path fill="%s" d="M4,4H20V20H4V4M6,8V18H18V8H6Z" />
-// 		</svg>
-// 		`, color.Hex()) 
-// 		f.IconMaximize.Load2(core.NewQByteArray2(SvgMaximize, len(SvgMaximize)))
-// 
-// 		SvgRestore := fmt.Sprintf(`
-// 		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-// 		<path fill="%s" d="M4,8H8V4H20V16H16V20H4V8M16,8V14H18V6H10V8H16M6,12V18H14V12H6Z" />
-// 		</svg>
-// 		`, color.Hex()) 
-// 		f.IconRestore.Load2(core.NewQByteArray2(SvgRestore, len(SvgRestore)))
-// 
-// 		SvgClose := fmt.Sprintf(`
-// 		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-// 		<path fill="%s" d="M13.46,12L19,17.54V19H17.54L12,13.46L6.46,19H5V17.54L10.54,12L5,6.46V5H6.46L12,10.54L17.54,5H19V6.46L13.46,12Z" />
-// 		</svg>
-// 		`, color.Hex()) 
-// 		f.IconClose.Load2(core.NewQByteArray2(SvgClose, len(SvgClose)))
-// 	} else {
-// 	}
-// 
-// 	f.IconMinimize.Show()
-// 	f.IconMaximize.Show()
-// 	f.IconRestore.Show()
-// 	f.IconRestore.SetVisible(false)
-// 	f.IconClose.Show()
-// }
-
-// func (f *QFramelessWindow) SetTitleBarButtonColorInDarwin() {
-// 	window := f.Widget.Window()
-// 	var baseStyle, restoreAndMaximizeColor, minimizeColor, closeColor string
-// 	baseStyle = ` #BtnMinimize, #BtnMaximize, #BtnRestore, #BtnClose {
-// 		min-width: 10px;
-// 		min-height: 10px;
-// 		max-width: 10px;
-// 		max-height: 10px;
-// 		border-radius: 6px;
-// 		border-width: 1px;
-// 		border-style: solid;
-// 		margin: 4px;
-// 	}`
-// 	if window.IsActiveWindow() {
-// 		restoreAndMaximizeColor = `
-// 			#BtnRestore, #BtnMaximize {
-// 				background-color: rgb(53, 202, 74);
-// 				border-color: rgb(34, 182, 52);
-// 			}
-// 		`
-// 		minimizeColor = `
-// 			#BtnMinimize {
-// 				background-color: rgb(253, 190, 65);
-// 				border-color: rgb(239, 170, 47);
-// 			}
-// 		`
-// 		closeColor = `
-// 			#BtnClose {
-// 				background-color: rgb(252, 98, 93);
-// 				border-color: rgb(239, 75, 71);
-// 			}
-// 		`
-// 	} else {
-// 		restoreAndMaximizeColor = `
-// 			#BtnRestore, #BtnMaximize {
-// 				background-color: rgba(128, 128, 128, 0.3);
-// 				border-color: rgb(128, 128, 128, 0.2);
-// 			}
-// 		`
-// 		minimizeColor = `
-// 			#BtnMinimize {
-// 				background-color: rgba(128, 128, 128, 0.3);
-// 				border-color: rgb(128, 128, 128, 0.2);
-// 			}
-// 		`
-// 		closeColor = `
-// 			#BtnClose {
-// 				background-color: rgba(128, 128, 128, 0.3);
-// 				border-color: rgb(128, 128, 128, 0.2);
-// 			}
-// 		`
-// 	}
-// 	MaximizeColorHover := `
-// 		#BtnMaximize:hover {
-// 			background-color: rgb(53, 202, 74);
-// 			border-color: rgb(34, 182, 52);
-// 			background-image: url(":/icons/MaximizeHoverDarwin.png");
-// 			background-repeat: no-repeat;
-// 			background-position: center center; 
-// 		}
-// 	`
-// 	RestoreColorHover := `
-// 		#BtnRestore:hover {
-// 			background-color: rgb(53, 202, 74);
-// 			border-color: rgb(34, 182, 52);
-// 			background-image: url(":/icons/RestoreHoverDarwin.png");
-// 			background-repeat: no-repeat;
-// 			background-position: center center; 
-// 		}
-// 	`
-// 	minimizeColorHover := `
-// 		#BtnMinimize:hover {
-// 			background-color: rgb(253, 190, 65);
-// 			border-color: rgb(239, 170, 47);
-// 			background-image: url(":/icons/MinimizeHoverDarwin.png");
-// 			background-repeat: no-repeat;
-// 			background-position: center center; 
-// 		}
-// 	`
-// 	closeColorHover := `
-// 		#BtnClose:hover {
-// 			background-color: rgb(252, 98, 93);
-// 			border-color: rgb(239, 75, 71);
-// 			background-image: url(":/icons/CloseHoverDarwin.png");
-// 			background-repeat: no-repeat;
-// 			background-position: center center; 
-// 		}
-// 	`
-// 	f.BtnMinimize.SetStyleSheet(baseStyle+minimizeColor+minimizeColorHover)
-// 	f.BtnMaximize.SetStyleSheet(baseStyle+restoreAndMaximizeColor+MaximizeColorHover)
-// 	f.BtnRestore.SetStyleSheet(baseStyle+restoreAndMaximizeColor+RestoreColorHover)
-// 	f.BtnClose.SetStyleSheet(baseStyle+closeColor+closeColorHover)
-// }
-
 func (f *QFramelessWindow) SetWindowFlags() {
 	f.Widget.Window().SetWindowFlag(core.Qt__Window, true)
 	f.Widget.Window().SetWindowFlag(core.Qt__FramelessWindowHint, true)
@@ -453,42 +318,33 @@ func (f *QFramelessWindow) SetTitleBarColorForNotDarwin(color *RGB) {
 			B: 128,
 		}
 	}
-	window := f.Widget.Window()
-	if window.IsActiveWindow() {
-		SvgMinimize := fmt.Sprintf(`
-		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-		<path fill="%s" d="M20,14H4V10H20" />
-		</svg>
-		`, color.Hex()) 
-		f.IconMinimize.Load2(core.NewQByteArray2(SvgMinimize, len(SvgMinimize)))
+	SvgMinimize := fmt.Sprintf(`
+	<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+	<path fill="%s" d="M20,14H4V10H20" />
+	</svg>
+	`, color.Hex()) 
+	f.IconMinimize.Load2(core.NewQByteArray2(SvgMinimize, len(SvgMinimize)))
 
-		SvgMaximize := fmt.Sprintf(`
-		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-		<path fill="%s" d="M4,4H20V20H4V4M6,8V18H18V8H6Z" />
-		</svg>
-		`, color.Hex()) 
-		f.IconMaximize.Load2(core.NewQByteArray2(SvgMaximize, len(SvgMaximize)))
+	SvgMaximize := fmt.Sprintf(`
+	<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+	<path fill="%s" d="M4,4H20V20H4V4M6,8V18H18V8H6Z" />
+	</svg>
+	`, color.Hex()) 
+	f.IconMaximize.Load2(core.NewQByteArray2(SvgMaximize, len(SvgMaximize)))
 
-		SvgRestore := fmt.Sprintf(`
-		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-		<path fill="%s" d="M4,8H8V4H20V16H16V20H4V8M16,8V14H18V6H10V8H16M6,12V18H14V12H6Z" />
-		</svg>
-		`, color.Hex()) 
-		f.IconRestore.Load2(core.NewQByteArray2(SvgRestore, len(SvgRestore)))
+	SvgRestore := fmt.Sprintf(`
+	<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+	<path fill="%s" d="M4,8H8V4H20V16H16V20H4V8M16,8V14H18V6H10V8H16M6,12V18H14V12H6Z" />
+	</svg>
+	`, color.Hex()) 
+	f.IconRestore.Load2(core.NewQByteArray2(SvgRestore, len(SvgRestore)))
 
-		SvgClose := fmt.Sprintf(`
-		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-		<path fill="%s" d="M13.46,12L19,17.54V19H17.54L12,13.46L6.46,19H5V17.54L10.54,12L5,6.46V5H6.46L12,10.54L17.54,5H19V6.46L13.46,12Z" />
-		</svg>
-		`, color.Hex()) 
-		f.IconClose.Load2(core.NewQByteArray2(SvgClose, len(SvgClose)))
-	} else {
-	}
-	f.IconMinimize.Hide()
-	f.IconMaximize.Hide()
-	f.IconRestore.Hide()
-	f.IconRestore.SetVisible(false)
-	f.IconClose.Hide()
+	SvgClose := fmt.Sprintf(`
+	<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+	<path fill="%s" d="M13.46,12L19,17.54V19H17.54L12,13.46L6.46,19H5V17.54L10.54,12L5,6.46V5H6.46L12,10.54L17.54,5H19V6.46L13.46,12Z" />
+	</svg>
+	`, color.Hex()) 
+	f.IconClose.Load2(core.NewQByteArray2(SvgClose, len(SvgClose)))
 
 	f.IconMinimize.Show()
 	f.IconMaximize.Show()
