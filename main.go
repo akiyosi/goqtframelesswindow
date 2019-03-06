@@ -3,12 +3,12 @@ package main
 import (
 	"time"
 
-        "github.com/therecipe/qt/widgets"
 	frameless "github.com/akiyosi/goqtframelesswindow/qframelesswindow"
+	"github.com/therecipe/qt/widgets"
 )
 
 type framelessTest struct {
-	fw  *frameless.QFramelessWindow
+	fw *frameless.QFramelessWindow
 
 	app *widgets.QApplication
 	win *widgets.QMainWindow
@@ -25,7 +25,6 @@ func main() {
 	a.fw.SetWidgetColor(30, 30, 30, 0.5)
 	a.fw.SetTitle("frameless test")
 	a.fw.SetTitleColor(200, 200, 200)
-
 
 	label := widgets.NewQLabel(nil, 0)
 	layout.AddWidget(label, 0, 0)

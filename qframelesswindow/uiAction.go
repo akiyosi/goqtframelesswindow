@@ -10,6 +10,48 @@ import (
 func (f *QFramelessWindow) SetTitleBarActions() {
 	t := f.TitleBar
 
+	f.IconMinimize.ConnectEnterEvent(func(event *core.QEvent) {
+		f.SetIconMinimizeStyle(&RGB{
+			R: 0,
+			G: 162,
+			B: 232,
+		})
+	})
+	f.IconMaximize.ConnectEnterEvent(func(event *core.QEvent) {
+		f.SetIconMaximizeStyle(&RGB{
+			R: 0,
+			G: 162,
+			B: 232,
+		})
+	})
+	f.IconRestore.ConnectEnterEvent(func(event *core.QEvent) {
+		f.SetIconRestoreStyle(&RGB{
+			R: 0,
+			G: 162,
+			B: 232,
+		})
+	})
+	f.IconClose.ConnectEnterEvent(func(event *core.QEvent) {
+		f.SetIconCloseStyle(&RGB{
+			R: 0,
+			G: 162,
+			B: 232,
+		})
+	})
+
+	f.IconMinimize.ConnectLeaveEvent(func(event *core.QEvent) {
+		f.SetIconMinimizeStyle(nil)
+	})
+	f.IconMaximize.ConnectLeaveEvent(func(event *core.QEvent) {
+		f.SetIconMaximizeStyle(nil)
+	})
+	f.IconRestore.ConnectLeaveEvent(func(event *core.QEvent) {
+		f.SetIconRestoreStyle(nil)
+	})
+	f.IconClose.ConnectLeaveEvent(func(event *core.QEvent) {
+		f.SetIconCloseStyle(nil)
+	})
+
 	// TitleBar Actions
 	t.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
 		f.Widget.Raise()

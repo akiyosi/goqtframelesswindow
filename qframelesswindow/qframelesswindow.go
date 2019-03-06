@@ -164,8 +164,8 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 }
 
 func (f *QFramelessWindow) SetTitleBarButtons() {
-	iconSize := 14
-        f.TitleBarLayout.SetSpacing(iconSize/2)
+	iconSize := 15
+        f.TitleBarLayout.SetSpacing(iconSize*3/5)
 	f.IconMinimize = svg.NewQSvgWidget(nil)
 	f.IconMinimize.SetFixedSize2(iconSize, iconSize)
 	f.IconMinimize.SetObjectName("IconMinimize")
@@ -178,32 +178,8 @@ func (f *QFramelessWindow) SetTitleBarButtons() {
 	f.IconClose = svg.NewQSvgWidget(nil)
 	f.IconClose.SetFixedSize2(iconSize, iconSize)
 	f.IconClose.SetObjectName("IconClose")
-	f.IconMinimize.SetStyleSheet(`
-	#IconMinimize { 
-		background-color:none;
-		border:none;
-	}
-	`)
-	f.IconMaximize.SetStyleSheet(`
-	#IconMaximize { 
-		background-color:none;
-		border:none;
-	}
-	`)
 
-	f.IconRestore.SetStyleSheet(`
-	#IconRestore { 
-		background-color:none;
-		border:none;
-	}
-	`)
-
-	f.IconClose.SetStyleSheet(`
-	#IconClose { 
-		background-color:none;
-		border:none;
-	}
-	`)
+	f.SetIconsStyle(nil)
 
 	f.IconMinimize.Hide()
 	f.IconMaximize.Hide()
@@ -216,6 +192,78 @@ func (f *QFramelessWindow) SetTitleBarButtons() {
         f.TitleBarLayout.AddWidget(f.IconMaximize, 0, 0)
         f.TitleBarLayout.AddWidget(f.IconRestore, 0, 0)
         f.TitleBarLayout.AddWidget(f.IconClose, 0, 0)
+}
+
+func (f *QFramelessWindow) SetIconsStyle(color *RGB) {
+	f.SetIconMinimizeStyle(color)
+	f.SetIconMaximizeStyle(color)
+	f.SetIconRestoreStyle(color)
+	f.SetIconCloseStyle(color)
+}
+
+func (f *QFramelessWindow) SetIconMinimizeStyle(color *RGB) {
+	var backgroundColor string
+	if color == nil {
+		backgroundColor = "background-color:none;"
+	} else {
+		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, 0.3);", color.R, color.G, color.B)
+	}
+
+	f.IconMinimize.SetStyleSheet(fmt.Sprintf(`
+	#IconMinimize { 
+		%s
+		border:none;
+	}
+	`, backgroundColor))
+}
+
+func (f *QFramelessWindow) SetIconMaximizeStyle(color *RGB) {
+	var backgroundColor string
+	if color == nil {
+		backgroundColor = "background-color:none;"
+	} else {
+		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, 0.3);", color.R, color.G, color.B)
+	}
+
+	f.IconMaximize.SetStyleSheet(fmt.Sprintf(`
+	#IconMaximize { 
+		%s
+		border:none;
+	}
+	`, backgroundColor))
+}
+
+
+func (f *QFramelessWindow) SetIconRestoreStyle(color *RGB) {
+	var backgroundColor string
+	if color == nil {
+		backgroundColor = "background-color:none;"
+	} else {
+		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, 0.3);", color.R, color.G, color.B)
+	}
+
+	f.IconRestore.SetStyleSheet(fmt.Sprintf(`
+	#IconRestore { 
+		%s
+		border:none;
+	}
+	`, backgroundColor))
+}
+
+func (f *QFramelessWindow) SetIconCloseStyle(color *RGB) {
+	var backgroundColor string
+	if color == nil {
+		backgroundColor = "background-color:none;"
+	} else {
+		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, 0.3);", color.R, color.G, color.B)
+	}
+
+	f.IconClose.SetStyleSheet(fmt.Sprintf(`
+	#IconClose { 
+		%s
+		border:none;
+	}
+	`, backgroundColor))
 }
 
 func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
