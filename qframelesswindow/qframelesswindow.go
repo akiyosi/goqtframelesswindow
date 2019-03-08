@@ -31,7 +31,7 @@ type RGB struct {
 }
 
 type QToolButtonForNotDarwin struct {
-	Widget     *widgets.Qwidget
+	Widget     *widgets.QWidget
 	IconBtn    *svg.QSvgWidget
 }
 
@@ -176,7 +176,7 @@ func NewQToolButtonForNotDarwin(parent widgets.QWidget_ITF) *QToolButtonForNotDa
 	widget := widgets.NewQWidget(parent, 0)
 	layout := widgets.NewQVBoxLayout2(widget)
 	layout.SetContentsMargins(marginLR, marginTB, marginLR, marginTB)
-	icon = svg.NewQSvgWidget(nil)
+	icon := svg.NewQSvgWidget(nil)
 	icon.SetFixedSize2(iconSize, iconSize)
 
 	layout.AddWidget(icon, 0, 0)
@@ -189,7 +189,7 @@ func NewQToolButtonForNotDarwin(parent widgets.QWidget_ITF) *QToolButtonForNotDa
 }
 
 func (b *QToolButtonForNotDarwin) SetObjectName(name string) {
-	b.icon.SetObjectName(name)
+	b.IconBtn.SetObjectName(name)
 }
 
 
