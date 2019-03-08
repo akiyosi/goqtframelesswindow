@@ -30,6 +30,11 @@ type RGB struct {
 	B uint16
 }
 
+type QToolButtonForNotDarwin struct {
+	Widget     *widgets.Qwidget
+	IconBtn    *svg.QSvgWidget
+}
+
 type QFramelessWindow struct {
 	Window         *widgets.QMainWindow
 	Widget         *widgets.QWidget
@@ -161,6 +166,47 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
         f.WindowVLayout.AddWidget(f.Content, 0, 0)
 
         f.Layout.AddWidget(f.WindowWidget, 0, 0)
+}
+
+func NewQToolButtonForNotDarwin(parent widgets.QWidget_ITF) *QToolButtonForNotDarwin {
+	iconSize := 15
+	marginTB := iconSize/5
+	marginLR := iconSize/3
+
+	widget := widgets.NewQWidget(parent, 0)
+	layout := widgets.NewQVBoxLayout2(widget)
+	layout.SetContentsMargins(marginLR, marginTB, marginLR, marginTB)
+	icon = svg.NewQSvgWidget(nil)
+	icon.SetFixedSize2(iconSize, iconSize)
+
+	layout.AddWidget(icon, 0, 0)
+        layout.SetAlignment(icon, core.Qt__AlignCenter)
+
+	return &QToolButtonForNotDarwin{
+		Widget: widget,
+		IconBtn: icon,
+	}
+}
+
+func (b *QToolButtonForNotDarwin) SetObjectName(name string) {
+	b.icon.SetObjectName(name)
+}
+
+
+func (b *QToolButtonForNotDarwin) SetIconStyle(color *RGB) {
+	var backgroundColor string
+	if color == nil {
+		backgroundColor = "background-color:none;"
+	} else {
+		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, 0.3);", color.R, color.G, color.B)
+	}
+
+	b.IconBtn.SetStyleSheet(fmt.Sprintf(`
+	* { 
+		%s
+		border:none;
+	}
+	`, backgroundColor))
 }
 
 func (f *QFramelessWindow) SetTitleBarButtons() {
