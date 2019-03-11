@@ -102,7 +102,7 @@ func (f *QFramelessWindow) SetborderSize(size int) {
 func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
         //f.Layout = widgets.NewQVBoxLayout2(widget)
 
-	widget.SetObjectName("QFramelessWindow")
+	widget.SetSizePolicy2(widgets.QSizePolicy__Expanding | widgets.QSizePolicy__Maximum, widgets.QSizePolicy__Expanding | widgets.QSizePolicy__Maximum)
 	window := widget.Window()
 	window.InstallEventFilter(window)
 
@@ -117,8 +117,8 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	// window.InstallEventFilter(f.WindowWidget)
         // f.WindowWidget = widgets.NewQWidget(widget, 0)
 
-        //f.WindowWidget.SetObjectName("QFramelessWidget")
-	f.WindowWidget.SetSizePolicy2(widgets.QSizePolicy__Expanding | widgets.QSizePolicy__Maximum , widgets.QSizePolicy__Expanding)
+        f.WindowWidget.SetObjectName("QFramelessWidget")
+	f.WindowWidget.SetSizePolicy2(widgets.QSizePolicy__Expanding | widgets.QSizePolicy__Maximum, widgets.QSizePolicy__Expanding | widgets.QSizePolicy__Maximum)
 
 	// windowVLayout is the following structure layout
 	// +-----------+
@@ -166,6 +166,19 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
         f.WindowVLayout.AddWidget(f.Content, 0, 0)
 
         f.Layout.AddWidget(f.WindowWidget, 0, 0)
+}
+
+func (f *QFramelessWindow) SetWidgetColor(red uint16, green uint16, blue uint16, alpha float64) {
+	f.WindowColor = &RGB{
+		R: red,
+		G: green,
+		B: blue,
+	}
+	color := f.WindowColor
+	style := fmt.Sprintf("background-color: rgba(%d, %d, %d, %f);", color.R, color.G, color.B, alpha)
+	f.Widget.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0); color: rgba(0, 0, 0, 0); }")
+
+	f.WindowWidget.SetStyleSheet(fmt.Sprintf(" #QFramelessWidget { border: 0px solid %s; padding: 6px; border-radius: 6px; %s; }", color.Hex(), style))
 }
 
 func NewQToolButtonForNotDarwin(parent widgets.QWidget_ITF) *QToolButtonForNotDarwin {
@@ -292,19 +305,6 @@ func (f *QFramelessWindow) SetAttributes() {
 	f.Widget.Window().SetAttribute(core.Qt__WA_NoSystemBackground, true)
 	f.Widget.Window().SetAttribute(core.Qt__WA_Hover, true)
 	f.Widget.Window().SetMouseTracking(true)
-}
-
-func (f *QFramelessWindow) SetWidgetColor(red uint16, green uint16, blue uint16, alpha float64) {
-	f.WindowColor = &RGB{
-		R: red,
-		G: green,
-		B: blue,
-	}
-	color := f.WindowColor
-	style := fmt.Sprintf("background-color: rgba(%d, %d, %d, %f);", color.R, color.G, color.B, alpha)
-	f.Widget.SetStyleSheet("* { background-color: rgba(0, 0, 0, 0); }")
-
-	f.WindowWidget.SetStyleSheet(fmt.Sprintf(" .QFrame { border: 0px solid %s; padding: 6px; border-radius: 6px; %s; }", color.Hex(), style))
 }
 
 func (f *QFramelessWindow) SetWindowFlags() {
@@ -514,19 +514,21 @@ func (f *QFramelessWindow) SetWindowActions() {
 			f.Widget.Window().UnsetCursor()
 
 		case core.QEvent__MouseMove :
+			window := f.Widget.Window()
+
 			if f.isDragStart {
-				startPos := f.Widget.Window().FrameGeometry().TopLeft()
-				newX :=startPos.X() + e.Pos().X() - f.dragPos.X()
-				newY :=startPos.Y() + e.Pos().Y() - f.dragPos.Y()
+				startPos := window.FrameGeometry().TopLeft()
+				newX := startPos.X() + e.Pos().X() - f.dragPos.X()
+				newY := startPos.Y() + e.Pos().Y() - f.dragPos.Y()
 				newPoint := core.NewQPoint2(newX, newY)
-				f.Widget.Window().Move(newPoint)
+				window.Move(newPoint)
 			}
 			if f.pressedEdge != None {
 
-				left := f.Widget.Window().FrameGeometry().Left()
-				top := f.Widget.Window().FrameGeometry().Top()
-				right := f.Widget.Window().FrameGeometry().Right()
-				bottom := f.Widget.Window().FrameGeometry().Bottom()
+				left := window.FrameGeometry().Left()
+				top := window.FrameGeometry().Top()
+				right := window.FrameGeometry().Right()
+				bottom := window.FrameGeometry().Bottom()
 
 				switch f.pressedEdge {
 				case Top:
@@ -555,17 +557,17 @@ func (f *QFramelessWindow) SetWindowActions() {
 				topLeftPoint := core.NewQPoint2(left, top)
 				rightBottomPoint := core.NewQPoint2(right, bottom)
 				newRect := core.NewQRect2(topLeftPoint, rightBottomPoint)
-				if newRect.Width() < f.Widget.Window().MinimumWidth() {
-					left = f.Widget.Window().FrameGeometry().X()
+				if newRect.Width() < window.MinimumWidth() {
+					left = window.FrameGeometry().X()
 				}
-				if newRect.Height() < f.Widget.Window().MinimumHeight() {
-					top = f.Widget.Window().FrameGeometry().Y()
+				if newRect.Height() < window.MinimumHeight() {
+					top = window.FrameGeometry().Y()
 				}
 				topLeftPoint = core.NewQPoint2(left, top)
 				rightBottomPoint = core.NewQPoint2(right, bottom)
 				newRect = core.NewQRect2(topLeftPoint, rightBottomPoint)
 
-				f.Widget.Window().SetGeometry(newRect)
+				window.SetGeometry(newRect)
 			}
 		case core.QEvent__MouseButtonPress :
 			f.pressedEdge = f.calcCursorPos(e.GlobalPos(), f.Widget.Window().FrameGeometry())
