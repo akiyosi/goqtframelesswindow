@@ -63,10 +63,10 @@ type QFramelessWindow struct {
 	BtnClose       *widgets.QToolButton
 
 	// for windows, linux
-	IconMinimize    *svg.QSvgWidget
-	IconMaximize    *svg.QSvgWidget
-	IconRestore     *svg.QSvgWidget
-	IconClose       *svg.QSvgWidget
+	IconMinimize  *QToolButtonForNotDarwin // *svg.QSvgWidget
+	IconMaximize  *QToolButtonForNotDarwin // *svg.QSvgWidget
+	IconRestore   *QToolButtonForNotDarwin // *svg.QSvgWidget
+	IconClose     *QToolButtonForNotDarwin // *svg.QSvgWidget
 
 	isCursorChanged bool
 	isDragStart     bool
@@ -192,6 +192,13 @@ func (b *QToolButtonForNotDarwin) SetObjectName(name string) {
 	b.IconBtn.SetObjectName(name)
 }
 
+func (b *QToolButtonForNotDarwin) Hide() {
+	b.Widget.Hide()
+}
+
+func (b *QToolButtonForNotDarwin) Show() {
+	b.Widget.Show()
+}
 
 func (b *QToolButtonForNotDarwin) SetIconStyle(color *RGB) {
 	var backgroundColor string
@@ -212,17 +219,18 @@ func (b *QToolButtonForNotDarwin) SetIconStyle(color *RGB) {
 func (f *QFramelessWindow) SetTitleBarButtons() {
 	iconSize := 15
         f.TitleBarLayout.SetSpacing(iconSize*3/5)
-	f.IconMinimize = svg.NewQSvgWidget(nil)
-	f.IconMinimize.SetFixedSize2(iconSize, iconSize)
+
+	f.IconMinimize = NewQToolButtonForNotDarwin(nil)
+	f.IconMinimize.IconBtn.SetFixedSize2(iconSize, iconSize)
 	f.IconMinimize.SetObjectName("IconMinimize")
-	f.IconMaximize = svg.NewQSvgWidget(nil)
-	f.IconMaximize.SetFixedSize2(iconSize, iconSize)
+	f.IconMaximize = NewQToolButtonForNotDarwin(nil)
+	f.IconMaximize.IconBtn.SetFixedSize2(iconSize, iconSize)
 	f.IconMaximize.SetObjectName("IconMaximize")
-	f.IconRestore = svg.NewQSvgWidget(nil)
-	f.IconRestore.SetFixedSize2(iconSize, iconSize)
+	f.IconRestore = NewQToolButtonForNotDarwin(nil)
+	f.IconRestore.IconBtn.SetFixedSize2(iconSize, iconSize)
 	f.IconRestore.SetObjectName("IconRestore")
-	f.IconClose = svg.NewQSvgWidget(nil)
-	f.IconClose.SetFixedSize2(iconSize, iconSize)
+	f.IconClose = NewQToolButtonForNotDarwin(nil)
+	f.IconClose.IconBtn.SetFixedSize2(iconSize, iconSize)
 	f.IconClose.SetObjectName("IconClose")
 
 	f.SetIconsStyle(nil)
@@ -234,82 +242,21 @@ func (f *QFramelessWindow) SetTitleBarButtons() {
 
         f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignRight)
         f.TitleBarLayout.AddWidget(f.TitleLabel, 0, 0)
-        f.TitleBarLayout.AddWidget(f.IconMinimize, 0, 0)
-        f.TitleBarLayout.AddWidget(f.IconMaximize, 0, 0)
-        f.TitleBarLayout.AddWidget(f.IconRestore, 0, 0)
-        f.TitleBarLayout.AddWidget(f.IconClose, 0, 0)
+        f.TitleBarLayout.AddWidget(f.IconMinimize.Widget, 0, 0)
+        f.TitleBarLayout.AddWidget(f.IconMaximize.Widget, 0, 0)
+        f.TitleBarLayout.AddWidget(f.IconRestore.Widget, 0, 0)
+        f.TitleBarLayout.AddWidget(f.IconClose.Widget, 0, 0)
 }
 
 func (f *QFramelessWindow) SetIconsStyle(color *RGB) {
-	f.SetIconMinimizeStyle(color)
-	f.SetIconMaximizeStyle(color)
-	f.SetIconRestoreStyle(color)
-	f.SetIconCloseStyle(color)
-}
-
-func (f *QFramelessWindow) SetIconMinimizeStyle(color *RGB) {
-	var backgroundColor string
-	if color == nil {
-		backgroundColor = "background-color:none;"
-	} else {
-		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, 0.3);", color.R, color.G, color.B)
+	for _, b := range []*QToolButtonForNotDarwin{
+		f.IconMinimize,
+		f.IconMaximize,
+		f.IconRestore,
+		f.IconClose,
+	} {
+		b.SetIconStyle(color)
 	}
-
-	f.IconMinimize.SetStyleSheet(fmt.Sprintf(`
-	#IconMinimize { 
-		%s
-		border:none;
-	}
-	`, backgroundColor))
-}
-
-func (f *QFramelessWindow) SetIconMaximizeStyle(color *RGB) {
-	var backgroundColor string
-	if color == nil {
-		backgroundColor = "background-color:none;"
-	} else {
-		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, 0.3);", color.R, color.G, color.B)
-	}
-
-	f.IconMaximize.SetStyleSheet(fmt.Sprintf(`
-	#IconMaximize { 
-		%s
-		border:none;
-	}
-	`, backgroundColor))
-}
-
-
-func (f *QFramelessWindow) SetIconRestoreStyle(color *RGB) {
-	var backgroundColor string
-	if color == nil {
-		backgroundColor = "background-color:none;"
-	} else {
-		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, 0.3);", color.R, color.G, color.B)
-	}
-
-	f.IconRestore.SetStyleSheet(fmt.Sprintf(`
-	#IconRestore { 
-		%s
-		border:none;
-	}
-	`, backgroundColor))
-}
-
-func (f *QFramelessWindow) SetIconCloseStyle(color *RGB) {
-	var backgroundColor string
-	if color == nil {
-		backgroundColor = "background-color:none;"
-	} else {
-		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, 0.3);", color.R, color.G, color.B)
-	}
-
-	f.IconClose.SetStyleSheet(fmt.Sprintf(`
-	#IconClose { 
-		%s
-		border:none;
-	}
-	`, backgroundColor))
 }
 
 func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
@@ -417,33 +364,33 @@ func (f *QFramelessWindow) SetTitleBarColorForNotDarwin(color *RGB) {
 	<path fill="%s" d="M20,14H4V10H20" />
 	</svg>
 	`, color.Hex()) 
-	f.IconMinimize.Load2(core.NewQByteArray2(SvgMinimize, len(SvgMinimize)))
+	f.IconMinimize.IconBtn.Load2(core.NewQByteArray2(SvgMinimize, len(SvgMinimize)))
 
 	SvgMaximize := fmt.Sprintf(`
 	<svg style="width:24px;height:24px" viewBox="0 0 24 24">
 	<path fill="%s" d="M4,4H20V20H4V4M6,8V18H18V8H6Z" />
 	</svg>
 	`, color.Hex()) 
-	f.IconMaximize.Load2(core.NewQByteArray2(SvgMaximize, len(SvgMaximize)))
+	f.IconMaximize.IconBtn.Load2(core.NewQByteArray2(SvgMaximize, len(SvgMaximize)))
 
 	SvgRestore := fmt.Sprintf(`
 	<svg style="width:24px;height:24px" viewBox="0 0 24 24">
 	<path fill="%s" d="M4,8H8V4H20V16H16V20H4V8M16,8V14H18V6H10V8H16M6,12V18H14V12H6Z" />
 	</svg>
 	`, color.Hex()) 
-	f.IconRestore.Load2(core.NewQByteArray2(SvgRestore, len(SvgRestore)))
+	f.IconRestore.IconBtn.Load2(core.NewQByteArray2(SvgRestore, len(SvgRestore)))
 
 	SvgClose := fmt.Sprintf(`
 	<svg style="width:24px;height:24px" viewBox="0 0 24 24">
 	<path fill="%s" d="M13.46,12L19,17.54V19H17.54L12,13.46L6.46,19H5V17.54L10.54,12L5,6.46V5H6.46L12,10.54L17.54,5H19V6.46L13.46,12Z" />
 	</svg>
 	`, color.Hex()) 
-	f.IconClose.Load2(core.NewQByteArray2(SvgClose, len(SvgClose)))
+	f.IconClose.IconBtn.Load2(core.NewQByteArray2(SvgClose, len(SvgClose)))
 
 	f.IconMinimize.Show()
 	f.IconMaximize.Show()
 	f.IconRestore.Show()
-	f.IconRestore.SetVisible(false)
+	f.IconRestore.Widget.SetVisible(false)
 	f.IconClose.Show()
 }
 
