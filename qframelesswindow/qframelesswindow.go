@@ -224,7 +224,7 @@ func (b *QToolButtonForNotDarwin) SetStyle(color *RGB) {
 	if color == nil {
 		backgroundColor = "background-color:none;"
 	} else {
-		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, 0.3);", color.R, color.G, color.B)
+		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, 0.2);", color.R, color.G, color.B)
 	}
 
 	b.Widget.SetStyleSheet(fmt.Sprintf(`
