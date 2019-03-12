@@ -178,17 +178,23 @@ func (f *QFramelessWindow) SetWidgetColor(red uint16, green uint16, blue uint16,
 	style := fmt.Sprintf("background-color: rgba(%d, %d, %d, %f);", color.R, color.G, color.B, alpha)
 	f.Widget.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0); color: rgba(0, 0, 0, 0); }")
 
-	f.WindowWidget.SetStyleSheet(fmt.Sprintf(" #QFramelessWidget { border: 0px solid %s; padding: 6px; border-radius: 6px; %s; }", color.Hex(), style))
+	f.WindowWidget.SetStyleSheet(fmt.Sprintf(`
+	#QFramelessWidget {
+		border: 0px solid %s; 
+		padding-top: 2px; padding-right: 6px; padding-bottom: 6px; padding-left: 6px; 
+		border-radius: 6px; %s; 
+	}`, color.Hex(), style))
 }
 
 func NewQToolButtonForNotDarwin(parent widgets.QWidget_ITF) *QToolButtonForNotDarwin {
 	iconSize := 15
-	margin := iconSize/5
+	marginTB := iconSize/6
+	marginLR := iconSize/3
 
 	widget := widgets.NewQWidget(parent, 0)
 	widget.SetSizePolicy2(widgets.QSizePolicy__Fixed, widgets.QSizePolicy__Fixed)
 	layout := widgets.NewQVBoxLayout2(widget)
-	layout.SetContentsMargins(0, 0, 0, margin)
+	layout.SetContentsMargins(marginLR, marginTB, marginLR, marginTB)
 	icon := svg.NewQSvgWidget(nil)
 	icon.SetFixedSize2(iconSize, iconSize)
 
@@ -231,7 +237,7 @@ func (b *QToolButtonForNotDarwin) SetStyle(color *RGB) {
 
 func (f *QFramelessWindow) SetTitleBarButtons() {
 	iconSize := 15
-        f.TitleBarLayout.SetSpacing(iconSize*3/5)
+        f.TitleBarLayout.SetSpacing(1)
 
 	f.IconMinimize = NewQToolButtonForNotDarwin(nil)
 	f.IconMinimize.IconBtn.SetFixedSize2(iconSize, iconSize)
