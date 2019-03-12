@@ -3,8 +3,8 @@
 package qframelesswindow
 
 import (
-        "github.com/therecipe/qt/core"
-        "github.com/therecipe/qt/gui"
+	"github.com/therecipe/qt/core"
+	"github.com/therecipe/qt/gui"
 )
 
 func (f *QFramelessWindow) SetTitleBarActions() {
@@ -77,13 +77,13 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 	// TitleBar Actions
 	t.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
 		f.Widget.Raise()
-	 	f.IsMousePressed = true
-	 	f.MousePos = e.GlobalPos()
+		f.IsMousePressed = true
+		f.MousePos = e.GlobalPos()
 		f.Pos = f.Widget.Window().Pos()
 	})
 
 	t.ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
-	 	f.IsMousePressed = false
+		f.IsMousePressed = false
 	})
 
 	t.ConnectMouseMoveEvent(func(e *gui.QMouseEvent) {
@@ -105,13 +105,13 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 	})
 }
 
-func(f *QFramelessWindow) windowMaximize() {
+func (f *QFramelessWindow) windowMaximize() {
 	f.IconMaximize.Widget.SetVisible(false)
 	f.IconRestore.Widget.SetVisible(true)
 	f.Widget.Window().SetWindowState(core.Qt__WindowMaximized)
 }
 
-func(f *QFramelessWindow) windowRestore() {
+func (f *QFramelessWindow) windowRestore() {
 	f.IconMaximize.Widget.SetVisible(true)
 	f.IconRestore.Widget.SetVisible(false)
 	f.Widget.Window().SetWindowState(core.Qt__WindowNoState)

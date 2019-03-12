@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 
-	frameless "github.com/akiyosi/goqtframelesswindow/qframelesswindow"
+	frameless "github.com/akiyosi/goqtframelesswindow"
 	"github.com/therecipe/qt/widgets"
 )
 
