@@ -183,12 +183,12 @@ func (f *QFramelessWindow) SetWidgetColor(red uint16, green uint16, blue uint16,
 
 func NewQToolButtonForNotDarwin(parent widgets.QWidget_ITF) *QToolButtonForNotDarwin {
 	iconSize := 15
-	marginTB := iconSize/5
-	marginLR := iconSize/3
+	margin := iconSize/5
 
 	widget := widgets.NewQWidget(parent, 0)
+	widget.SetSizePolicy2(widgets.QSizePolicy__Fixed, widgets.QSizePolicy__Fixed)
 	layout := widgets.NewQVBoxLayout2(widget)
-	layout.SetContentsMargins(marginLR, marginTB, marginLR, marginTB)
+	layout.SetContentsMargins(0, 0, 0, margin)
 	icon := svg.NewQSvgWidget(nil)
 	icon.SetFixedSize2(iconSize, iconSize)
 
@@ -213,7 +213,7 @@ func (b *QToolButtonForNotDarwin) Show() {
 	b.Widget.Show()
 }
 
-func (b *QToolButtonForNotDarwin) SetIconStyle(color *RGB) {
+func (b *QToolButtonForNotDarwin) SetStyle(color *RGB) {
 	var backgroundColor string
 	if color == nil {
 		backgroundColor = "background-color:none;"
@@ -221,9 +221,9 @@ func (b *QToolButtonForNotDarwin) SetIconStyle(color *RGB) {
 		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, 0.3);", color.R, color.G, color.B)
 	}
 
-	b.IconBtn.SetStyleSheet(fmt.Sprintf(`
-	* { 
-		%s
+	b.Widget.SetStyleSheet(fmt.Sprintf(`
+	.QWidget { 
+		%s;
 		border:none;
 	}
 	`, backgroundColor))
@@ -268,7 +268,7 @@ func (f *QFramelessWindow) SetIconsStyle(color *RGB) {
 		f.IconRestore,
 		f.IconClose,
 	} {
-		b.SetIconStyle(color)
+		b.SetStyle(color)
 	}
 }
 

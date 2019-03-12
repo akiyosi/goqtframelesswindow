@@ -10,46 +10,68 @@ import (
 func (f *QFramelessWindow) SetTitleBarActions() {
 	t := f.TitleBar
 
-	f.IconMinimize.ConnectEnterEvent(func(event *core.QEvent) {
-		f.SetIconMinimizeStyle(&RGB{
+	f.IconMinimize.Widget.ConnectEnterEvent(func(event *core.QEvent) {
+		f.IconMinimize.SetStyle(&RGB{
 			R: 0,
 			G: 162,
 			B: 232,
 		})
 	})
-	f.IconMaximize.ConnectEnterEvent(func(event *core.QEvent) {
-		f.SetIconMaximizeStyle(&RGB{
+	f.IconMaximize.Widget.ConnectEnterEvent(func(event *core.QEvent) {
+		f.IconMaximize.SetStyle(&RGB{
 			R: 0,
 			G: 162,
 			B: 232,
 		})
 	})
-	f.IconRestore.ConnectEnterEvent(func(event *core.QEvent) {
-		f.SetIconRestoreStyle(&RGB{
+	f.IconRestore.Widget.ConnectEnterEvent(func(event *core.QEvent) {
+		f.IconRestore.SetStyle(&RGB{
 			R: 0,
 			G: 162,
 			B: 232,
 		})
 	})
-	f.IconClose.ConnectEnterEvent(func(event *core.QEvent) {
-		f.SetIconCloseStyle(&RGB{
+	f.IconClose.Widget.ConnectEnterEvent(func(event *core.QEvent) {
+		f.IconClose.SetStyle(&RGB{
 			R: 0,
 			G: 162,
 			B: 232,
 		})
 	})
 
-	f.IconMinimize.ConnectLeaveEvent(func(event *core.QEvent) {
-		f.SetIconMinimizeStyle(nil)
+	f.IconMinimize.Widget.ConnectLeaveEvent(func(event *core.QEvent) {
+		f.IconMinimize.SetStyle(nil)
 	})
-	f.IconMaximize.ConnectLeaveEvent(func(event *core.QEvent) {
-		f.SetIconMaximizeStyle(nil)
+	f.IconMaximize.Widget.ConnectLeaveEvent(func(event *core.QEvent) {
+		f.IconMaximize.SetStyle(nil)
 	})
-	f.IconRestore.ConnectLeaveEvent(func(event *core.QEvent) {
-		f.SetIconRestoreStyle(nil)
+	f.IconRestore.Widget.ConnectLeaveEvent(func(event *core.QEvent) {
+		f.IconRestore.SetStyle(nil)
 	})
-	f.IconClose.ConnectLeaveEvent(func(event *core.QEvent) {
-		f.SetIconCloseStyle(nil)
+	f.IconClose.Widget.ConnectLeaveEvent(func(event *core.QEvent) {
+		f.IconClose.SetStyle(nil)
+	})
+
+	// Button Actions
+	f.IconMinimize.Widget.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
+		f.Widget.Window().SetWindowState(core.Qt__WindowMinimized)
+		f.Widget.Hide()
+		f.Widget.Show()
+	})
+
+	f.IconMaximize.Widget.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
+		f.windowMaximize()
+		f.Widget.Hide()
+		f.Widget.Show()
+	})
+
+	f.IconRestore.Widget.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
+		f.windowRestore()
+		f.Widget.Hide()
+		f.Widget.Show()
+	})
+
+	f.IconClose.Widget.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
 	})
 
 	// TitleBar Actions
@@ -75,44 +97,22 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 	})
 
 	t.ConnectMouseDoubleClickEvent(func(e *gui.QMouseEvent) {
-		if f.IconMaximize.IsVisible() {
+		if f.IconMaximize.Widget.IsVisible() {
 			f.windowMaximize()
 		} else {
 			f.windowRestore()
 		}
 	})
-
-	// Button Actions
-	f.IconMinimize.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
-		f.Widget.Window().SetWindowState(core.Qt__WindowMinimized)
-		f.Widget.Hide()
-		f.Widget.Show()
-	})
-
-	f.IconMaximize.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
-		f.windowMaximize()
-		f.Widget.Hide()
-		f.Widget.Show()
-	})
-
-	f.IconRestore.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
-		f.windowRestore()
-		f.Widget.Hide()
-		f.Widget.Show()
-	})
-
-	f.IconClose.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
-	})
 }
 
 func(f *QFramelessWindow) windowMaximize() {
-	f.IconMaximize.SetVisible(false)
-	f.IconRestore.SetVisible(true)
+	f.IconMaximize.Widget.SetVisible(false)
+	f.IconRestore.Widget.SetVisible(true)
 	f.Widget.Window().SetWindowState(core.Qt__WindowMaximized)
 }
 
 func(f *QFramelessWindow) windowRestore() {
-	f.IconMaximize.SetVisible(true)
-	f.IconRestore.SetVisible(false)
+	f.IconMaximize.Widget.SetVisible(true)
+	f.IconRestore.Widget.SetVisible(false)
 	f.Widget.Window().SetWindowState(core.Qt__WindowNoState)
 }
