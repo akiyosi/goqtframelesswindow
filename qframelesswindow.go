@@ -103,7 +103,7 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	//f.Layout = widgets.NewQVBoxLayout2(widget)
 
 	widget.SetSizePolicy2(widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum, widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum)
-	window := widget.Window()
+	window := f.Window
 	window.InstallEventFilter(window)
 
 	// f.Layout = widgets.NewQGridLayout(widget)
@@ -306,16 +306,16 @@ func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
 }
 
 func (f *QFramelessWindow) SetAttributes() {
-	f.Widget.Window().SetAttribute(core.Qt__WA_TranslucentBackground, true)
-	f.Widget.Window().SetAttribute(core.Qt__WA_NoSystemBackground, true)
-	f.Widget.Window().SetAttribute(core.Qt__WA_Hover, true)
-	f.Widget.Window().SetMouseTracking(true)
+	f.Window.SetAttribute(core.Qt__WA_TranslucentBackground, true)
+	f.Window.SetAttribute(core.Qt__WA_NoSystemBackground, true)
+	f.Window.SetAttribute(core.Qt__WA_Hover, true)
+	f.Window.SetMouseTracking(true)
 }
 
 func (f *QFramelessWindow) SetWindowFlags() {
-	f.Widget.Window().SetWindowFlag(core.Qt__Window, true)
-	f.Widget.Window().SetWindowFlag(core.Qt__FramelessWindowHint, true)
-	f.Widget.Window().SetWindowFlag(core.Qt__WindowSystemMenuHint, true)
+	f.Window.SetWindowFlag(core.Qt__Window, true)
+	f.Window.SetWindowFlag(core.Qt__FramelessWindowHint, true)
+	f.Window.SetWindowFlag(core.Qt__WindowSystemMenuHint, true)
 }
 
 func (f *QFramelessWindow) SetTitle(title string) {
@@ -333,7 +333,7 @@ func (f *QFramelessWindow) SetTitleColor(red uint16, green uint16, blue uint16) 
 
 func (f *QFramelessWindow) SetTitleBarColor() {
 	var color, labelColor *RGB
-	window := f.Widget.Window()
+	window := f.Window
 	if window.IsActiveWindow() {
 		color = f.TitleColor
 	} else {
@@ -498,13 +498,13 @@ func (f *QFramelessWindow) SetContent(layout widgets.QLayout_ITF) {
 
 func (f *QFramelessWindow) UpdateWidget() {
 	f.Widget.Update()
-	f.Widget.Window().Update()
+	f.Window.Update()
 }
 
 func (f *QFramelessWindow) SetWindowActions() {
 
 	// Ref: https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341#37507341
-	f.Widget.Window().ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
+	f.Window.ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
 		// f.WindowWidget.ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
 		e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 		switch event.Type() {
@@ -515,10 +515,10 @@ func (f *QFramelessWindow) SetWindowActions() {
 			f.updateCursorShape(e.GlobalPos())
 
 		case core.QEvent__Leave:
-			f.Widget.Window().UnsetCursor()
+			f.Window.UnsetCursor()
 
 		case core.QEvent__MouseMove:
-			window := f.Widget.Window()
+			window := f.Window
 
 			if f.isDragStart {
 				startPos := window.FrameGeometry().TopLeft()
@@ -574,10 +574,10 @@ func (f *QFramelessWindow) SetWindowActions() {
 				window.SetGeometry(newRect)
 			}
 		case core.QEvent__MouseButtonPress:
-			f.pressedEdge = f.calcCursorPos(e.GlobalPos(), f.Widget.Window().FrameGeometry())
+			f.pressedEdge = f.calcCursorPos(e.GlobalPos(), f.Window.FrameGeometry())
 			if f.pressedEdge != None {
 				margins := core.NewQMargins2(f.borderSize*2, f.borderSize, f.borderSize*2, f.borderSize*2)
-				if f.Widget.Window().Rect().MarginsRemoved(margins).Contains3(e.Pos().X(), e.Pos().Y()) {
+				if f.Window.Rect().MarginsRemoved(margins).Contains3(e.Pos().X(), e.Pos().Y()) {
 					f.isDragStart = true
 					f.dragPos = e.Pos()
 				}
@@ -595,29 +595,29 @@ func (f *QFramelessWindow) SetWindowActions() {
 }
 
 func (f *QFramelessWindow) updateCursorShape(pos *core.QPoint) {
-	if f.Widget.Window().IsFullScreen() || f.Widget.Window().IsMaximized() {
+	if f.Window.IsFullScreen() || f.Window.IsMaximized() {
 		if f.isCursorChanged {
-			f.Widget.Window().UnsetCursor()
+			f.Window.UnsetCursor()
 		}
 	}
-	hoverEdge := f.calcCursorPos(pos, f.Widget.Window().FrameGeometry())
+	hoverEdge := f.calcCursorPos(pos, f.Window.FrameGeometry())
 	f.isCursorChanged = true
 	cursor := gui.NewQCursor()
 	switch hoverEdge {
 	case Top, Bottom:
 		cursor.SetShape(core.Qt__SizeVerCursor)
-		f.Widget.Window().SetCursor(cursor)
+		f.Window.SetCursor(cursor)
 	case Left, Right:
 		cursor.SetShape(core.Qt__SizeHorCursor)
-		f.Widget.Window().SetCursor(cursor)
+		f.Window.SetCursor(cursor)
 	case TopLeft, BottomRight:
 		cursor.SetShape(core.Qt__SizeFDiagCursor)
-		f.Widget.Window().SetCursor(cursor)
+		f.Window.SetCursor(cursor)
 	case TopRight, BottomLeft:
 		cursor.SetShape(core.Qt__SizeBDiagCursor)
-		f.Widget.Window().SetCursor(cursor)
+		f.Window.SetCursor(cursor)
 	default:
-		f.Widget.Window().UnsetCursor()
+		f.Window.UnsetCursor()
 		f.isCursorChanged = false
 	}
 }

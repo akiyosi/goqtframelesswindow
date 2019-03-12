@@ -54,7 +54,7 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 
 	// Button Actions
 	f.IconMinimize.Widget.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
-		f.Widget.Window().SetWindowState(core.Qt__WindowMinimized)
+		f.Window.SetWindowState(core.Qt__WindowMinimized)
 		f.Widget.Hide()
 		f.Widget.Show()
 	})
@@ -79,7 +79,7 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 		f.Widget.Raise()
 		f.IsMousePressed = true
 		f.MousePos = e.GlobalPos()
-		f.Pos = f.Widget.Window().Pos()
+		f.Pos = f.Window.Pos()
 	})
 
 	t.ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
@@ -93,7 +93,7 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 		x := f.Pos.X() + e.GlobalPos().X() - f.MousePos.X()
 		y := f.Pos.Y() + e.GlobalPos().Y() - f.MousePos.Y()
 		newPos := core.NewQPoint2(x, y)
-		f.Widget.Window().Move(newPos)
+		f.Window.Move(newPos)
 	})
 
 	t.ConnectMouseDoubleClickEvent(func(e *gui.QMouseEvent) {
@@ -108,11 +108,11 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 func (f *QFramelessWindow) windowMaximize() {
 	f.IconMaximize.Widget.SetVisible(false)
 	f.IconRestore.Widget.SetVisible(true)
-	f.Widget.Window().SetWindowState(core.Qt__WindowMaximized)
+	f.Window.SetWindowState(core.Qt__WindowMaximized)
 }
 
 func (f *QFramelessWindow) windowRestore() {
 	f.IconMaximize.Widget.SetVisible(true)
 	f.IconRestore.Widget.SetVisible(false)
-	f.Widget.Window().SetWindowState(core.Qt__WindowNoState)
+	f.Window.SetWindowState(core.Qt__WindowNoState)
 }
