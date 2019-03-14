@@ -633,19 +633,25 @@ func (f *QFramelessWindow) updateCursorShape(pos *core.QPoint) {
 }
 
 func (f *QFramelessWindow) calcCursorPos(pos *core.QPoint, rect *core.QRect) Edge {
-	borderSize := f.borderSize + 1
-	doubleBorderSize := borderSize * 2
-	topBorderSize := 2
+	doubleBorderSize := f.borderSize * 2
+	octupleBorderSize := f.borderSize * 8
+	topBorderSize := 2 - 1
 	var onLeft, onRight, onBottom, onTop, onBottomLeft, onBottomRight, onTopRight, onTopLeft bool
 
-	onBottomLeft = (pos.X() <= (rect.X() + doubleBorderSize)) && pos.X() >= rect.X() &&
-		(pos.Y() <= (rect.Y() + rect.Height())) && (pos.Y() >= (rect.Y() + rect.Height() - doubleBorderSize))
+	onBottomLeft = (((pos.X() <= (rect.X() + octupleBorderSize)) && pos.X() >= rect.X() &&
+		(pos.Y() <= (rect.Y() + rect.Height())) && (pos.Y() >= (rect.Y() + rect.Height() - doubleBorderSize))) ||
+		((pos.X() <= (rect.X() + doubleBorderSize)) && pos.X() >= rect.X() &&
+		(pos.Y() <= (rect.Y() + rect.Height())) && (pos.Y() >= (rect.Y() + rect.Height() - octupleBorderSize))))
+
 	if onBottomLeft {
 		return BottomLeft
 	}
 
-	onBottomRight = (pos.X() >= (rect.X() + rect.Width() - doubleBorderSize)) && (pos.X() <= (rect.X() + rect.Width())) &&
-		(pos.Y() >= (rect.Y() + rect.Height() - doubleBorderSize)) && (pos.Y() <= (rect.Y() + rect.Height()))
+	onBottomRight = (((pos.X() >= (rect.X() + rect.Width() - octupleBorderSize)) && (pos.X() <= (rect.X() + rect.Width())) &&
+		(pos.Y() >= (rect.Y() + rect.Height() - doubleBorderSize)) && (pos.Y() <= (rect.Y() + rect.Height()))) ||
+		((pos.X() >= (rect.X() + rect.Width() - doubleBorderSize)) && (pos.X() <= (rect.X() + rect.Width())) &&
+		(pos.Y() >= (rect.Y() + rect.Height() - octupleBorderSize)) && (pos.Y() <= (rect.Y() + rect.Height()))))
+
 	if onBottomRight {
 		return BottomRight
 	}
@@ -683,7 +689,7 @@ func (f *QFramelessWindow) calcCursorPos(pos *core.QPoint, rect *core.QRect) Edg
 	}
 
 	onTop = (pos.X() >= (rect.X() + doubleBorderSize)) && (pos.X() <= (rect.X() + rect.Width() - doubleBorderSize)) &&
-		(pos.Y() >= rect.Y()) && (pos.Y() < (rect.Y() + topBorderSize))
+		(pos.Y() >= rect.Y()) && (pos.Y() <= (rect.Y() + topBorderSize))
 	if onTop {
 		return Top
 	}
