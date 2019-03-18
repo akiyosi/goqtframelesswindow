@@ -43,10 +43,8 @@ type QFramelessWindow struct {
 
 	borderSize int
 	Layout     *widgets.QVBoxLayout
-	// Layout         *widgets.QGridLayout
 
 	WindowWidget *widgets.QFrame
-	// WindowWidget   *widgets.QWidget
 	WindowVLayout *widgets.QVBoxLayout
 
 	TitleBar          *widgets.QWidget
@@ -63,10 +61,10 @@ type QFramelessWindow struct {
 	BtnClose    *widgets.QToolButton
 
 	// for windows, linux
-	IconMinimize *QToolButtonForNotDarwin // *svg.QSvgWidget
-	IconMaximize *QToolButtonForNotDarwin // *svg.QSvgWidget
-	IconRestore  *QToolButtonForNotDarwin // *svg.QSvgWidget
-	IconClose    *QToolButtonForNotDarwin // *svg.QSvgWidget
+	IconMinimize *QToolButtonForNotDarwin
+	IconMaximize *QToolButtonForNotDarwin
+	IconRestore  *QToolButtonForNotDarwin
+	IconClose    *QToolButtonForNotDarwin
 
 	isCursorChanged     bool
 	isDragStart         bool
@@ -101,22 +99,15 @@ func (f *QFramelessWindow) SetborderSize(size int) {
 }
 
 func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
-	//f.Layout = widgets.NewQVBoxLayout2(widget)
-
 	widget.SetSizePolicy2(widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum, widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum)
 	window := f.Window
 	window.InstallEventFilter(window)
 
-	// f.Layout = widgets.NewQGridLayout(widget)
 	f.Layout = widgets.NewQVBoxLayout2(widget)
 	f.Layout.SetContentsMargins(0, 0, 0, 0)
 	f.Layout.SetSpacing(0)
 
 	f.WindowWidget = widgets.NewQFrame(widget, 0)
-	// f.WindowWidget.InstallEventFilter(f.WindowWidget)
-	// f.WindowWidget.InstallEventFilter(window)
-	// window.InstallEventFilter(f.WindowWidget)
-	// f.WindowWidget = widgets.NewQWidget(widget, 0)
 
 	f.WindowWidget.SetObjectName("QFramelessWidget")
 	f.WindowWidget.SetSizePolicy2(widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum, widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum)
@@ -139,7 +130,6 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	f.TitleBar = widgets.NewQWidget(f.WindowWidget, 0)
 	f.TitleBar.SetObjectName("titleBar")
 	f.TitleBar.SetSizePolicy2(widgets.QSizePolicy__Expanding, widgets.QSizePolicy__Fixed)
-	//f.TitleBar.ConnectEventFilter(f.EventFilter)
 
 	// titleBarLayout is the following structure layout
 	// +--+--+--+--+
@@ -542,14 +532,6 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 
 	if f.isLeftButtonPressed {
 
-		// if f.isDragStart {
-		// 	startPos := window.FrameGeometry().TopLeft()
-		// 	newX := startPos.X() + e.Pos().X() - f.dragPos.X()
-		// 	newY := startPos.Y() + e.Pos().Y() - f.dragPos.Y()
-		// 	newPoint := core.NewQPoint2(newX, newY)
-		// 	window.Move(newPoint)
-		// }
-
 		if f.pressedEdge != None {
 
 			left := window.FrameGeometry().Left()
@@ -604,13 +586,6 @@ func (f *QFramelessWindow) mouseButtonPressed(e *gui.QMouseEvent) {
 	if f.pressedEdge != None {
 		f.isLeftButtonPressed = true
 	}
-	// if f.pressedEdge != None {
-		// margins := core.NewQMargins2(f.borderSize*2, f.borderSize, f.borderSize*2, f.borderSize*2)
-		// if f.Window.Rect().MarginsRemoved(margins).Contains3(e.Pos().X(), e.Pos().Y()) {
-		// 	f.isDragStart = true
-		// 	f.dragPos = e.Pos()
-		// }
-	// }
 }
 
 func (f *QFramelessWindow) updateCursorShape(pos *core.QPoint) {
