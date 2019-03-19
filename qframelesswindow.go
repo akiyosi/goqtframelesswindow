@@ -44,8 +44,9 @@ type QFramelessWindow struct {
 	borderSize int
 	Layout     *widgets.QVBoxLayout
 
-	WindowWidget *widgets.QFrame
+	WindowWidget  *widgets.QFrame
 	WindowVLayout *widgets.QVBoxLayout
+	shadowMargin  int
 
 	TitleBar          *widgets.QWidget
 	TitleBarLayout    *widgets.QHBoxLayout
@@ -104,13 +105,21 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	window.InstallEventFilter(window)
 
 	f.Layout = widgets.NewQVBoxLayout2(widget)
-	f.Layout.SetContentsMargins(0, 0, 0, 0)
 	f.Layout.SetSpacing(0)
 
 	f.WindowWidget = widgets.NewQFrame(widget, 0)
 
 	f.WindowWidget.SetObjectName("QFramelessWidget")
 	f.WindowWidget.SetSizePolicy2(widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum, widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum)
+
+	// Put a shadow
+	f.shadowMargin = 50
+	shadow := widgets.NewQGraphicsDropShadowEffect(nil)
+	shadow.SetBlurRadius((float64)(f.shadowMargin))
+	shadow.SetColor(gui.NewQColor3(0, 0, 0, 200))
+	shadow.SetOffset3(-1, 1)
+	f.WindowWidget.SetGraphicsEffect(shadow)
+	f.Layout.SetContentsMargins(f.shadowMargin, f.shadowMargin, f.shadowMargin, f.shadowMargin)
 
 	// windowVLayout is the following structure layout
 	// +-----------+
@@ -526,18 +535,18 @@ func (f *QFramelessWindow) SetWindowActions() {
 	})
 }
 
-
 func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 	window := f.Window
+	margin := f.shadowMargin
 
 	if f.isLeftButtonPressed {
 
 		if f.pressedEdge != None {
 
-			left := window.FrameGeometry().Left()
-			top := window.FrameGeometry().Top()
-			right := window.FrameGeometry().Right()
-			bottom := window.FrameGeometry().Bottom()
+			left := window.FrameGeometry().Left() + margin
+			top := window.FrameGeometry().Top() + margin
+			right := window.FrameGeometry().Right() - margin
+			bottom := window.FrameGeometry().Bottom() - margin
 
 			switch f.pressedEdge {
 			case Top:
@@ -566,14 +575,14 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 			topLeftPoint := core.NewQPoint2(left, top)
 			rightBottomPoint := core.NewQPoint2(right, bottom)
 			newRect := core.NewQRect2(topLeftPoint, rightBottomPoint)
-			if newRect.Width() < window.MinimumWidth() {
-				left = window.FrameGeometry().X()
-			}
-			if newRect.Height() < window.MinimumHeight() {
-				top = window.FrameGeometry().Y()
-			}
-			topLeftPoint = core.NewQPoint2(left, top)
-			rightBottomPoint = core.NewQPoint2(right, bottom)
+			// if newRect.Width() < window.MinimumWidth() {
+			// 	left = window.FrameGeometry().X()
+			// }
+			// if newRect.Height() < window.MinimumHeight() {
+			// 	top = window.FrameGeometry().Y()
+			// }
+			topLeftPoint = core.NewQPoint2(left-margin, top-margin)
+			rightBottomPoint = core.NewQPoint2(right+margin, bottom+margin)
 			newRect = core.NewQRect2(topLeftPoint, rightBottomPoint)
 
 			window.SetGeometry(newRect)
@@ -617,63 +626,71 @@ func (f *QFramelessWindow) updateCursorShape(pos *core.QPoint) {
 }
 
 func (f *QFramelessWindow) calcCursorPos(pos *core.QPoint, rect *core.QRect) Edge {
+	margin := f.shadowMargin
+
 	doubleBorderSize := f.borderSize * 2
 	octupleBorderSize := f.borderSize * 8
 	topBorderSize := 2 - 1
+
+	rectX := rect.X() + margin
+	rectY := rect.Y() + margin
+	rectHeight := rect.Height() - (2 * margin)
+	rectWidth := rect.Width() - (2 * margin)
+
 	var onLeft, onRight, onBottom, onTop, onBottomLeft, onBottomRight, onTopRight, onTopLeft bool
 
-	onBottomLeft = (((pos.X() <= (rect.X() + octupleBorderSize)) && pos.X() >= rect.X() &&
-		(pos.Y() <= (rect.Y() + rect.Height())) && (pos.Y() >= (rect.Y() + rect.Height() - doubleBorderSize))) ||
-		((pos.X() <= (rect.X() + doubleBorderSize)) && pos.X() >= rect.X() &&
-		(pos.Y() <= (rect.Y() + rect.Height())) && (pos.Y() >= (rect.Y() + rect.Height() - octupleBorderSize))))
+	onBottomLeft = (((pos.X() <= (rectX + octupleBorderSize)) && pos.X() >= rectX &&
+		(pos.Y() <= (rectY + rectHeight)) && (pos.Y() >= (rectY + rectHeight - doubleBorderSize))) ||
+		((pos.X() <= (rectX + doubleBorderSize)) && pos.X() >= rectX &&
+			(pos.Y() <= (rectY + rectHeight)) && (pos.Y() >= (rectY + rectHeight - octupleBorderSize))))
 
 	if onBottomLeft {
 		return BottomLeft
 	}
 
-	onBottomRight = (((pos.X() >= (rect.X() + rect.Width() - octupleBorderSize)) && (pos.X() <= (rect.X() + rect.Width())) &&
-		(pos.Y() >= (rect.Y() + rect.Height() - doubleBorderSize)) && (pos.Y() <= (rect.Y() + rect.Height()))) ||
-		((pos.X() >= (rect.X() + rect.Width() - doubleBorderSize)) && (pos.X() <= (rect.X() + rect.Width())) &&
-		(pos.Y() >= (rect.Y() + rect.Height() - octupleBorderSize)) && (pos.Y() <= (rect.Y() + rect.Height()))))
+	onBottomRight = (((pos.X() >= (rectX + rectWidth - octupleBorderSize)) && (pos.X() <= (rectX + rectWidth)) &&
+		(pos.Y() >= (rectY + rectHeight - doubleBorderSize)) && (pos.Y() <= (rectY + rectHeight))) ||
+		((pos.X() >= (rectX + rectWidth - doubleBorderSize)) && (pos.X() <= (rectX + rectWidth)) &&
+			(pos.Y() >= (rectY + rectHeight - octupleBorderSize)) && (pos.Y() <= (rectY + rectHeight))))
 
 	if onBottomRight {
 		return BottomRight
 	}
 
-	onTopRight = (pos.X() >= (rect.X() + rect.Width() - doubleBorderSize)) && (pos.X() <= (rect.X() + rect.Width())) &&
-		(pos.Y() >= rect.Y()) && (pos.Y() <= (rect.Y() + doubleBorderSize))
+	onTopRight = (pos.X() >= (rectX + rectWidth - doubleBorderSize)) && (pos.X() <= (rectX + rectWidth)) &&
+		(pos.Y() >= rectY) && (pos.Y() <= (rectY + doubleBorderSize))
 	if onTopRight {
 		return TopRight
 	}
 
-	onTopLeft = pos.X() >= rect.X() && (pos.X() <= (rect.X() + doubleBorderSize)) &&
-		pos.Y() >= rect.Y() && (pos.Y() <= (rect.Y() + doubleBorderSize))
+	onTopLeft = pos.X() >= rectX && (pos.X() <= (rectX + doubleBorderSize)) &&
+		pos.Y() >= rectY && (pos.Y() <= (rectY + doubleBorderSize))
 	if onTopLeft {
 		return TopLeft
 	}
 
-	onLeft = (pos.X() >= (rect.X() - doubleBorderSize)) && (pos.X() <= (rect.X() + doubleBorderSize)) &&
-		(pos.Y() <= (rect.Y() + rect.Height() - doubleBorderSize)) &&
-		(pos.Y() >= rect.Y()+doubleBorderSize)
+	onLeft = (pos.X() >= (rectX - doubleBorderSize)) && (pos.X() <= (rectX + doubleBorderSize)) &&
+		(pos.Y() <= (rectY + rectHeight - doubleBorderSize)) &&
+		(pos.Y() >= rectY+doubleBorderSize)
 	if onLeft {
 		return Left
 	}
 
-	onRight = (pos.X() >= (rect.X() + rect.Width() - doubleBorderSize)) &&
-		(pos.X() <= (rect.X() + rect.Width())) &&
-		(pos.Y() >= (rect.Y() + doubleBorderSize)) && (pos.Y() <= (rect.Y() + rect.Height() - doubleBorderSize))
+	onRight = (pos.X() >= (rectX + rectWidth - doubleBorderSize)) &&
+		(pos.X() <= (rectX + rectWidth)) &&
+		(pos.Y() >= (rectY + doubleBorderSize)) && (pos.Y() <= (rectY + rectHeight - doubleBorderSize))
 	if onRight {
 		return Right
 	}
 
-	onBottom = (pos.X() >= (rect.X() + doubleBorderSize)) && (pos.X() <= (rect.X() + rect.Width() - doubleBorderSize)) &&
-		(pos.Y() >= (rect.Y() + rect.Height() - doubleBorderSize)) && (pos.Y() <= (rect.Y() + rect.Height()))
+	onBottom = (pos.X() >= (rectX + doubleBorderSize)) && (pos.X() <= (rectX + rectWidth - doubleBorderSize)) &&
+		(pos.Y() >= (rectY + rectHeight - doubleBorderSize)) && (pos.Y() <= (rectY + rectHeight))
 	if onBottom {
 		return Bottom
 	}
 
-	onTop = (pos.X() >= (rect.X() + doubleBorderSize)) && (pos.X() <= (rect.X() + rect.Width() - doubleBorderSize)) &&
-		(pos.Y() >= rect.Y()) && (pos.Y() <= (rect.Y() + topBorderSize))
+	onTop = (pos.X() >= (rectX + doubleBorderSize)) && (pos.X() <= (rectX + rectWidth - doubleBorderSize)) &&
+		(pos.Y() >= rectY) && (pos.Y() <= (rectY + topBorderSize))
 	if onTop {
 		return Top
 	}

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	frameless "github.com/akiyosi/goqtframelesswindow"
 	"github.com/therecipe/qt/widgets"
 )
@@ -30,8 +32,14 @@ func main() {
 	the geometric theory of gravitation published by Albert Einstein in 1915 and 
 	the current description of gravitation in modern physics. `)
 
-	layout.AddWidget(label, 0, 0)
+	go func() {
+		time.Sleep(13000 * time.Millisecond)
+		label.SetText(`	Update! `)
+		time.Sleep(3000 * time.Millisecond)
+		label.SetText(`	Update 2! `)
+	}()
 
+	layout.AddWidget(label, 0, 0)
 
 	// In Windows, signal arrived during external code execution
 	// In MacOS, bad access

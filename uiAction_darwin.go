@@ -64,11 +64,13 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 func (f *QFramelessWindow) windowMaximize() {
 	f.BtnMaximize.SetVisible(false)
 	f.BtnRestore.SetVisible(true)
+	f.Layout.SetContentsMargins(0, 0, 0, 0)
 	f.Window.SetWindowState(core.Qt__WindowMaximized)
 }
 
 func (f *QFramelessWindow) windowRestore() {
 	f.BtnMaximize.SetVisible(true)
 	f.BtnRestore.SetVisible(false)
+	f.Layout.SetContentsMargins(f.shadowMargin, f.shadowMargin, f.shadowMargin, f.shadowMargin)
 	f.Window.SetWindowState(core.Qt__WindowNoState)
 }

@@ -28,7 +28,7 @@ func (f *QFramelessWindow) SetNativeEvent(app *widgets.QApplication) {
 		case win.WM_NCHITTEST:
 			fmt.Println("debug:: WM_NCHITTEST")
 			var winrect *win.RECT
-		 	winid := (*win.HWND)(unsafe.Pointer(f.Window.WinId()))
+			winid := (*win.HWND)(unsafe.Pointer(f.Window.WinId()))
 			win.GetWindowRect(*winid, winrect)
 			fmt.Println(winrect.Left, winrect.Bottom)
 			return true
@@ -36,7 +36,7 @@ func (f *QFramelessWindow) SetNativeEvent(app *widgets.QApplication) {
 			fmt.Println("debug --", msg.Message)
 			return true
 		}
-		
+
 		// return filterObj.NativeEventFilter(eventType, message, result)
 	})
 	app.InstallNativeEventFilter(filterObj)
