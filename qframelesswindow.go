@@ -88,6 +88,7 @@ func NewQFramelessWindow() *QFramelessWindow {
 	f.Window.SetCentralWidget(f.Widget)
 	f.SetupUI(f.Widget)
 	f.SetWindowFlags()
+	f.SetWindowShadow(0)
 	f.SetAttributes()
 	f.SetWindowActions()
 	f.SetTitleBarActions()
@@ -97,6 +98,19 @@ func NewQFramelessWindow() *QFramelessWindow {
 
 func (f *QFramelessWindow) SetborderSize(size int) {
 	f.borderSize = size
+}
+
+func (f *QFramelessWindow) SetWindowShadow(size int) {
+	f.shadowMargin = size
+	if f.shadowMargin == 0 {
+		return
+	}
+	shadow := widgets.NewQGraphicsDropShadowEffect(nil)
+	shadow.SetBlurRadius((float64)(f.shadowMargin))
+	shadow.SetColor(gui.NewQColor3(0, 0, 0, 200))
+	shadow.SetOffset3(-1, 1)
+	f.WindowWidget.SetGraphicsEffect(shadow)
+	f.Layout.SetContentsMargins(f.shadowMargin, f.shadowMargin, f.shadowMargin, f.shadowMargin)
 }
 
 func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
@@ -111,14 +125,7 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 
 	f.WindowWidget.SetObjectName("QFramelessWidget")
 	f.WindowWidget.SetSizePolicy2(widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum, widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum)
-
-	// Put a shadow
-	f.shadowMargin = 50
-	shadow := widgets.NewQGraphicsDropShadowEffect(nil)
-	shadow.SetBlurRadius((float64)(f.shadowMargin))
-	shadow.SetColor(gui.NewQColor3(0, 0, 0, 200))
-	shadow.SetOffset3(-1, 1)
-	f.WindowWidget.SetGraphicsEffect(shadow)
+	
 	f.Layout.SetContentsMargins(f.shadowMargin, f.shadowMargin, f.shadowMargin, f.shadowMargin)
 
 	// windowVLayout is the following structure layout
@@ -515,7 +522,9 @@ func (f *QFramelessWindow) SetWindowActions() {
 			f.updateCursorShape(e.GlobalPos())
 
 		case core.QEvent__Leave:
-			f.Window.UnsetCursor()
+			cursor := gui.NewQCursor()
+			cursor.SetShape(core.Qt__ArrowCursor)
+			f.Window.SetCursor(cursor)
 
 		case core.QEvent__MouseMove:
 			f.mouseMove(e)
@@ -598,14 +607,15 @@ func (f *QFramelessWindow) mouseButtonPressed(e *gui.QMouseEvent) {
 }
 
 func (f *QFramelessWindow) updateCursorShape(pos *core.QPoint) {
+	cursor := gui.NewQCursor()
 	if f.Window.IsFullScreen() || f.Window.IsMaximized() {
 		if f.isCursorChanged {
-			f.Window.UnsetCursor()
+			cursor.SetShape(core.Qt__ArrowCursor)
+			f.Window.SetCursor(cursor)
 		}
 	}
 	hoverEdge := f.calcCursorPos(pos, f.Window.FrameGeometry())
 	f.isCursorChanged = true
-	cursor := gui.NewQCursor()
 	switch hoverEdge {
 	case Top, Bottom:
 		cursor.SetShape(core.Qt__SizeVerCursor)
@@ -620,7 +630,8 @@ func (f *QFramelessWindow) updateCursorShape(pos *core.QPoint) {
 		cursor.SetShape(core.Qt__SizeBDiagCursor)
 		f.Window.SetCursor(cursor)
 	default:
-		f.Window.UnsetCursor()
+		cursor.SetShape(core.Qt__ArrowCursor)
+		f.Window.SetCursor(cursor)
 		f.isCursorChanged = false
 	}
 }
