@@ -105,9 +105,15 @@ func (f *QFramelessWindow) SetWindowShadow(size int) {
 	if f.shadowMargin == 0 {
 		return
 	}
+	var alpha int
+	if runtime.GOOS == "darwin" {
+		alpha = 200
+	} else {
+		alpha = 100
+	}
 	shadow := widgets.NewQGraphicsDropShadowEffect(nil)
 	shadow.SetBlurRadius((float64)(f.shadowMargin))
-	shadow.SetColor(gui.NewQColor3(0, 0, 0, 200))
+	shadow.SetColor(gui.NewQColor3(0, 0, 0, alpha))
 	shadow.SetOffset3(-1, 1)
 	f.WindowWidget.SetGraphicsEffect(shadow)
 	f.Layout.SetContentsMargins(f.shadowMargin, f.shadowMargin, f.shadowMargin, f.shadowMargin)
