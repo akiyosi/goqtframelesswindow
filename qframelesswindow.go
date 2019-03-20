@@ -3,6 +3,7 @@ package qframelesswindow
 import (
 	"fmt"
 	"runtime"
+	"math"
 
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/gui"
@@ -371,6 +372,34 @@ func (f *QFramelessWindow) SetTitleBarColor() {
 	}
 }
 
+func (c *RGB) fade() *RGB {
+	r := (float64)(c.R)
+	g := (float64)(c.G)
+	b := (float64)(c.B)
+	disp := (math.Abs(128 - r) + math.Abs(128 - g) + math.Abs(128 - b)) / 3 * 2 / 3
+	var newColor [3]float64
+	for i, color := range []float64{
+		r,g,b,
+	} {
+		if color > 128 {
+			newColor[i] = color - disp
+		} else {
+			newColor[i] = color + disp
+		}
+		if newColor[i] < 0 {
+			newColor[i] = 0
+		} else if newColor[i] > 255 {
+			newColor[i] = 255
+		}
+	}
+
+	return &RGB{
+		R: (uint16)(newColor[0]),
+		G: (uint16)(newColor[1]),
+		B: (uint16)(newColor[2]),
+	}
+}
+
 func (f *QFramelessWindow) SetTitleBarColorForNotDarwin(color *RGB) {
 	if color == nil {
 		color = &RGB{
@@ -378,6 +407,8 @@ func (f *QFramelessWindow) SetTitleBarColorForNotDarwin(color *RGB) {
 			G: 128,
 			B: 128,
 		}
+	} else {
+		color = color.fade()
 	}
 	SvgMinimize := fmt.Sprintf(`
 	<svg style="width:24px;height:24px" viewBox="0 0 24 24">
