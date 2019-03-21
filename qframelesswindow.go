@@ -101,6 +101,16 @@ func (f *QFramelessWindow) SetborderSize(size int) {
 	f.borderSize = size
 }
 
+// For MacOS only
+func (f *QFramelessWindow) SetWindowNativeShadow() {
+	f.Window.SetWindowFlag(core.Qt__NoDropShadowWindowHint, false)
+}
+
+// For MacOS only
+func (f *QFramelessWindow) UnsetWindowNativeShadow() {
+	f.Window.SetWindowFlag(core.Qt__NoDropShadowWindowHint, true)
+}
+
 func (f *QFramelessWindow) SetWindowShadow(size int) {
 	f.shadowMargin = size
 	if f.shadowMargin == 0 {
