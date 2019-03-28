@@ -1,43 +1,41 @@
 package qframelesswindow
 
 import (
-	"fmt"
 	"unsafe"
 
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/widgets"
 
-	"github.com/lxn/win"
+	win "github.com/akiyosi/w32"
 )
 
 func (f *QFramelessWindow) SetNativeEvent(app *widgets.QApplication) {
 	filterObj := core.NewQAbstractNativeEventFilter()
 	filterObj.ConnectNativeEventFilter(func(eventType *core.QByteArray, message unsafe.Pointer, result int) bool {
-		fmt.Println(message)
 		msg := (*win.MSG)(message)
-		switch msg.Message {
-		case win.WM_KEYDOWN:
-			return false
-		case win.WM_NCCALCSIZE:
-			fmt.Println("debug")
-			winid := (*win.HWND)(unsafe.Pointer(f.Window.WinId()))
-			style := win.GetWindowLong(*winid, win.GWL_STYLE)
-			style = style | win.WS_MAXIMIZEBOX | win.WS_THICKFRAME | win.WS_CAPTION
-			win.SetWindowLong(*winid, win.GWL_STYLE, style)
-			return true
-		case win.WM_NCHITTEST:
-			fmt.Println("debug:: WM_NCHITTEST")
-			var winrect *win.RECT
-			winid := (*win.HWND)(unsafe.Pointer(f.Window.WinId()))
-			win.GetWindowRect(*winid, winrect)
-			fmt.Println(winrect.Left, winrect.Bottom)
-			return true
-		default:
-			fmt.Println("debug --", msg.Message)
-			return true
-		}
+		hwnd := msg.Hwnd
 
-		// return filterObj.NativeEventFilter(eventType, message, result)
+		switch msg.Message {
+		case win.WM_CREATE:
+		 	style := win.GetWindowLong(hwnd, win.GWL_STYLE)
+		 	style = style | win.WS_THICKFRAME | win.WS_CAPTION
+		 	win.SetWindowLong(hwnd, win.GWL_STYLE, uint32(style))
+			f.borderless = true
+		 	return false
+
+		case win.WM_NCCALCSIZE:
+			if msg.WParam == 1 && f.borderless {
+				// this kills the window frame and title bar we added with WS_THICKFRAME and WS_CAPTION
+				result = 0
+				if win.IsWindowVisible(hwnd) == false {
+		 			win.ShowWindow(hwnd, win.SW_SHOW)
+				}
+			}
+			return true
+
+		default:
+		}
+		return false
 	})
 	app.InstallNativeEventFilter(filterObj)
 }

@@ -73,6 +73,7 @@ type QFramelessWindow struct {
 	isLeftButtonPressed bool
 	dragPos             *core.QPoint
 	pressedEdge         Edge
+	borderless          bool
 
 	Content *widgets.QWidget
 
@@ -333,6 +334,7 @@ func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
 
 func (f *QFramelessWindow) SetAttributes() {
 	f.Window.SetAttribute(core.Qt__WA_TranslucentBackground, true)
+	f.Window.SetAttribute(core.Qt__WA_NoSystemBackground, true)
 	f.Window.SetAttribute(core.Qt__WA_Hover, true)
 	f.Window.SetMouseTracking(true)
 }
@@ -341,7 +343,6 @@ func (f *QFramelessWindow) SetWindowFlags() {
 	f.Window.SetWindowFlag(core.Qt__Window, true)
 	f.Window.SetWindowFlag(core.Qt__FramelessWindowHint, true)
 	f.Window.SetWindowFlag(core.Qt__NoDropShadowWindowHint, true)
-	f.Window.SetWindowFlag(core.Qt__WindowSystemMenuHint, true)
 }
 
 func (f *QFramelessWindow) SetTitle(title string) {

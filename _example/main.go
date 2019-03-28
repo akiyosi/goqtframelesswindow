@@ -22,7 +22,7 @@ func main() {
 	a.win = a.fw.Window
 	layout := widgets.NewQVBoxLayout()
 	a.fw.SetContent(layout)
-	a.fw.SetWidgetColor(30, 30, 30, 0.6)
+	a.fw.SetWidgetColor(30, 30, 30, 0.7)
 	a.fw.SetTitle("frameless test")
 	a.fw.SetTitleColor(200, 200, 200)
 
@@ -43,7 +43,7 @@ func main() {
 
 	// In Windows, signal arrived during external code execution
 	// In MacOS, bad access
-	// a.fw.SetNativeEvent(a.app)
+	a.fw.SetNativeEvent(a.app)
 
 	a.win.Show()
 	a.fw.Widget.SetFocus2()
