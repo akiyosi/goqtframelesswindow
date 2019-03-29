@@ -20,6 +20,8 @@ func (f *QFramelessWindow) SetNativeEvent(app *widgets.QApplication) {
 		 	style := win.GetWindowLong(hwnd, win.GWL_STYLE)
 		 	style = style | win.WS_THICKFRAME | win.WS_CAPTION
 		 	win.SetWindowLong(hwnd, win.GWL_STYLE, uint32(style))
+			shadow := &win.MARGINS{-1, -1, -1, -1}
+			win.DwmExtendFrameIntoClientArea(hwnd, shadow)
 			f.borderless = true
 		 	return false
 

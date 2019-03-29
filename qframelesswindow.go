@@ -48,6 +48,8 @@ type QFramelessWindow struct {
 	WindowWidget  *widgets.QFrame
 	WindowVLayout *widgets.QVBoxLayout
 	shadowMargin  int
+	minimumWidth  int
+	minimumHeight int
 
 	TitleBar          *widgets.QWidget
 	TitleBarLayout    *widgets.QHBoxLayout
@@ -84,18 +86,30 @@ type QFramelessWindow struct {
 
 func NewQFramelessWindow() *QFramelessWindow {
 	f := &QFramelessWindow{}
+	f.shadowMargin = 0
 	f.Window = widgets.NewQMainWindow(nil, 0)
 	f.Widget = widgets.NewQWidget(nil, 0)
 	f.SetborderSize(3)
 	f.Window.SetCentralWidget(f.Widget)
 	f.SetupUI(f.Widget)
 	f.SetWindowFlags()
-	f.SetWindowShadow(0)
 	f.SetAttributes()
 	f.SetWindowActions()
 	f.SetTitleBarActions()
+	f.SetMinimumSize(400, 300)
 
 	return f
+}
+
+func (f *QFramelessWindow) SetMinimumSize(w int, h int) {
+	f.Window.SetMinimumWidth(w + (2 * f.shadowMargin))
+	f.Window.SetMinimumHeight(h + (2 * f.shadowMargin))
+	f.Widget.SetMinimumWidth(w + (2 * f.shadowMargin))
+	f.Widget.SetMinimumHeight(h + (2 * f.shadowMargin))
+	f.WindowWidget.SetMinimumWidth(w)
+	f.WindowWidget.SetMinimumHeight(h)
+	f.minimumWidth = w
+	f.minimumHeight = h
 }
 
 func (f *QFramelessWindow) SetborderSize(size int) {
@@ -114,6 +128,7 @@ func (f *QFramelessWindow) UnsetWindowNativeShadow() {
 
 func (f *QFramelessWindow) SetWindowShadow(size int) {
 	f.shadowMargin = size
+	f.Layout.SetContentsMargins(f.shadowMargin, f.shadowMargin, f.shadowMargin, f.shadowMargin)
 	if f.shadowMargin == 0 {
 		return
 	}
@@ -128,7 +143,6 @@ func (f *QFramelessWindow) SetWindowShadow(size int) {
 	shadow.SetColor(gui.NewQColor3(0, 0, 0, alpha))
 	shadow.SetOffset3(-1, 1)
 	f.WindowWidget.SetGraphicsEffect(shadow)
-	f.Layout.SetContentsMargins(f.shadowMargin, f.shadowMargin, f.shadowMargin, f.shadowMargin)
 }
 
 func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
@@ -593,6 +607,7 @@ func (f *QFramelessWindow) SetWindowActions() {
 }
 
 func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
+	// https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341
 	window := f.Window
 	margin := f.shadowMargin
 
@@ -631,18 +646,53 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 
 			topLeftPoint := core.NewQPoint2(left, top)
 			rightBottomPoint := core.NewQPoint2(right, bottom)
-			newRect := core.NewQRect2(topLeftPoint, rightBottomPoint)
-			// if newRect.Width() < window.MinimumWidth() {
-			// 	left = window.FrameGeometry().X()
-			// }
-			// if newRect.Height() < window.MinimumHeight() {
-			// 	top = window.FrameGeometry().Y()
-			// }
+			rect := core.NewQRect2(topLeftPoint, rightBottomPoint)
+
+			// minimum size
+			minimumWidth := f.minimumWidth
+			minimumHeight := f.minimumHeight
+			if rect.Width() < minimumWidth {
+				switch f.pressedEdge {
+				case Left:
+					left = right - minimumWidth
+				case Right:
+					right = left + minimumWidth
+				case TopLeft:
+					left = right - minimumWidth
+				case TopRight:
+					right = left + minimumWidth
+				case BottomLeft:
+					left = right - minimumWidth
+				case BottomRight:
+					right = left + minimumWidth
+				default:
+				}
+			}
+			if rect.Height() < minimumHeight {
+				switch f.pressedEdge {
+				case Top:
+					top = bottom - minimumHeight
+				case Bottom:
+					bottom = top + minimumHeight
+				case TopLeft:
+					top = bottom - minimumHeight
+				case TopRight:
+					top = bottom - minimumHeight
+				case BottomLeft:
+					bottom = top + minimumHeight
+				case BottomRight:
+					bottom = top + minimumHeight
+				default:
+				}
+			}
+
 			topLeftPoint = core.NewQPoint2(left-margin, top-margin)
 			rightBottomPoint = core.NewQPoint2(right+margin, bottom+margin)
-			newRect = core.NewQRect2(topLeftPoint, rightBottomPoint)
+			newRect := core.NewQRect2(topLeftPoint, rightBottomPoint)
 
 			window.SetGeometry(newRect)
+			fmt.Println("debug:", f.Window.Width(), f.Window.Height())
+			fmt.Println("debug2:", f.WindowWidget.Width(), f.WindowWidget.Height())
 		}
 	}
 }
@@ -655,6 +705,9 @@ func (f *QFramelessWindow) mouseButtonPressed(e *gui.QMouseEvent) {
 }
 
 func (f *QFramelessWindow) updateCursorShape(pos *core.QPoint) {
+	if f.isLeftButtonPressed {
+		return
+	}
 	cursor := gui.NewQCursor()
 	if f.Window.IsFullScreen() || f.Window.IsMaximized() {
 		if f.isCursorChanged {
