@@ -102,12 +102,11 @@ func NewQFramelessWindow() *QFramelessWindow {
 }
 
 func (f *QFramelessWindow) SetMinimumSize(w int, h int) {
-	f.Window.SetMinimumWidth(w + (2 * f.shadowMargin))
-	f.Window.SetMinimumHeight(h + (2 * f.shadowMargin))
-	f.Widget.SetMinimumWidth(w + (2 * f.shadowMargin))
-	f.Widget.SetMinimumHeight(h + (2 * f.shadowMargin))
-	f.WindowWidget.SetMinimumWidth(w)
-	f.WindowWidget.SetMinimumHeight(h)
+	W := w + (2 * f.shadowMargin)
+	H := h + (2 * f.shadowMargin)
+	f.Window.SetMinimumSize2(W, H)
+	f.Widget.SetMinimumSize2(W, H)
+	f.WindowWidget.SetMinimumSize2(w, h)
 	f.minimumWidth = w
 	f.minimumHeight = h
 }
@@ -691,8 +690,9 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 			newRect := core.NewQRect2(topLeftPoint, rightBottomPoint)
 
 			window.SetGeometry(newRect)
-			fmt.Println("debug:", f.Window.Width(), f.Window.Height())
-			fmt.Println("debug2:", f.WindowWidget.Width(), f.WindowWidget.Height())
+			// fmt.Println("debug:", f.Window.FrameGeometry().Width(), f.Window.FrameGeometry().Height())
+			// fmt.Println("debug2:", f.WindowWidget.FrameGeometry().Width(), f.WindowWidget.FrameGeometry().Height())
+			// fmt.Println("debug3:", f.WindowWidget.MinimumWidth(), f.WindowWidget.MinimumHeight())
 		}
 	}
 }
