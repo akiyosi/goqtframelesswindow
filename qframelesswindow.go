@@ -57,6 +57,7 @@ type QFramelessWindow struct {
 	TitleBarBtnWidget *widgets.QWidget
 	TitleBarBtnLayout *widgets.QHBoxLayout
 	TitleColor        *RGB
+	TitleBarMousePos  *core.QPoint
 
 	// for darwin
 	BtnMinimize *widgets.QToolButton
@@ -74,14 +75,15 @@ type QFramelessWindow struct {
 	isDragStart         bool
 	isLeftButtonPressed bool
 	dragPos             *core.QPoint
-	pressedEdge         Edge
+	hoverEdge         Edge
 	borderless          bool
 
 	Content *widgets.QWidget
 
 	Pos            *core.QPoint
-	MousePos       *core.QPoint
+	MousePos       [2]int
 	IsMousePressed bool
+
 }
 
 func NewQFramelessWindow() *QFramelessWindow {
@@ -94,7 +96,11 @@ func NewQFramelessWindow() *QFramelessWindow {
 	f.SetupUI(f.Widget)
 	f.SetWindowFlags()
 	f.SetAttributes()
-	f.SetWindowActions()
+	if runtime.GOOS == "windows" {
+		f.SetWindowActionsForWin()
+	} else {
+		f.SetWindowActionsForNotWin()
+	}
 	f.SetTitleBarActions()
 	f.SetMinimumSize(400, 300)
 
@@ -571,7 +577,41 @@ func (f *QFramelessWindow) UpdateWidget() {
 	f.Window.Update()
 }
 
-func (f *QFramelessWindow) SetWindowActions() {
+func (f *QFramelessWindow) SetWindowActionsForWin() {
+	// Ref: https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341#37507341
+	f.Window.ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
+		e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
+		switch event.Type() {
+		case core.QEvent__ActivationChange:
+			f.SetTitleBarColor()
+		case core.QEvent__HoverMove:
+			f.MousePos[0] = e.GlobalPos().X()
+			f.MousePos[1] = e.GlobalPos().Y()
+
+		case core.QEvent__Leave:
+			cursor := gui.NewQCursor()
+			cursor.SetShape(core.Qt__ArrowCursor)
+			f.Window.SetCursor(cursor)
+
+		case core.QEvent__MouseMove:
+			f.mouseMove(e)
+
+		case core.QEvent__MouseButtonPress:
+			f.mouseButtonPressedForWin(e)
+
+		case core.QEvent__MouseButtonRelease:
+			f.isDragStart = false
+			f.isLeftButtonPressed = false
+			f.hoverEdge = None
+
+		default:
+		}
+
+		return f.Widget.EventFilter(watched, event)
+	})
+}
+
+func (f *QFramelessWindow) SetWindowActionsForNotWin() {
 	// Ref: https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341#37507341
 	f.Window.ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
 		e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
@@ -596,7 +636,7 @@ func (f *QFramelessWindow) SetWindowActions() {
 		case core.QEvent__MouseButtonRelease:
 			f.isDragStart = false
 			f.isLeftButtonPressed = false
-			f.pressedEdge = None
+			f.hoverEdge = None
 
 		default:
 		}
@@ -612,34 +652,37 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 
 	if f.isLeftButtonPressed {
 
-		if f.pressedEdge != None {
+		if f.hoverEdge != None {
 
 			left := window.FrameGeometry().Left() + margin
 			top := window.FrameGeometry().Top() + margin
 			right := window.FrameGeometry().Right() - margin
 			bottom := window.FrameGeometry().Bottom() - margin
 
-			switch f.pressedEdge {
+			X := e.GlobalPos().X()
+			Y := e.GlobalPos().Y()
+
+			switch f.hoverEdge {
 			case Top:
-				top = e.GlobalPos().Y()
+				top = Y
 			case Bottom:
-				bottom = e.GlobalPos().Y()
+				bottom = Y
 			case Left:
-				left = e.GlobalPos().X()
+				left = X
 			case Right:
-				right = e.GlobalPos().X()
+				right = X
 			case TopLeft:
-				top = e.GlobalPos().Y()
-				left = e.GlobalPos().X()
+				top = Y
+				left = X
 			case TopRight:
-				top = e.GlobalPos().Y()
-				right = e.GlobalPos().X()
+				top = Y
+				right = X
 			case BottomLeft:
-				bottom = e.GlobalPos().Y()
-				left = e.GlobalPos().X()
+				bottom = Y
+				left = X
 			case BottomRight:
-				bottom = e.GlobalPos().Y()
-				right = e.GlobalPos().X()
+				bottom = Y
+				right = X
 			default:
 			}
 
@@ -650,8 +693,8 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 			// minimum size
 			minimumWidth := f.minimumWidth
 			minimumHeight := f.minimumHeight
-			if rect.Width() < minimumWidth {
-				switch f.pressedEdge {
+			if rect.Width() <= minimumWidth {
+				switch f.hoverEdge {
 				case Left:
 					left = right - minimumWidth
 				case Right:
@@ -667,8 +710,8 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 				default:
 				}
 			}
-			if rect.Height() < minimumHeight {
-				switch f.pressedEdge {
+			if rect.Height() <= minimumHeight {
+				switch f.hoverEdge {
 				case Top:
 					top = bottom - minimumHeight
 				case Bottom:
@@ -685,21 +728,27 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 				}
 			}
 
+			right = right - 1
+			bottom = bottom - 1
+
 			topLeftPoint = core.NewQPoint2(left-margin, top-margin)
 			rightBottomPoint = core.NewQPoint2(right+margin, bottom+margin)
 			newRect := core.NewQRect2(topLeftPoint, rightBottomPoint)
 
 			window.SetGeometry(newRect)
-			// fmt.Println("debug:", f.Window.FrameGeometry().Width(), f.Window.FrameGeometry().Height())
-			// fmt.Println("debug2:", f.WindowWidget.FrameGeometry().Width(), f.WindowWidget.FrameGeometry().Height())
-			// fmt.Println("debug3:", f.WindowWidget.MinimumWidth(), f.WindowWidget.MinimumHeight())
 		}
 	}
 }
 
 func (f *QFramelessWindow) mouseButtonPressed(e *gui.QMouseEvent) {
-	f.pressedEdge = f.calcCursorPos(e.GlobalPos(), f.Window.FrameGeometry())
-	if f.pressedEdge != None {
+	f.hoverEdge = f.calcCursorPos(e.GlobalPos(), f.Window.FrameGeometry())
+	if f.hoverEdge != None {
+		f.isLeftButtonPressed = true
+	}
+}
+
+func (f *QFramelessWindow) mouseButtonPressedForWin(e *gui.QMouseEvent) {
+	if f.hoverEdge != None {
 		f.isLeftButtonPressed = true
 	}
 }
@@ -738,71 +787,82 @@ func (f *QFramelessWindow) updateCursorShape(pos *core.QPoint) {
 }
 
 func (f *QFramelessWindow) calcCursorPos(pos *core.QPoint, rect *core.QRect) Edge {
-	margin := f.shadowMargin
+	rectX := rect.X()
+	rectY := rect.Y()
+	rectWidth := rect.Width()
+	rectHeight := rect.Height()
+	posX := pos.X()
+	posY := pos.Y()
 
+	edge := f.detectEdgeOnCursor(posX, posY, rectX, rectY, rectWidth, rectHeight)
+	return edge
+}
+
+func (f *QFramelessWindow) detectEdgeOnCursor(posX, posY, rectX, rectY, rectWidth, rectHeight int) Edge {
 	doubleBorderSize := f.borderSize * 2
 	octupleBorderSize := f.borderSize * 8
 	topBorderSize := 2 - 1
 
-	rectX := rect.X() + margin
-	rectY := rect.Y() + margin
-	rectHeight := rect.Height() - (2 * margin)
-	rectWidth := rect.Width() - (2 * margin)
+	margin := f.shadowMargin
+	rectX = rectX + margin 
+	rectY = rectY + margin
+	rectWidth = rectWidth - (2 * margin)
+	rectHeight = rectHeight - (2 * margin)
 
 	var onLeft, onRight, onBottom, onTop, onBottomLeft, onBottomRight, onTopRight, onTopLeft bool
 
-	onBottomLeft = (((pos.X() <= (rectX + octupleBorderSize)) && pos.X() >= rectX &&
-		(pos.Y() <= (rectY + rectHeight)) && (pos.Y() >= (rectY + rectHeight - doubleBorderSize))) ||
-		((pos.X() <= (rectX + doubleBorderSize)) && pos.X() >= rectX &&
-			(pos.Y() <= (rectY + rectHeight)) && (pos.Y() >= (rectY + rectHeight - octupleBorderSize))))
+	onBottomLeft = (((posX <= (rectX + octupleBorderSize)) && posX >= rectX &&
+		(posY <= (rectY + rectHeight)) && (posY >= (rectY + rectHeight - doubleBorderSize))) ||
+		((posX <= (rectX + doubleBorderSize)) && posX >= rectX &&
+			(posY <= (rectY + rectHeight)) && (posY >= (rectY + rectHeight - octupleBorderSize))))
 
 	if onBottomLeft {
 		return BottomLeft
 	}
 
-	onBottomRight = (((pos.X() >= (rectX + rectWidth - octupleBorderSize)) && (pos.X() <= (rectX + rectWidth)) &&
-		(pos.Y() >= (rectY + rectHeight - doubleBorderSize)) && (pos.Y() <= (rectY + rectHeight))) ||
-		((pos.X() >= (rectX + rectWidth - doubleBorderSize)) && (pos.X() <= (rectX + rectWidth)) &&
-			(pos.Y() >= (rectY + rectHeight - octupleBorderSize)) && (pos.Y() <= (rectY + rectHeight))))
+	onBottomRight = (((posX >= (rectX + rectWidth - octupleBorderSize)) && (posX <= (rectX + rectWidth)) &&
+		(posY >= (rectY + rectHeight - doubleBorderSize)) && (posY <= (rectY + rectHeight))) ||
+		((posX >= (rectX + rectWidth - doubleBorderSize)) && (posX <= (rectX + rectWidth)) &&
+			(posY >= (rectY + rectHeight - octupleBorderSize)) && (posY <= (rectY + rectHeight))))
 
 	if onBottomRight {
 		return BottomRight
 	}
 
-	onTopRight = (pos.X() >= (rectX + rectWidth - doubleBorderSize)) && (pos.X() <= (rectX + rectWidth)) &&
-		(pos.Y() >= rectY) && (pos.Y() <= (rectY + doubleBorderSize))
+	onTopRight = (posX >= (rectX + rectWidth - doubleBorderSize)) && (posX <= (rectX + rectWidth)) &&
+		(posY >= rectY) && (posY <= (rectY + doubleBorderSize))
 	if onTopRight {
 		return TopRight
 	}
 
-	onTopLeft = pos.X() >= rectX && (pos.X() <= (rectX + doubleBorderSize)) &&
-		pos.Y() >= rectY && (pos.Y() <= (rectY + doubleBorderSize))
+	onTopLeft = posX >= rectX && (posX <= (rectX + doubleBorderSize)) &&
+		posY >= rectY && (posY <= (rectY + doubleBorderSize))
 	if onTopLeft {
 		return TopLeft
 	}
 
-	onLeft = (pos.X() >= (rectX - doubleBorderSize)) && (pos.X() <= (rectX + doubleBorderSize)) &&
-		(pos.Y() <= (rectY + rectHeight - doubleBorderSize)) &&
-		(pos.Y() >= rectY+doubleBorderSize)
+	onLeft = (posX >= (rectX - doubleBorderSize)) && (posX <= (rectX + doubleBorderSize)) &&
+		(posY <= (rectY + rectHeight - doubleBorderSize)) &&
+		(posY >= rectY+doubleBorderSize)
 	if onLeft {
 		return Left
 	}
 
-	onRight = (pos.X() >= (rectX + rectWidth - doubleBorderSize)) &&
-		(pos.X() <= (rectX + rectWidth)) &&
-		(pos.Y() >= (rectY + doubleBorderSize)) && (pos.Y() <= (rectY + rectHeight - doubleBorderSize))
+	onRight = (posX >= (rectX + rectWidth - doubleBorderSize)) &&
+		(posX <= (rectX + rectWidth)) &&
+		(posY >= (rectY + doubleBorderSize)) && (posY <= (rectY + rectHeight - doubleBorderSize))
 	if onRight {
 		return Right
 	}
 
-	onBottom = (pos.X() >= (rectX + doubleBorderSize)) && (pos.X() <= (rectX + rectWidth - doubleBorderSize)) &&
-		(pos.Y() >= (rectY + rectHeight - doubleBorderSize)) && (pos.Y() <= (rectY + rectHeight))
+	onBottom = (posX >= (rectX + doubleBorderSize)) && (posX <= (rectX + rectWidth - doubleBorderSize)) &&
+		(posY >= (rectY + rectHeight - doubleBorderSize)) && (posY <= (rectY + rectHeight))
 	if onBottom {
 		return Bottom
 	}
 
-	onTop = (pos.X() >= (rectX + doubleBorderSize)) && (pos.X() <= (rectX + rectWidth - doubleBorderSize)) &&
-		(pos.Y() >= rectY) && (pos.Y() <= (rectY + topBorderSize))
+	onTop = (posX >= (rectX + doubleBorderSize)) && (posX <= (rectX + rectWidth - doubleBorderSize)) &&
+		(posY >= rectY) && (posY <= (rectY + topBorderSize))
 	if onTop {
 		return Top
 	}

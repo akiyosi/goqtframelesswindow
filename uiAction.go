@@ -78,7 +78,7 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 	t.ConnectMousePressEvent(func(e *gui.QMouseEvent) {
 		f.Widget.Raise()
 		f.IsMousePressed = true
-		f.MousePos = e.GlobalPos()
+		f.TitleBarMousePos = e.GlobalPos()
 		f.Pos = f.Window.Pos()
 	})
 
@@ -90,8 +90,8 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 		if !f.IsMousePressed {
 			return
 		}
-		x := f.Pos.X() + e.GlobalPos().X() - f.MousePos.X()
-		y := f.Pos.Y() + e.GlobalPos().Y() - f.MousePos.Y()
+		x := f.Pos.X() + e.GlobalPos().X() - f.TitleBarMousePos.X()
+		y := f.Pos.Y() + e.GlobalPos().Y() - f.TitleBarMousePos.Y()
 		newPos := core.NewQPoint2(x, y)
 		f.Window.Move(newPos)
 	})
