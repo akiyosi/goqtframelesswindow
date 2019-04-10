@@ -32,6 +32,7 @@ type RGB struct {
 }
 
 type QToolButtonForNotDarwin struct {
+	f       *QFramelessWindow
 	Widget  *widgets.QWidget
 	IconBtn *svg.QSvgWidget
 }
@@ -41,6 +42,7 @@ type QFramelessWindow struct {
 	Widget *widgets.QWidget
 
 	WindowColor *RGB
+	WindowColorAlpha float64
 
 	borderSize int
 	Layout     *widgets.QVBoxLayout
@@ -96,11 +98,7 @@ func NewQFramelessWindow() *QFramelessWindow {
 	f.SetupUI(f.Widget)
 	f.SetWindowFlags()
 	f.SetAttributes()
-	if runtime.GOOS == "windows" {
-		f.SetWindowActionsForWin()
-	} else {
-		f.SetWindowActionsForNotWin()
-	}
+	f.SetWindowActions()
 	f.SetTitleBarActions()
 	f.SetMinimumSize(400, 300)
 
@@ -213,6 +211,7 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 }
 
 func (f *QFramelessWindow) SetWidgetColor(red uint16, green uint16, blue uint16, alpha float64) {
+	f.WindowColorAlpha = alpha
 	f.WindowColor = &RGB{
 		R: red,
 		G: green,
@@ -270,7 +269,7 @@ func (b *QToolButtonForNotDarwin) SetStyle(color *RGB) {
 	if color == nil {
 		backgroundColor = "background-color:none;"
 	} else {
-		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, 0.2);", color.R, color.G, color.B)
+		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, %f);", color.R, color.G, color.B, float64(1.0) - b.f.WindowColorAlpha)
 	}
 
 	b.Widget.SetStyleSheet(fmt.Sprintf(`
@@ -286,15 +285,19 @@ func (f *QFramelessWindow) SetTitleBarButtons() {
 	f.TitleBarLayout.SetSpacing(1)
 
 	f.IconMinimize = NewQToolButtonForNotDarwin(nil)
+	f.IconMinimize.f = f
 	f.IconMinimize.IconBtn.SetFixedSize2(iconSize, iconSize)
 	f.IconMinimize.SetObjectName("IconMinimize")
 	f.IconMaximize = NewQToolButtonForNotDarwin(nil)
+	f.IconMaximize.f = f
 	f.IconMaximize.IconBtn.SetFixedSize2(iconSize, iconSize)
 	f.IconMaximize.SetObjectName("IconMaximize")
 	f.IconRestore = NewQToolButtonForNotDarwin(nil)
+	f.IconRestore.f = f
 	f.IconRestore.IconBtn.SetFixedSize2(iconSize, iconSize)
 	f.IconRestore.SetObjectName("IconRestore")
 	f.IconClose = NewQToolButtonForNotDarwin(nil)
+	f.IconClose.f = f
 	f.IconClose.IconBtn.SetFixedSize2(iconSize, iconSize)
 	f.IconClose.SetObjectName("IconClose")
 
@@ -578,41 +581,7 @@ func (f *QFramelessWindow) UpdateWidget() {
 	f.Window.Update()
 }
 
-func (f *QFramelessWindow) SetWindowActionsForWin() {
-	// Ref: https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341#37507341
-	f.Window.ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
-		e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
-		switch event.Type() {
-		case core.QEvent__ActivationChange:
-			f.SetTitleBarColor()
-		case core.QEvent__HoverMove:
-			f.MousePos[0] = e.GlobalPos().X()
-			f.MousePos[1] = e.GlobalPos().Y()
-
-		case core.QEvent__Leave:
-			cursor := gui.NewQCursor()
-			cursor.SetShape(core.Qt__ArrowCursor)
-			f.Window.SetCursor(cursor)
-
-		case core.QEvent__MouseMove:
-			f.mouseMove(e)
-
-		case core.QEvent__MouseButtonPress:
-			f.mouseButtonPressedForWin(e)
-
-		case core.QEvent__MouseButtonRelease:
-			f.isDragStart = false
-			f.isLeftButtonPressed = false
-			f.hoverEdge = None
-
-		default:
-		}
-
-		return f.Widget.EventFilter(watched, event)
-	})
-}
-
-func (f *QFramelessWindow) SetWindowActionsForNotWin() {
+func (f *QFramelessWindow) SetWindowActions() {
 	// Ref: https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341#37507341
 	f.Window.ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
 		e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
@@ -621,7 +590,13 @@ func (f *QFramelessWindow) SetWindowActionsForNotWin() {
 			f.SetTitleBarColor()
 
 		case core.QEvent__HoverMove:
-			f.updateCursorShape(e.GlobalPos())
+			// In windows, detect window edge in nativeEvent()
+			if runtime.GOOS == "windows" {
+				f.MousePos[0] = e.GlobalPos().X()
+				f.MousePos[1] = e.GlobalPos().Y()
+			} else {
+				f.updateCursorShape(e.GlobalPos())
+			}
 
 		case core.QEvent__Leave:
 			cursor := gui.NewQCursor()
