@@ -410,7 +410,7 @@ func (c *RGB) fade() *RGB {
 	r := (float64)(c.R)
 	g := (float64)(c.G)
 	b := (float64)(c.B)
-	disp := (math.Abs(128 - r) + math.Abs(128 - g) + math.Abs(128 - b)) / 3 * 2 / 3
+	disp := (math.Abs(128 - r) + math.Abs(128 - g) + math.Abs(128 - b)) / 3 * 1 / 4
 	var newColor [3]float64
 	for i, color := range []float64{
 		r,g,b,
