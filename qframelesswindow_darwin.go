@@ -11,7 +11,6 @@ import (
 func (f *QFramelessWindow) SetNativeEvent(app *widgets.QApplication) {
 	filterObj := core.NewQAbstractNativeEventFilter()
 	filterObj.ConnectNativeEventFilter(func(eventType *core.QByteArray, message unsafe.Pointer, result int) bool {
-		fmt.Println("debug:", eventType)
 
 		// return filterObj.NativeEventFilter(eventType, message, result)
 		return false
