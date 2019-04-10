@@ -5,7 +5,6 @@ import (
 
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/widgets"
-	"github.com/therecipe/qt/gui"
 
 	win "github.com/akiyosi/w32"
 )
@@ -22,6 +21,16 @@ func (f *QFramelessWindow) SetNativeEvent(app *widgets.QApplication) {
 		 	style := win.GetWindowLong(hwnd, win.GWL_STYLE)
 		 	style = style | win.WS_THICKFRAME | win.WS_CAPTION
 		 	win.SetWindowLong(hwnd, win.GWL_STYLE, uint32(style))
+
+			// class := win.GetClassLong(hwnd, win.GCL_STYLE)
+			// class = class | win.CS_DROPSHADOW
+			// win.SetClassLong(hwnd, win.GCL_STYLE, class)
+			// pva := 2
+			// win.DwmSetWindowAttribute(hwnd, win.DWMWA_NCRENDERING_POLICY, *(*win.LPCVOID)((unsafe.Pointer)(&pva)), uint32(4))
+
+			// shadow := &win.MARGINS{-5, -5, -5, -5}
+			// win.DwmExtendFrameIntoClientArea(hwnd, shadow)
+
 			f.borderless = true
 		 	return false
 
@@ -30,8 +39,6 @@ func (f *QFramelessWindow) SetNativeEvent(app *widgets.QApplication) {
 				// this kills the window frame and title bar we added with WS_THICKFRAME and WS_CAPTION
 				result = 0
 				if win.IsWindowVisible(hwnd) == false {
-					shadow := &win.MARGINS{1, 1, 1, 1}
-					win.DwmExtendFrameIntoClientArea(hwnd, shadow)
 		 			win.ShowWindow(hwnd, win.SW_SHOW)
 				}
 			}
@@ -41,57 +48,7 @@ func (f *QFramelessWindow) SetNativeEvent(app *widgets.QApplication) {
 			mm := (*win.MINMAXINFO)((unsafe.Pointer)(lparam))
 			mm.PtMinTrackSize.X = int32(f.minimumWidth)
 			mm.PtMinTrackSize.Y = int32(f.minimumHeight)
-
 			return true
-
-		case win.WM_NCHITTEST:
-			result = 0
-
-			rect := win.GetWindowRect(hwnd)
-
-			// Get the cursor position from Qt instead of winapi.
-			// x, y, _ := win.GetCursorPos()
-			x := f.MousePos[0]
-			y := f.MousePos[1]
-
-			rectX := int(rect.Left)
-			rectY := int(rect.Top)
-			rectWidth := int(rect.Right - rect.Left)
-			rectHeight := int(rect.Bottom - rect.Top)
-
-			edge := f.detectEdgeOnCursor(x, y, rectX, rectY, rectWidth, rectHeight)
-			if !f.isLeftButtonPressed {
-				f.hoverEdge = edge
-			}
-
-			if !f.isLeftButtonPressed {
-				f.isCursorChanged = true
-				cursor := gui.NewQCursor()
-				if f.Window.IsFullScreen() || f.Window.IsMaximized() {
-					if f.isCursorChanged {
-						cursor.SetShape(core.Qt__ArrowCursor)
-						f.Window.SetCursor(cursor)
-					}
-				}
-				switch f.hoverEdge {
-				case Top, Bottom:
-					cursor.SetShape(core.Qt__SizeVerCursor)
-					f.Window.SetCursor(cursor)
-				case Left, Right:
-					cursor.SetShape(core.Qt__SizeHorCursor)
-					f.Window.SetCursor(cursor)
-				case TopLeft, BottomRight:
-					cursor.SetShape(core.Qt__SizeFDiagCursor)
-					f.Window.SetCursor(cursor)
-				case TopRight, BottomLeft:
-					cursor.SetShape(core.Qt__SizeBDiagCursor)
-					f.Window.SetCursor(cursor)
-				default:
-					cursor.SetShape(core.Qt__ArrowCursor)
-					f.Window.SetCursor(cursor)
-					f.isCursorChanged = false
-				}
-			}
 
 		default:
 		}

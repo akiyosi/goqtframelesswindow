@@ -44,7 +44,7 @@ func main() {
 	// In Windows, signal arrived during external code execution
 	// In MacOS, bad access
 	a.fw.SetNativeEvent(a.app)
-	a.fw.SetWindowShadow(60)
+	// a.fw.SetWindowShadow(60)
 
 	a.win.Show()
 	a.fw.Widget.SetFocus2()

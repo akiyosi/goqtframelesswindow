@@ -60,6 +60,7 @@ type QFramelessWindow struct {
 	TitleBarBtnLayout *widgets.QHBoxLayout
 	TitleColor        *RGB
 	TitleBarMousePos  *core.QPoint
+	IsTitleBarPressed bool
 
 	// for darwin
 	BtnMinimize *widgets.QToolButton
@@ -84,7 +85,6 @@ type QFramelessWindow struct {
 
 	Pos            *core.QPoint
 	MousePos       [2]int
-	IsMousePressed bool
 
 }
 
@@ -590,13 +590,7 @@ func (f *QFramelessWindow) SetWindowActions() {
 			f.SetTitleBarColor()
 
 		case core.QEvent__HoverMove:
-			// In windows, detect window edge in nativeEvent()
-			if runtime.GOOS == "windows" {
-				f.MousePos[0] = e.GlobalPos().X()
-				f.MousePos[1] = e.GlobalPos().Y()
-			} else {
-				f.updateCursorShape(e.GlobalPos())
-			}
+			f.updateCursorShape(e.GlobalPos())
 
 		case core.QEvent__Leave:
 			cursor := gui.NewQCursor()
@@ -629,14 +623,19 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 	if f.isLeftButtonPressed {
 
 		if f.hoverEdge != None {
+			X := e.GlobalPos().X()
+			Y := e.GlobalPos().Y()
 
+			if f.MousePos[0] == X && f.MousePos[1] == Y {
+				return
+			}
+
+			f.MousePos[0] = X
+			f.MousePos[1] = Y
 			left := window.FrameGeometry().Left() + margin
 			top := window.FrameGeometry().Top() + margin
 			right := window.FrameGeometry().Right() - margin
 			bottom := window.FrameGeometry().Bottom() - margin
-
-			X := e.GlobalPos().X()
-			Y := e.GlobalPos().Y()
 
 			switch f.hoverEdge {
 			case Top:
@@ -703,9 +702,10 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 				default:
 				}
 			}
-
-			right = right - 1
-			bottom = bottom - 1
+			if rect.Width() <= minimumWidth || rect.Height() <= minimumHeight {
+				right = right - 1
+				bottom = bottom - 1
+			}
 
 			topLeftPoint = core.NewQPoint2(left-margin, top-margin)
 			rightBottomPoint = core.NewQPoint2(right+margin, bottom+margin)
