@@ -1,7 +1,6 @@
 package qframelesswindow
 
 import (
-	"fmt"
 	"unsafe"
 
 	"github.com/therecipe/qt/core"
