@@ -270,7 +270,7 @@ func (b *QToolButtonForNotDarwin) SetStyle(color *RGB) {
 		backgroundColor = "background-color:none;"
 	} else {
 		hoverColor := color.Brend(b.f.WindowColor, 0.75)
-		backgroundColor = fmt.Sprintf("background-color: %s;", hoverColor.Hex())
+		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, %f);", hoverColor.R, hoverColor.G, hoverColor.B, b.f.WindowColorAlpha)
 	}
 
 	b.Widget.SetStyleSheet(fmt.Sprintf(`
