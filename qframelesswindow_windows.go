@@ -22,6 +22,21 @@ func (f *QFramelessWindow) SetNativeEvent(app *widgets.QApplication) {
 		 	style = style | win.WS_THICKFRAME | win.WS_CAPTION
 		 	win.SetWindowLong(hwnd, win.GWL_STYLE, uint32(style))
 
+			// // Change window region
+			// window := f.Window
+			// margin := f.shadowMargin
+			// left := window.FrameGeometry().Left() + margin
+			// top := window.FrameGeometry().Top() + margin
+			// right := window.FrameGeometry().Right() - margin
+			// bottom := window.FrameGeometry().Bottom() - margin
+			// x2 := right - left
+			// y2 := bottom - top
+			// // round := f.borderSize*2
+			// round := 50
+			// roundedRgn := win.CreateRoundRectRgn(0, 0, x2, y2, round, round)
+			// win.SetWindowRgn(hwnd, roundedRgn, true)
+
+			// // Put shadow
 			// class := win.GetClassLong(hwnd, win.GCL_STYLE)
 			// class = class | win.CS_DROPSHADOW
 			// win.SetClassLong(hwnd, win.GCL_STYLE, class)
@@ -30,6 +45,7 @@ func (f *QFramelessWindow) SetNativeEvent(app *widgets.QApplication) {
 
 			// shadow := &win.MARGINS{-5, -5, -5, -5}
 			// win.DwmExtendFrameIntoClientArea(hwnd, shadow)
+
 
 			f.borderless = true
 		 	return false

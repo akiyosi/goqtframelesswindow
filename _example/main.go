@@ -22,7 +22,7 @@ func main() {
 	a.win = a.fw.Window
 	layout := widgets.NewQVBoxLayout()
 	a.fw.SetContent(layout)
-	a.fw.SetWidgetColor(30, 30, 30, 0.7)
+	a.fw.SetWidgetColor(30, 30, 30, 1.0)
 	a.fw.SetTitle("frameless test")
 	a.fw.SetTitleColor(200, 200, 200)
 
