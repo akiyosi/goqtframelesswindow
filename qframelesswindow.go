@@ -35,6 +35,7 @@ type QToolButtonForNotDarwin struct {
 	f       *QFramelessWindow
 	Widget  *widgets.QWidget
 	IconBtn *svg.QSvgWidget
+	isHover bool
 }
 
 type QFramelessWindow struct {
