@@ -269,7 +269,8 @@ func (b *QToolButtonForNotDarwin) SetStyle(color *RGB) {
 	if color == nil {
 		backgroundColor = "background-color:none;"
 	} else {
-		backgroundColor = fmt.Sprintf("background-color: rgba(%d, %d, %d, %f);", color.R, color.G, color.B, (float64(1.0) - b.f.WindowColorAlpha) / 2.0)
+		hoverColor := color.Brend(b.f.WindowColor, 0.75)
+		backgroundColor = fmt.Sprintf("background-color: %s;", hoverColor.Hex())
 	}
 
 	b.Widget.SetStyleSheet(fmt.Sprintf(`
@@ -849,3 +850,12 @@ func (f *QFramelessWindow) detectEdgeOnCursor(posX, posY, rectX, rectY, rectWidt
 func (c *RGB) Hex() string {
 	return fmt.Sprintf("#%02x%02x%02x", uint8(c.R), uint8(c.G), uint8(c.B))
 }
+
+func (c *RGB) Brend(color *RGB, alpha float64) *RGB {
+	return &RGB {
+		R: uint16((float64(c.R) * float64(1-alpha)) + (float64(color.R) * float64(alpha))),
+		G: uint16((float64(c.G) * float64(1-alpha)) + (float64(color.G) * float64(alpha))),
+		B: uint16((float64(c.B) * float64(1-alpha)) + (float64(color.B) * float64(alpha))),
+	}
+}
+
