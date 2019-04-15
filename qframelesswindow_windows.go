@@ -15,23 +15,22 @@ func (f *QFramelessWindow) SetNativeEvent(app *widgets.QApplication) {
 		msg := (*win.MSG)(message)
 		lparam := msg.LParam
 		hwnd := msg.Hwnd
+		var uflag uint
+		uflag = win.SWP_NOZORDER | win.SWP_NOOWNERZORDER | win.SWP_NOMOVE | win.SWP_NOSIZE | win.SWP_FRAMECHANGED
+		var nullptr win.HWND
+		shadow := &win.MARGINS{0, 0, 0, 1}
 
 		switch msg.Message {
 		case win.WM_CREATE:
 			// set style
-		 	style := win.GetWindowLong(hwnd, win.GWL_STYLE)
-		 	style = style | win.WS_THICKFRAME | win.WS_CAPTION
+		 	// style := win.GetWindowLong(hwnd, win.GWL_STYLE)
+		 	// style = style | win.WS_THICKFRAME | win.WS_CAPTION
+			style := win.WS_POPUP | win.WS_THICKFRAME | win.WS_MINIMIZEBOX | win.WS_MAXIMIZEBOX | win.WS_CAPTION
 		 	win.SetWindowLong(hwnd, win.GWL_STYLE, uint32(style))
 
 			// shadow
-			shadow := &win.MARGINS{0, 0, 0, 1}
 			win.DwmExtendFrameIntoClientArea(hwnd, shadow)
-			var nullptr win.HWND
-			var uflag uint
-			uflag = win.SWP_NOZORDER | win.SWP_NOOWNERZORDER | win.SWP_NOMOVE | win.SWP_NOSIZE | win.SWP_FRAMECHANGED
 			win.SetWindowPos(hwnd, nullptr, 0, 0, 0, 0, uflag)
-
-			f.borderless = true
 
 		 	return true
 
