@@ -39,6 +39,8 @@ type QToolButtonForNotDarwin struct {
 }
 
 type QFramelessWindow struct {
+	winid  uintptr
+
 	Window *widgets.QMainWindow
 	Widget *widgets.QWidget
 
@@ -92,6 +94,7 @@ func NewQFramelessWindow() *QFramelessWindow {
 	f := &QFramelessWindow{}
 	f.shadowMargin = 0
 	f.Window = widgets.NewQMainWindow(nil, 0)
+	f.winid = f.Window.WinId()
 	f.Widget = widgets.NewQWidget(nil, 0)
 	f.SetborderSize(3)
 	f.Window.SetCentralWidget(f.Widget)
@@ -101,6 +104,7 @@ func NewQFramelessWindow() *QFramelessWindow {
 	f.SetWindowActions()
 	f.SetTitleBarActions()
 	f.SetMinimumSize(400, 300)
+	f.SetNativeEvent()
 
 	return f
 }
