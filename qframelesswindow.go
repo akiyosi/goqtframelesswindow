@@ -226,13 +226,21 @@ func (f *QFramelessWindow) SetWidgetColor(red uint16, green uint16, blue uint16,
 	f.Widget.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0.0); color: rgba(0, 0, 0, 0); }")
 
 	borderSizeString := fmt.Sprintf("%d", f.borderSize*2) + "px"
+
+	var roundSizeString string
+	if runtime.GOOS == "darwin" {
+		roundSizeString = fmt.Sprintf("%d", f.borderSize*2) + "px"
+	} else {
+		roundSizeString = "0px"
+	}
+
 	f.WindowWidget.SetStyleSheet(fmt.Sprintf(`
 	#QFramelessWidget {
 		border: 0px solid %s; 
 		padding-top: 2px; padding-right: %s; padding-bottom: %s; padding-left: %s; 
 		border-radius: %s;
 		%s; 
-	}`, color.Hex(), borderSizeString, borderSizeString, borderSizeString, borderSizeString, style))
+	}`, color.Hex(), borderSizeString, borderSizeString, borderSizeString, roundSizeString, style))
 }
 
 func NewQToolButtonForNotDarwin(parent widgets.QWidget_ITF) *QToolButtonForNotDarwin {

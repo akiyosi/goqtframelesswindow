@@ -40,15 +40,10 @@ func (f *QFramelessWindow) SetNativeEvent() {
 			win.SetWindowLongPtr(hwnd, win.GWL_STYLE, styleptr)
 
 			// shadow
-			shadow := &win.MARGINS{0, 0, 0, 1}
+			shadow := &win.MARGINS{1, 1, 1, 1}
 			win.DwmExtendFrameIntoClientArea(hwnd, shadow)
 
-			var uflag uint
-			var nullptr win.HWND
-			uflag = win.SWP_NOZORDER | win.SWP_NOOWNERZORDER | win.SWP_NOMOVE | win.SWP_NOSIZE | win.SWP_FRAMECHANGED
-			win.SetWindowPos(hwnd, nullptr, 0, 0, 0, 0, uflag)
 			win.ShowWindow(hwnd, win.SW_SHOW)
-
 			f.borderless = true
 		}
 		return false
