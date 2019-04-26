@@ -94,7 +94,7 @@ func NewQFramelessWindow() *QFramelessWindow {
 	f := &QFramelessWindow{}
 	f.shadowMargin = 0
 	f.Window = widgets.NewQMainWindow(nil, 0)
-	f.winid = f.Window.WinId()
+	f.SetNativeEvent()
 	f.Widget = widgets.NewQWidget(nil, 0)
 	f.SetborderSize(3)
 	f.Window.SetCentralWidget(f.Widget)
@@ -104,7 +104,6 @@ func NewQFramelessWindow() *QFramelessWindow {
 	f.SetWindowActions()
 	f.SetTitleBarActions()
 	f.SetMinimumSize(400, 300)
-	f.SetNativeEvent()
 
 	return f
 }
@@ -864,6 +863,9 @@ func (c *RGB) Hex() string {
 }
 
 func (c *RGB) Brend(color *RGB, alpha float64) *RGB {
+	if color == nil {
+		return &RGB{0, 0, 0}
+	}
 	return &RGB {
 		R: uint16((float64(c.R) * float64(1-alpha)) + (float64(color.R) * float64(alpha))),
 		G: uint16((float64(c.G) * float64(1-alpha)) + (float64(color.G) * float64(alpha))),

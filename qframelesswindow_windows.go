@@ -7,11 +7,11 @@ import (
 	win "github.com/akiyosi/w32"
 )
 
-
 func (f *QFramelessWindow) SetNativeEvent() {
+	f.winid = f.Window.WinId()
 	f.Window.ConnectNativeEvent(func(eventType *core.QByteArray, message unsafe.Pointer, result *int) bool {
 		msg := (*win.MSG)(message)
-		hwnd := (win.HWND)(f.winid)
+		hwnd := msg.Hwnd
 		lparam := msg.LParam
 
 		switch msg.Message {
@@ -28,24 +28,43 @@ func (f *QFramelessWindow) SetNativeEvent() {
 			mm.PtMinTrackSize.Y = int32(f.minimumHeight)
                 
 			return true
+	
+		case win.WM_NCACTIVATE:
+			f.putShadow(hwnd)
 
-		case win.WM_ACTIVATE:
-			if f.borderless {
-				return false
-			}
-			// style
-			style := win.GetWindowLong(hwnd, win.GWL_STYLE)
-			style = style | win.WS_THICKFRAME
-			styleptr := uintptr(unsafe.Pointer(&style))
-			win.SetWindowLongPtr(hwnd, win.GWL_STYLE, styleptr)
-
-			// shadow
-			shadow := &win.MARGINS{1, 1, 1, 1}
-			win.DwmExtendFrameIntoClientArea(hwnd, shadow)
-
-			win.ShowWindow(hwnd, win.SW_SHOW)
-			f.borderless = true
 		}
 		return false
 	})
+}
+
+func (f *QFramelessWindow) putShadow(hwnd win.HWND) {
+	if f.borderless {
+		return
+	}
+	// style
+	style := win.GetWindowLong(hwnd, win.GWL_STYLE)
+	style = style | win.WS_THICKFRAME
+	styleptr := uintptr(unsafe.Pointer(&style))
+	ret1 := win.SetWindowLongPtr(hwnd, win.GWL_STYLE, styleptr)
+	if ret1 == 0 {
+		return
+	}
+
+	// shadow
+	shadow := &win.MARGINS{1, 1, 1, 1}
+	ret2 := win.DwmExtendFrameIntoClientArea(hwnd, shadow)
+	if ret2 != 0 {
+		return
+	}
+
+	var uflag uint
+	uflag = win.SWP_NOZORDER | win.SWP_NOOWNERZORDER | win.SWP_NOMOVE | win.SWP_NOSIZE | win.SWP_FRAMECHANGED
+	var nullptr win.HWND
+	ret3 := win.SetWindowPos(hwnd, nullptr, 0, 0, 0, 0, uflag)
+	if !ret3 {
+		return
+	}
+	win.ShowWindow(hwnd, win.SW_SHOW)
+	f.winid = uintptr(hwnd)
+	f.borderless = true
 }
