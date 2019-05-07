@@ -245,7 +245,7 @@ func (f *QFramelessWindow) SetWidgetColor(red uint16, green uint16, blue uint16,
 func NewQToolButtonForNotDarwin(parent widgets.QWidget_ITF) *QToolButtonForNotDarwin {
 	iconSize := 15
 	marginTB := iconSize / 6
-	marginLR := iconSize / 3
+	marginLR := int(float64(iconSize) / float64(2.5))
 
 	widget := widgets.NewQWidget(parent, 0)
 	widget.SetSizePolicy2(widgets.QSizePolicy__Fixed, widgets.QSizePolicy__Fixed)
