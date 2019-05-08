@@ -5,7 +5,7 @@ import (
 	"github.com/therecipe/qt/gui"
 )
 
-func (f *QFramelessWindow) SetTitleBarActions() {
+func (f *QFramelessWindow) SetupTitleBarActions() {
 	t := f.TitleBar
 
 	// TitleBar Actions
@@ -13,7 +13,7 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 		f.Widget.Raise()
 		f.IsTitleBarPressed = true
 		f.TitleBarMousePos = e.GlobalPos()
-		f.Pos = f.Window.Pos()
+		f.Position = f.Pos()
 	})
 
 	t.ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
@@ -24,10 +24,10 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 		if !f.IsTitleBarPressed {
 			return
 		}
-		x := f.Pos.X() + e.GlobalPos().X() - f.TitleBarMousePos.X()
-		y := f.Pos.Y() + e.GlobalPos().Y() - f.TitleBarMousePos.Y()
+		x := f.Position.X() + e.GlobalPos().X() - f.TitleBarMousePos.X()
+		y := f.Position.Y() + e.GlobalPos().Y() - f.TitleBarMousePos.Y()
 		newPos := core.NewQPoint2(x, y)
-		f.Window.Move(newPos)
+		f.Move(newPos)
 	})
 
 	t.ConnectMouseDoubleClickEvent(func(e *gui.QMouseEvent) {
@@ -56,7 +56,7 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 	})
 
 	f.BtnMinimize.ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
-		f.Window.SetWindowState(core.Qt__WindowMinimized)
+		f.SetWindowState(core.Qt__WindowMinimized)
 		f.Widget.Hide()
 		f.Widget.Show()
 	})
@@ -74,7 +74,7 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 	})
 
 	f.BtnClose.ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
-		f.Window.Close()
+		f.Close()
 	})
 }
 
@@ -82,12 +82,12 @@ func (f *QFramelessWindow) windowMaximize() {
 	f.BtnMaximize.SetVisible(false)
 	f.BtnRestore.SetVisible(true)
 	f.Layout.SetContentsMargins(0, 0, 0, 0)
-	f.Window.SetWindowState(core.Qt__WindowMaximized)
+	f.SetWindowState(core.Qt__WindowMaximized)
 }
 
 func (f *QFramelessWindow) windowRestore() {
 	f.BtnMaximize.SetVisible(true)
 	f.BtnRestore.SetVisible(false)
 	f.Layout.SetContentsMargins(f.shadowMargin, f.shadowMargin, f.shadowMargin, f.shadowMargin)
-	f.Window.SetWindowState(core.Qt__WindowNoState)
+	f.SetWindowState(core.Qt__WindowNoState)
 }
