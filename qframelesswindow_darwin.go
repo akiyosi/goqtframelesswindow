@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (f *QFramelessWindow) SetNativeEvent() {
+func (f *QFramelessWindow) SetupNativeEvent() {
 	fmt.Println("Need to imprement SetNativeEvent() for darwin")
 	// filterObj := core.NewQAbstractNativeEventFilter()
 	// filterObj.ConnectNativeEventFilter(func(eventType *core.QByteArray, message unsafe.Pointer, result int) bool {

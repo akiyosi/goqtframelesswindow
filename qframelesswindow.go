@@ -39,20 +39,19 @@ type QToolButtonForNotDarwin struct {
 }
 
 type QFramelessWindow struct {
-	winid  uintptr
+	widgets.QMainWindow
 
-	Window *widgets.QMainWindow
-	Widget *widgets.QWidget
-
-	WindowColor *RGB
+	WindowColor      *RGB
 	WindowColorAlpha float64
 
-	borderSize int
-	Layout     *widgets.QVBoxLayout
+	Widget  *widgets.QWidget
+	Layout  *widgets.QVBoxLayout
+	Content *widgets.QWidget
 
 	WindowWidget  *widgets.QFrame
 	WindowVLayout *widgets.QVBoxLayout
 	shadowMargin  int
+	borderSize    int
 	minimumWidth  int
 	minimumHeight int
 
@@ -81,58 +80,59 @@ type QFramelessWindow struct {
 	isDragStart         bool
 	isLeftButtonPressed bool
 	dragPos             *core.QPoint
-	hoverEdge         Edge
+	hoverEdge           Edge
+	Position            *core.QPoint
+	MousePos            [2]int
+
 	borderless          bool
-
-	Content *widgets.QWidget
-
-	Pos            *core.QPoint
-	MousePos       [2]int
 }
 
-func NewQFramelessWindow() *QFramelessWindow {
-	f := &QFramelessWindow{}
-	f.shadowMargin = 0
-	f.Window = widgets.NewQMainWindow(nil, 0)
-	f.SetNativeEvent()
+func CreateQFramelessWindow() *QFramelessWindow {
+	// f := &QFramelessWindow{}
+	// f.Window = widgets.NewQMainWindow(nil, 0)
+
+	f := NewQFramelessWindow(nil, 0)
+	f.SetupNativeEvent()
 	f.Widget = widgets.NewQWidget(nil, 0)
-	f.SetborderSize(3)
-	f.Window.SetCentralWidget(f.Widget)
+	f.SetCentralWidget(f.Widget)
+
+	f.shadowMargin = 0
+	f.SetupBorderSize(3)
 	f.SetupUI(f.Widget)
-	f.SetWindowFlags()
-	f.SetAttributes()
-	f.SetWindowActions()
-	f.SetTitleBarActions()
-	f.SetMinimumSize(400, 300)
+	f.SetupWindowFlags()
+	f.SetupAttributes()
+	f.SetupWindowActions()
+	f.SetupTitleBarActions()
+	f.SetupMinimumSize(400, 300)
 
 	return f
 }
 
-func (f *QFramelessWindow) SetMinimumSize(w int, h int) {
+func (f *QFramelessWindow) SetupMinimumSize(w int, h int) {
 	W := w + (2 * f.shadowMargin)
 	H := h + (2 * f.shadowMargin)
-	f.Window.SetMinimumSize2(W, H)
+	f.SetMinimumSize2(W, H)
 	f.Widget.SetMinimumSize2(W, H)
 	f.WindowWidget.SetMinimumSize2(w, h)
 	f.minimumWidth = w
 	f.minimumHeight = h
 }
 
-func (f *QFramelessWindow) SetborderSize(size int) {
+func (f *QFramelessWindow) SetupBorderSize(size int) {
 	f.borderSize = size
 }
 
 // For MacOS only
-func (f *QFramelessWindow) SetWindowNativeShadow() {
-	f.Window.SetWindowFlag(core.Qt__NoDropShadowWindowHint, false)
+func (f *QFramelessWindow) SetupWindowNativeShadow() {
+	f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, false)
 }
 
 // For MacOS only
-func (f *QFramelessWindow) UnsetWindowNativeShadow() {
-	f.Window.SetWindowFlag(core.Qt__NoDropShadowWindowHint, true)
+func (f *QFramelessWindow) UnsetupWindowNativeShadow() {
+	f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, true)
 }
 
-func (f *QFramelessWindow) SetWindowShadow(size int) {
+func (f *QFramelessWindow) SetupWindowShadow(size int) {
 	f.shadowMargin = size
 	f.Layout.SetContentsMargins(f.shadowMargin, f.shadowMargin, f.shadowMargin, f.shadowMargin)
 	if f.shadowMargin == 0 {
@@ -153,15 +153,13 @@ func (f *QFramelessWindow) SetWindowShadow(size int) {
 }
 
 func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
-	widget.SetSizePolicy2(widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum, widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum)
-	window := f.Window
-	window.InstallEventFilter(window)
+	f.InstallEventFilter(f)
 
+	widget.SetSizePolicy2(widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum, widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum)
 	f.Layout = widgets.NewQVBoxLayout2(widget)
 	f.Layout.SetSpacing(0)
 
 	f.WindowWidget = widgets.NewQFrame(widget, 0)
-
 	f.WindowWidget.SetObjectName("QFramelessWidget")
 	f.WindowWidget.SetSizePolicy2(widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum, widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum)
 	
@@ -213,7 +211,7 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	f.Layout.AddWidget(f.WindowWidget, 0, 0)
 }
 
-func (f *QFramelessWindow) SetWidgetColor(red uint16, green uint16, blue uint16, alpha float64) {
+func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint16, alpha float64) {
 	f.WindowColorAlpha = alpha
 	f.WindowColor = &RGB{
 		R: red,
@@ -367,36 +365,35 @@ func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
 	f.TitleBarLayout.AddWidget(f.TitleLabel, 0, 0)
 }
 
-func (f *QFramelessWindow) SetAttributes() {
-	f.Window.SetAttribute(core.Qt__WA_TranslucentBackground, true)
-	f.Window.SetAttribute(core.Qt__WA_NoSystemBackground, true)
-	f.Window.SetAttribute(core.Qt__WA_Hover, true)
-	f.Window.SetMouseTracking(true)
+func (f *QFramelessWindow) SetupAttributes() {
+	f.SetAttribute(core.Qt__WA_TranslucentBackground, true)
+	f.SetAttribute(core.Qt__WA_NoSystemBackground, true)
+	f.SetAttribute(core.Qt__WA_Hover, true)
+	f.SetMouseTracking(true)
 }
 
-func (f *QFramelessWindow) SetWindowFlags() {
-	f.Window.SetWindowFlag(core.Qt__Window, true)
-	f.Window.SetWindowFlag(core.Qt__FramelessWindowHint, true)
-	f.Window.SetWindowFlag(core.Qt__NoDropShadowWindowHint, true)
+func (f *QFramelessWindow) SetupWindowFlags() {
+	f.SetWindowFlag(core.Qt__Window, true)
+	f.SetWindowFlag(core.Qt__FramelessWindowHint, true)
+	f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, true)
 }
 
-func (f *QFramelessWindow) SetTitle(title string) {
+func (f *QFramelessWindow) SetupTitle(title string) {
 	f.TitleLabel.SetText(title)
 }
 
-func (f *QFramelessWindow) SetTitleColor(red uint16, green uint16, blue uint16) {
+func (f *QFramelessWindow) SetupTitleColor(red uint16, green uint16, blue uint16) {
 	f.TitleColor = &RGB{
 		R: red,
 		G: green,
 		B: blue,
 	}
-	f.SetTitleBarColor()
+	f.SetupTitleBarColor()
 }
 
-func (f *QFramelessWindow) SetTitleBarColor() {
+func (f *QFramelessWindow) SetupTitleBarColor() {
 	var color, labelColor *RGB
-	window := f.Window
-	if window.IsActiveWindow() {
+	if f.IsActiveWindow() {
 		color = f.TitleColor
 	} else {
 		color = nil
@@ -411,10 +408,10 @@ func (f *QFramelessWindow) SetTitleBarColor() {
 	}
 	if runtime.GOOS != "darwin" {
 		f.TitleLabel.SetStyleSheet(fmt.Sprintf(" *{padding-left: 60px; color: rgb(%d, %d, %d); }", labelColor.R, labelColor.G, labelColor.B))
-		f.SetTitleBarColorForNotDarwin(color)
+		f.SetupTitleBarColorForNotDarwin(color)
 	} else {
 		f.TitleLabel.SetStyleSheet(fmt.Sprintf(" *{padding-right: 60px; color: rgb(%d, %d, %d); }", labelColor.R, labelColor.G, labelColor.B))
-		f.SetTitleBarColorForDarwin(color)
+		f.SetupTitleBarColorForDarwin(color)
 	}
 }
 
@@ -446,7 +443,7 @@ func (c *RGB) fade() *RGB {
 	}
 }
 
-func (f *QFramelessWindow) SetTitleBarColorForNotDarwin(color *RGB) {
+func (f *QFramelessWindow) SetupTitleBarColorForNotDarwin(color *RGB) {
 	if color == nil {
 		color = &RGB{
 			R: 128,
@@ -500,7 +497,7 @@ func (f *QFramelessWindow) SetTitleBarColorForNotDarwin(color *RGB) {
 	f.IconClose.Show()
 }
 
-func (f *QFramelessWindow) SetTitleBarColorForDarwin(color *RGB) {
+func (f *QFramelessWindow) SetupTitleBarColorForDarwin(color *RGB) {
 	var baseStyle, restoreAndMaximizeColor, minimizeColor, closeColor string
 	baseStyle = ` #BtnMinimize, #BtnMaximize, #BtnRestore, #BtnClose {
 		min-width: 10px;
@@ -593,22 +590,22 @@ func (f *QFramelessWindow) SetTitleBarColorForDarwin(color *RGB) {
 	f.BtnClose.SetStyleSheet(baseStyle + closeColor + closeColorHover)
 }
 
-func (f *QFramelessWindow) SetContent(layout widgets.QLayout_ITF) {
+func (f *QFramelessWindow) SetupContent(layout widgets.QLayout_ITF) {
 	f.Content.SetLayout(layout)
 }
 
 func (f *QFramelessWindow) UpdateWidget() {
 	f.Widget.Update()
-	f.Window.Update()
+	f.Update()
 }
 
-func (f *QFramelessWindow) SetWindowActions() {
+func (f *QFramelessWindow) SetupWindowActions() {
 	// Ref: https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341#37507341
-	f.Window.ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
+	f.ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
 		e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 		switch event.Type() {
 		case core.QEvent__ActivationChange:
-			f.SetTitleBarColor()
+			f.SetupTitleBarColor()
 
 		case core.QEvent__HoverMove:
 			f.updateCursorShape(e.GlobalPos())
@@ -616,7 +613,7 @@ func (f *QFramelessWindow) SetWindowActions() {
 		case core.QEvent__Leave:
 			cursor := gui.NewQCursor()
 			cursor.SetShape(core.Qt__ArrowCursor)
-			f.Window.SetCursor(cursor)
+			f.SetCursor(cursor)
 
 		case core.QEvent__MouseMove:
 			f.mouseMove(e)
@@ -638,7 +635,7 @@ func (f *QFramelessWindow) SetWindowActions() {
 
 func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 	// https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341
-	window := f.Window
+	window := f
 	margin := f.shadowMargin
 
 	if f.isLeftButtonPressed {
@@ -738,7 +735,7 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 }
 
 func (f *QFramelessWindow) mouseButtonPressed(e *gui.QMouseEvent) {
-	f.hoverEdge = f.calcCursorPos(e.GlobalPos(), f.Window.FrameGeometry())
+	f.hoverEdge = f.calcCursorPos(e.GlobalPos(), f.FrameGeometry())
 	if f.hoverEdge != None {
 		f.isLeftButtonPressed = true
 	}
@@ -754,31 +751,32 @@ func (f *QFramelessWindow) updateCursorShape(pos *core.QPoint) {
 	if f.isLeftButtonPressed {
 		return
 	}
+	window := f
 	cursor := gui.NewQCursor()
-	if f.Window.IsFullScreen() || f.Window.IsMaximized() {
+	if window.IsFullScreen() || window.IsMaximized() {
 		if f.isCursorChanged {
 			cursor.SetShape(core.Qt__ArrowCursor)
-			f.Window.SetCursor(cursor)
+			window.SetCursor(cursor)
 		}
 	}
-	hoverEdge := f.calcCursorPos(pos, f.Window.FrameGeometry())
+	hoverEdge := f.calcCursorPos(pos, window.FrameGeometry())
 	f.isCursorChanged = true
 	switch hoverEdge {
 	case Top, Bottom:
 		cursor.SetShape(core.Qt__SizeVerCursor)
-		f.Window.SetCursor(cursor)
+		window.SetCursor(cursor)
 	case Left, Right:
 		cursor.SetShape(core.Qt__SizeHorCursor)
-		f.Window.SetCursor(cursor)
+		window.SetCursor(cursor)
 	case TopLeft, BottomRight:
 		cursor.SetShape(core.Qt__SizeFDiagCursor)
-		f.Window.SetCursor(cursor)
+		window.SetCursor(cursor)
 	case TopRight, BottomLeft:
 		cursor.SetShape(core.Qt__SizeBDiagCursor)
-		f.Window.SetCursor(cursor)
+		window.SetCursor(cursor)
 	default:
 		cursor.SetShape(core.Qt__ArrowCursor)
-		f.Window.SetCursor(cursor)
+		window.SetCursor(cursor)
 		f.isCursorChanged = false
 	}
 }

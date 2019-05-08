@@ -18,13 +18,12 @@ func main() {
 	a := &framelessTest{}
 	a.app = widgets.NewQApplication(0, nil)
 
-	a.fw = frameless.NewQFramelessWindow()
-	a.win = a.fw.Window
+	a.fw = frameless.CreateQFramelessWindow()
 	layout := widgets.NewQVBoxLayout()
-	a.fw.SetContent(layout)
-	a.fw.SetWidgetColor(30, 30, 30, 1.0)
-	a.fw.SetTitle("frameless test")
-	a.fw.SetTitleColor(200, 200, 200)
+	a.fw.SetupContent(layout)
+	a.fw.SetupWidgetColor(30, 30, 30, 1.0)
+	a.fw.SetupTitle("frameless test")
+	a.fw.SetupTitleColor(200, 200, 200)
 
 	label := widgets.NewQLabel(nil, 0)
 	label.SetStyleSheet(" * { color: #eee; }")
@@ -41,7 +40,7 @@ func main() {
 
 	layout.AddWidget(label, 0, 0)
 
-	a.win.Show()
+	a.fw.Show()
 	a.fw.Widget.SetFocus2()
 	a.app.Exec()
 

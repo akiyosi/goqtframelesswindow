@@ -7,7 +7,7 @@ import (
 	"github.com/therecipe/qt/gui"
 )
 
-func (f *QFramelessWindow) SetTitleBarActions() {
+func (f *QFramelessWindow) SetupTitleBarActions() {
 	t := f.TitleBar
 
 	f.IconMinimize.Widget.ConnectEnterEvent(func(event *core.QEvent) {
@@ -81,7 +81,7 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 		if !f.IconMinimize.isHover {
 			return
 		}
-		f.Window.SetWindowState(core.Qt__WindowMinimized)
+		f.SetWindowState(core.Qt__WindowMinimized)
 		f.Widget.Hide()
 		f.Widget.Show()
 	})
@@ -108,7 +108,7 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 		if !f.IconClose.isHover {
 			return
 		}
-		f.Window.Close()
+		f.Close()
 	})
 
 	// TitleBar Actions
@@ -116,7 +116,7 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 		f.Widget.Raise()
 		f.IsTitleBarPressed = true
 		f.TitleBarMousePos = e.GlobalPos()
-		f.Pos = f.Window.Pos()
+		f.Position = f.Pos()
 	})
 
 	t.ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
@@ -127,10 +127,10 @@ func (f *QFramelessWindow) SetTitleBarActions() {
 		if !f.IsTitleBarPressed {
 			return
 		}
-		x := f.Pos.X() + e.GlobalPos().X() - f.TitleBarMousePos.X()
-		y := f.Pos.Y() + e.GlobalPos().Y() - f.TitleBarMousePos.Y()
+		x := f.Position.X() + e.GlobalPos().X() - f.TitleBarMousePos.X()
+		y := f.Position.Y() + e.GlobalPos().Y() - f.TitleBarMousePos.Y()
 		newPos := core.NewQPoint2(x, y)
-		f.Window.Move(newPos)
+		f.Move(newPos)
 	})
 
 	t.ConnectMouseDoubleClickEvent(func(e *gui.QMouseEvent) {
@@ -146,7 +146,7 @@ func (f *QFramelessWindow) windowMaximize() {
 	f.IconMaximize.Widget.SetVisible(false)
 	f.IconRestore.Widget.SetVisible(true)
 	f.Layout.SetContentsMargins(0, 0, 0, 0)
-	f.Window.SetWindowState(core.Qt__WindowMaximized)
+	f.SetWindowState(core.Qt__WindowMaximized)
 	f.IconRestore.isHover = false
 	f.IconRestore.SetStyle(nil)
 }
@@ -155,5 +155,5 @@ func (f *QFramelessWindow) windowRestore() {
 	f.IconMaximize.Widget.SetVisible(true)
 	f.IconRestore.Widget.SetVisible(false)
 	f.Layout.SetContentsMargins(f.shadowMargin, f.shadowMargin, f.shadowMargin, f.shadowMargin)
-	f.Window.SetWindowState(core.Qt__WindowNoState)
+	f.SetWindowState(core.Qt__WindowNoState)
 }

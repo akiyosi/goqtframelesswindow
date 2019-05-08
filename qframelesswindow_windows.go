@@ -7,9 +7,9 @@ import (
 	win "github.com/akiyosi/w32"
 )
 
-func (f *QFramelessWindow) SetNativeEvent() {
-	f.Window.WinId()
-	f.Window.ConnectNativeEvent(func(eventType *core.QByteArray, message unsafe.Pointer, result *int) bool {
+func (f *QFramelessWindow) SetupNativeEvent() {
+	f.WinId()
+	f.ConnectNativeEvent(func(eventType *core.QByteArray, message unsafe.Pointer, result *int) bool {
 		msg := (*win.MSG)(message)
 		hwnd := msg.Hwnd
 
