@@ -225,7 +225,7 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 	borderSizeString := fmt.Sprintf("%d", f.borderSize*2) + "px"
 
 	var roundSizeString string
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS != "windows" {
 		roundSizeString = fmt.Sprintf("%d", f.borderSize*2) + "px"
 	} else {
 		roundSizeString = "0px"
@@ -238,6 +238,14 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 		border-radius: %s;
 		%s; 
 	}`, color.Hex(), borderSizeString, borderSizeString, borderSizeString, roundSizeString, style))
+
+	// On linux, add a frame if alpha is less than 1.0
+	if runtime.GOOS == "linux" && alpha == 1.0 {
+		f.TitleBar.Hide()
+		f.SetWindowFlag(core.Qt__FramelessWindowHint, false)
+		f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, false)
+		f.Show()
+	}
 }
 
 func NewQToolButtonForNotDarwin(parent widgets.QWidget_ITF) *QToolButtonForNotDarwin {
