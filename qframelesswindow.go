@@ -238,20 +238,18 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 		border-radius: %s;
 		%s; 
 	}`, color.Hex(), borderSizeString, borderSizeString, borderSizeString, roundSizeString, style))
-
-	// On linux, add a frame if alpha is less than 1.0
-	if runtime.GOOS == "linux" && alpha == 1.0 {
-		f.TitleBar.Hide()
-		f.SetWindowFlag(core.Qt__FramelessWindowHint, false)
-		f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, false)
-		f.Show()
-	}
 }
 
 func NewQToolButtonForNotDarwin(parent widgets.QWidget_ITF) *QToolButtonForNotDarwin {
 	iconSize := 15
 	marginTB := iconSize / 6
-	marginLR := int(float64(iconSize) / float64(2.5))
+	marginLR := 1
+	if runtime.GOOS == "linux" {
+		iconSize = 18
+		marginLR = int(float64(iconSize) / float64(3.5))
+	} else {
+		marginLR = int(float64(iconSize) / float64(2.5))
+	}
 
 	widget := widgets.NewQWidget(parent, 0)
 	widget.SetSizePolicy2(widgets.QSizePolicy__Fixed, widgets.QSizePolicy__Fixed)
@@ -461,41 +459,62 @@ func (f *QFramelessWindow) SetupTitleBarColorForNotDarwin(color *RGB) {
 	} else {
 		color = color.fade()
 	}
-	SvgMinimize := fmt.Sprintf(`
-	<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-	<path fill="%s" d="M20,14H4V10H20" />
-	</svg>
-	`, color.Hex())
-	f.IconMinimize.IconBtn.Load2(core.NewQByteArray2(SvgMinimize, len(SvgMinimize)))
+	var SvgMinimize, SvgMaximize, SvgRestore, SvgClose string
 
-	SvgMaximize := fmt.Sprintf(`
-	<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-	<path fill="%s" d="M4,4H20V20H4V4M6,8V18H18V8H6Z" />
-	</svg>
-	`, color.Hex())
-	f.IconMaximize.IconBtn.Load2(core.NewQByteArray2(SvgMaximize, len(SvgMaximize)))
 
-	SvgRestore := fmt.Sprintf(`
-	<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-	<path fill="%s" d="M4,8H8V4H20V16H16V20H4V8M16,8V14H18V6H10V8H16M6,12V18H14V12H6Z" />
-	</svg>
-	`, color.Hex())
-	f.IconRestore.IconBtn.Load2(core.NewQByteArray2(SvgRestore, len(SvgRestore)))
-
-	var SvgClose string
 	if runtime.GOOS == "windows" {
+		SvgMinimize = fmt.Sprintf(`
+		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+		<path fill="%s" d="M20,14H4V10H20" />
+		</svg>
+		`, color.Hex())
+
+		SvgMaximize = fmt.Sprintf(`
+		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+		<path fill="%s" d="M4,4H20V20H4V4M6,8V18H18V8H6Z" />
+		</svg>
+		`, color.Hex())
+
+		SvgRestore = fmt.Sprintf(`
+		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+		<path fill="%s" d="M4,8H8V4H20V16H16V20H4V8M16,8V14H18V6H10V8H16M6,12V18H14V12H6Z" />
+		</svg>
+		`, color.Hex())
+
 		SvgClose = fmt.Sprintf(`
 		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
 		<path fill="%s" d="M13.46,12L19,17.54V19H17.54L12,13.46L6.46,19H5V17.54L10.54,12L5,6.46V5H6.46L12,10.54L17.54,5H19V6.46L13.46,12Z" />
 		</svg>
 		`, color.Hex())
 	} else {
+		SvgMinimize = fmt.Sprintf(`
+		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+		<path fill="%s" d="M17,13H7V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
+		</svg>
+		`, color.Hex())
+
+		SvgMaximize = fmt.Sprintf(`
+		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+		<path fill="%s" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M9,9H15V15H9" />
+		</svg>
+		`, color.Hex())
+
+		SvgRestore = fmt.Sprintf(`
+		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+		<path fill="%s" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M9,9H15V15H9" />
+		</svg>
+		`, color.Hex())
+
 		SvgClose = fmt.Sprintf(`
 		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
 		<g transform="translate(0,1)">
 		<path fill="%s" d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/><path d="M0 0h24v24H0z" fill="none"/></g></svg>
 		`, "#e86032")
 	}
+
+	f.IconMinimize.IconBtn.Load2(core.NewQByteArray2(SvgMinimize, len(SvgMinimize)))
+	f.IconMaximize.IconBtn.Load2(core.NewQByteArray2(SvgMaximize, len(SvgMaximize)))
+	f.IconRestore.IconBtn.Load2(core.NewQByteArray2(SvgRestore, len(SvgRestore)))
 	f.IconClose.IconBtn.Load2(core.NewQByteArray2(SvgClose, len(SvgClose)))
 
 	f.IconMinimize.Show()
