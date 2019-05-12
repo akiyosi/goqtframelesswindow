@@ -125,11 +125,13 @@ func (f *QFramelessWindow) SetupBorderSize(size int) {
 // For MacOS only
 func (f *QFramelessWindow) AddWindowNativeShadow() {
 	f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, false)
+	f.SetStyleMask()
 }
 
 // For MacOS only
 func (f *QFramelessWindow) RemoveWindowNativeShadow() {
 	f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, true)
+	f.SetStyleMask()
 }
 
 func (f *QFramelessWindow) SetupWindowShadow(size int) {
