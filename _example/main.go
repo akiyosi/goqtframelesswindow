@@ -21,7 +21,7 @@ func main() {
 	a.fw = frameless.CreateQFramelessWindow()
 	layout := widgets.NewQVBoxLayout()
 	a.fw.SetupContent(layout)
-	a.fw.SetupWidgetColor(30, 30, 30, 1.0)
+	a.fw.SetupWidgetColor(30, 30, 30, 0.7)
 	a.fw.SetupTitle("frameless test")
 	a.fw.SetupTitleColor(200, 200, 200)
 

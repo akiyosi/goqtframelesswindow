@@ -382,6 +382,7 @@ func (f *QFramelessWindow) SetupWindowFlags() {
 	f.SetWindowFlag(core.Qt__Window, true)
 	f.SetWindowFlag(core.Qt__FramelessWindowHint, true)
 	f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, true)
+	f.SetStyleMask()
 }
 
 func (f *QFramelessWindow) SetupTitle(title string) {

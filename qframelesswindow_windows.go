@@ -7,6 +7,9 @@ import (
 	win "github.com/akiyosi/w32"
 )
 
+func (f *QFramelessWindow) SetStyleMask() {
+}
+
 func (f *QFramelessWindow) SetupNativeEvent() {
 	f.WinId()
 	f.ConnectNativeEvent(func(eventType *core.QByteArray, message unsafe.Pointer, result *int) bool {

@@ -4,6 +4,10 @@ package qframelesswindow
 // 	"fmt"
 // )
 
+
+func (f *QFramelessWindow) SetStyleMask() {
+}
+
 func (f *QFramelessWindow) SetupNativeEvent() {
 	// filterObj := core.NewQAbstractNativeEventFilter()
 	// filterObj.ConnectNativeEventFilter(func(eventType *core.QByteArray, message unsafe.Pointer, result int) bool {

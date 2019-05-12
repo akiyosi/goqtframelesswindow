@@ -1,16 +1,36 @@
 package qframelesswindow
 
+/*
+#cgo CFLAGS: -x objective-c
+#cgo LDFLAGS: -framework Cocoa
+#import <Cocoa/Cocoa.h>
+
+setStyleMask(long *wid) {
+    NSView* view = (NSView*)wid;
+    NSWindow *window = view.window;
+
+    window.styleMask |= NSResizableWindowMask;
+    window.opaque = NO;
+    window.backgroundColor = [NSColor clearColor];
+    window.movableByWindowBackground = YES;
+}
+*/
+import "C"
+
 import (
 	"fmt"
+	"unsafe"
 )
 
-func (f *QFramelessWindow) SetupNativeEvent() {
-	fmt.Println("Need to imprement SetNativeEvent() for darwin")
-	// filterObj := core.NewQAbstractNativeEventFilter()
-	// filterObj.ConnectNativeEventFilter(func(eventType *core.QByteArray, message unsafe.Pointer, result int) bool {
+func (f *QFramelessWindow) SetStyleMask() {
+	wid := f.WinId()
+	C.setStyleMask((*_Ctype_long)(unsafe.Pointer(wid)))
+}
 
-	// 	// return filterObj.NativeEventFilter(eventType, message, result)
+func (f *QFramelessWindow) SetupNativeEvent() {
+	// f.ConnectNativeEvent(func(eventType *core.QByteArray, message unsafe.Pointer, result *int) bool {
+	// 	fmt.Println("msg", message)
+
 	// 	return false
 	// })
-	// app.InstallNativeEventFilter(filterObj)
 }
