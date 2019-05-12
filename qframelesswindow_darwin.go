@@ -18,7 +18,6 @@ setStyleMask(long *wid) {
 import "C"
 
 import (
-	"fmt"
 	"unsafe"
 )
 
