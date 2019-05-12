@@ -5,7 +5,7 @@ package qframelesswindow
 #cgo LDFLAGS: -framework Cocoa
 #import <Cocoa/Cocoa.h>
 
-setStyleMask(long *wid) {
+void setStyleMask(long *wid) {
     NSView* view = (NSView*)wid;
     NSWindow *window = view.window;
 
@@ -13,6 +13,8 @@ setStyleMask(long *wid) {
     window.opaque = NO;
     window.backgroundColor = [NSColor clearColor];
     window.movableByWindowBackground = YES;
+
+    return;
 }
 */
 import "C"
