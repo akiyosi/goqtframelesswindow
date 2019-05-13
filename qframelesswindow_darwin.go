@@ -12,7 +12,6 @@ void setStyleMask(long *wid) {
     window.styleMask |= NSWindowStyleMaskResizable;
     window.opaque = NO;
     window.backgroundColor = [NSColor clearColor];
-    window.movableByWindowBackground = YES;
 
     return;
 }
