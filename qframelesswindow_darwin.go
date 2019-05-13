@@ -9,7 +9,7 @@ void setStyleMask(long *wid) {
     NSView* view = (NSView*)wid;
     NSWindow *window = view.window;
 
-    window.styleMask |= NSResizableWindowMask;
+    window.styleMask |= NSWindowStyleMaskResizable;
     window.opaque = NO;
     window.backgroundColor = [NSColor clearColor];
     window.movableByWindowBackground = YES;
