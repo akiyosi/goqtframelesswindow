@@ -14,6 +14,21 @@ void setStyleMask(long *wid) {
     window.styleMask |= NSWindowStyleMaskFullSizeContentView;
     window.opaque = NO;
     window.backgroundColor = [NSColor clearColor];
+    window.hasShadow = NO;
+
+    return;
+}
+
+void setStyleMaskAndShadow(long *wid) {
+    NSView* view = (NSView*)wid;
+    NSWindow *window = view.window;
+
+    window.styleMask |= NSWindowStyleMaskResizable;
+    window.styleMask |= NSWindowStyleMaskMiniaturizable;
+    window.styleMask |= NSWindowStyleMaskFullSizeContentView;
+    window.opaque = NO;
+    window.backgroundColor = [NSColor clearColor];
+    window.hasShadow = YES;
 
     return;
 }
@@ -26,7 +41,11 @@ import (
 
 func (f *QFramelessWindow) SetStyleMask() {
 	wid := f.WinId()
-	C.setStyleMask((*_Ctype_long)(unsafe.Pointer(wid)))
+	if f.WindowColorAlpha == 1.0 {
+		C.setStyleMaskAndShadow((*_Ctype_long)(unsafe.Pointer(wid)))
+	} else {
+		C.setStyleMask((*_Ctype_long)(unsafe.Pointer(wid)))
+	}
 }
 
 func (f *QFramelessWindow) SetupNativeEvent() {

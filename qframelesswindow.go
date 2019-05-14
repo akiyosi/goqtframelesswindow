@@ -240,6 +240,7 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 		border-radius: %s;
 		%s; 
 	}`, color.Hex(), borderSizeString, borderSizeString, borderSizeString, roundSizeString, style))
+	f.SetStyleMask()
 }
 
 func NewQToolButtonForNotDarwin(parent widgets.QWidget_ITF) *QToolButtonForNotDarwin {
