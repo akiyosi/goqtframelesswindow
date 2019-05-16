@@ -32,7 +32,7 @@ func (f *QFramelessWindow) SetupNativeEvent() {
                 
 			return true
 	
-		case win.WM_ACTIVATE:
+		case win.WM_NCACTIVATE:
 			f.putShadow(hwnd)
 
 		}
@@ -46,7 +46,7 @@ func (f *QFramelessWindow) putShadow(hwnd win.HWND) {
 	}
 	// style
 	style := win.GetWindowLong(hwnd, win.GWL_STYLE)
-	style = style | win.WS_THICKFRAME
+	style = style | win.WS_THICKFRAME ^ win.WS_CAPTION
 	win.SetWindowLong(hwnd, win.GWL_STYLE, uint32(style))
 
 	// shadow
