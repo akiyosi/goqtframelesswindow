@@ -87,12 +87,14 @@ type QFramelessWindow struct {
 	borderless          bool
 }
 
-func CreateQFramelessWindow() *QFramelessWindow {
-	// f := &QFramelessWindow{}
-	// f.Window = widgets.NewQMainWindow(nil, 0)
-
+func CreateQFramelessWindow(alpha float64) *QFramelessWindow {
 	f := NewQFramelessWindow(nil, 0)
-	f.SetupNativeEvent()
+	f.WindowColorAlpha = alpha
+	if f.WindowColorAlpha == 1.0 {
+		f.SetupNativeEvent()
+	} else {
+		f.SetupNativeEvent2()
+	}
 	f.Widget = widgets.NewQWidget(nil, 0)
 	f.SetCentralWidget(f.Widget)
 
@@ -213,8 +215,8 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	f.Layout.AddWidget(f.WindowWidget, 0, 0)
 }
 
-func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint16, alpha float64) {
-	f.WindowColorAlpha = alpha
+func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint16) {
+	alpha := f.WindowColorAlpha
 	f.WindowColor = &RGB{
 		R: red,
 		G: green,

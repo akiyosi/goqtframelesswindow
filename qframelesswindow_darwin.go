@@ -55,3 +55,6 @@ func (f *QFramelessWindow) SetupNativeEvent() {
 	// 	return false
 	// })
 }
+
+func (f *QFramelessWindow) SetupNativeEvent2() {
+}

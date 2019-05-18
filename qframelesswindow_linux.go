@@ -17,3 +17,6 @@ func (f *QFramelessWindow) SetupNativeEvent() {
 	// })
 	// app.InstallNativeEventFilter(filterObj)
 }
+
+func (f *QFramelessWindow) SetupNativeEvent2() {
+}
