@@ -3,8 +3,8 @@ package qframelesswindow
 import (
 	"unsafe"
 
-	"github.com/therecipe/qt/core"
 	win "github.com/akiyosi/w32"
+	"github.com/therecipe/qt/core"
 )
 
 func (f *QFramelessWindow) SetStyleMask() {
@@ -19,7 +19,7 @@ func (f *QFramelessWindow) SetupNativeEvent2() {
 		switch msg.Message {
 		case win.WM_CREATE:
 			style := win.GetWindowLong(hwnd, win.GWL_STYLE)
-			style = style | win.WS_THICKFRAME ^ win.WS_CAPTION
+			style = style | win.WS_THICKFRAME
 			win.SetWindowLong(hwnd, win.GWL_STYLE, uint32(style))
 
 		case win.WM_NCCALCSIZE:
@@ -29,6 +29,13 @@ func (f *QFramelessWindow) SetupNativeEvent2() {
 				return true
 			}
 			return false
+
+		case win.WM_GETMINMAXINFO:
+			mm := (*win.MINMAXINFO)((unsafe.Pointer)(msg.LParam))
+			mm.PtMinTrackSize.X = int32(f.minimumWidth)
+			mm.PtMinTrackSize.Y = int32(f.minimumHeight)
+
+			return true
 		}
 
 		return false
@@ -55,9 +62,9 @@ func (f *QFramelessWindow) SetupNativeEvent() {
 			mm := (*win.MINMAXINFO)((unsafe.Pointer)(msg.LParam))
 			mm.PtMinTrackSize.X = int32(f.minimumWidth)
 			mm.PtMinTrackSize.Y = int32(f.minimumHeight)
-                
+
 			return true
-	
+
 		case win.WM_NCACTIVATE:
 			f.putShadow(hwnd)
 

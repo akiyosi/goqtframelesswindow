@@ -4,7 +4,6 @@ package qframelesswindow
 // 	"fmt"
 // )
 
-
 func (f *QFramelessWindow) SetStyleMask() {
 }
 

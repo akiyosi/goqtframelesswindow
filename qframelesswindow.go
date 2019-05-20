@@ -2,8 +2,8 @@ package qframelesswindow
 
 import (
 	"fmt"
-	"runtime"
 	"math"
+	"runtime"
 
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/gui"
@@ -84,7 +84,7 @@ type QFramelessWindow struct {
 	Position            *core.QPoint
 	MousePos            [2]int
 
-	borderless          bool
+	borderless bool
 }
 
 func CreateQFramelessWindow(alpha float64) *QFramelessWindow {
@@ -166,7 +166,7 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	f.WindowWidget = widgets.NewQFrame(widget, 0)
 	f.WindowWidget.SetObjectName("QFramelessWidget")
 	f.WindowWidget.SetSizePolicy2(widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum, widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum)
-	
+
 	f.Layout.SetContentsMargins(f.shadowMargin, f.shadowMargin, f.shadowMargin, f.shadowMargin)
 
 	// windowVLayout is the following structure layout
@@ -431,10 +431,10 @@ func (c *RGB) fade() *RGB {
 	r := (float64)(c.R)
 	g := (float64)(c.G)
 	b := (float64)(c.B)
-	disp := (math.Abs(128 - r) + math.Abs(128 - g) + math.Abs(128 - b)) / 3 * 1 / 4
+	disp := (math.Abs(128-r) + math.Abs(128-g) + math.Abs(128-b)) / 3 * 1 / 4
 	var newColor [3]float64
 	for i, color := range []float64{
-		r,g,b,
+		r, g, b,
 	} {
 		if color > 128 {
 			newColor[i] = color - disp
@@ -466,7 +466,6 @@ func (f *QFramelessWindow) SetupTitleBarColorForNotDarwin(color *RGB) {
 		color = color.fade()
 	}
 	var SvgMinimize, SvgMaximize, SvgRestore, SvgClose string
-
 
 	if runtime.GOOS == "windows" {
 		SvgMinimize = fmt.Sprintf(`
@@ -832,7 +831,7 @@ func (f *QFramelessWindow) detectEdgeOnCursor(posX, posY, rectX, rectY, rectWidt
 	topBorderSize := 2 - 1
 
 	margin := f.shadowMargin
-	rectX = rectX + margin 
+	rectX = rectX + margin
 	rectY = rectY + margin
 	rectWidth = rectWidth - (2 * margin)
 	rectHeight = rectHeight - (2 * margin)
@@ -906,10 +905,9 @@ func (c *RGB) Brend(color *RGB, alpha float64) *RGB {
 	if color == nil {
 		return &RGB{0, 0, 0}
 	}
-	return &RGB {
+	return &RGB{
 		R: uint16((float64(c.R) * float64(1-alpha)) + (float64(color.R) * float64(alpha))),
 		G: uint16((float64(c.G) * float64(1-alpha)) + (float64(color.G) * float64(alpha))),
 		B: uint16((float64(c.B) * float64(1-alpha)) + (float64(color.B) * float64(alpha))),
 	}
 }
-
