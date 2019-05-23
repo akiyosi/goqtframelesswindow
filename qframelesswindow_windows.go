@@ -65,7 +65,11 @@ func (f *QFramelessWindow) SetupNativeEvent() {
 
 			return true
 
-		case win.WM_NCACTIVATE:
+		// case win.WM_STYLECHANGING:
+		// case win.WM_STYLECHANGED:
+		// case win.WM_SHOWWINDOW:
+		case win.WM_ACTIVATEAPP:
+		// case win.WM_NCACTIVATE:
 			f.putShadow(hwnd)
 
 		}
