@@ -42,9 +42,9 @@ import (
 func (f *QFramelessWindow) SetStyleMask() {
 	wid := f.WinId()
 	if f.WindowColorAlpha == 1.0 {
-		C.setStyleMaskAndShadow((*_Ctype_long)(unsafe.Pointer(wid)))
+		C.setStyleMaskAndShadow((*C.long)(unsafe.Pointer(wid)))
 	} else {
-		C.setStyleMask((*_Ctype_long)(unsafe.Pointer(wid)))
+		C.setStyleMask((*C.long)(unsafe.Pointer(wid)))
 	}
 }
 
