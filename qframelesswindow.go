@@ -532,12 +532,12 @@ func (f *QFramelessWindow) SetupTitleBarColorForNotDarwin(color *RGB) {
 func (f *QFramelessWindow) SetupTitleBarColorForDarwin(color *RGB) {
 	var baseStyle, restoreAndMaximizeColor, minimizeColor, closeColor string
 	baseStyle = ` #BtnMinimize, #BtnMaximize, #BtnRestore, #BtnClose {
-		min-width: 10px;
-		min-height: 10px;
-		max-width: 10px;
-		max-height: 10px;
+		min-width: 12px;
+		min-height: 12px;
+		max-width: 12px;
+		max-height: 12px;
 		border-radius: 6px;
-		border-width: 1px;
+		border-width: 0px;
 		border-style: solid;
 		margin: 4px;
 	}`
