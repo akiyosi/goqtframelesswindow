@@ -23,12 +23,19 @@ void setStyleMaskAndShadow(long *wid) {
     NSView* view = (NSView*)wid;
     NSWindow *window = view.window;
 
+    window.styleMask |= NSWindowStyleMaskTitled;
     window.styleMask |= NSWindowStyleMaskResizable;
     window.styleMask |= NSWindowStyleMaskMiniaturizable;
     window.styleMask |= NSWindowStyleMaskFullSizeContentView;
     window.opaque = NO;
     window.backgroundColor = [NSColor clearColor];
     window.hasShadow = YES;
+    window.titlebarAppearsTransparent = YES;
+    window.titleVisibility = NSWindowTitleHidden;
+
+    [[window standardWindowButton:NSWindowCloseButton] setHidden:YES];
+    [[window standardWindowButton:NSWindowMiniaturizeButton] setHidden:YES];
+    [[window standardWindowButton:NSWindowZoomButton] setHidden:YES];
 
     return;
 }

@@ -1,4 +1,4 @@
-// PAckage main
+// package main
 // 
 // import (
 // 	"time"
