@@ -146,10 +146,10 @@ func (f *QFramelessWindow) SetupWindowShadow(size int) {
 	var alpha int
 	if runtime.GOOS == "darwin" {
 		alpha = 220
-		shadow.SetOffset3(0, 10)
+		shadow.SetOffset2(0, 10)
 	} else {
 		alpha = 100
-		shadow.SetOffset3(0, 0)
+		shadow.SetOffset2(0, 0)
 	}
 	shadow.SetBlurRadius((float64)(f.shadowMargin))
 	shadow.SetColor(gui.NewQColor3(0, 0, 0, alpha))
