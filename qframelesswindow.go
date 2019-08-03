@@ -349,6 +349,7 @@ func (f *QFramelessWindow) SetIconsStyle(color *RGB) {
 }
 
 func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
+	f.TitleBarLayout.SetContentsMargins(5, 5, 0, 5)
 	btnSizePolicy := widgets.NewQSizePolicy2(widgets.QSizePolicy__Fixed, widgets.QSizePolicy__Fixed, widgets.QSizePolicy__ToolButton)
 	f.BtnMinimize = widgets.NewQToolButton(f.TitleBar)
 	f.BtnMinimize.SetObjectName("BtnMinimize")
