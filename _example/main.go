@@ -18,7 +18,7 @@ func main() {
 	a := &framelessTest{}
 	a.app = widgets.NewQApplication(0, nil)
 
-	a.fw = frameless.CreateQFramelessWindow(1.0)
+	a.fw = frameless.CreateQFramelessWindow(0.8)
 	layout := widgets.NewQVBoxLayout()
 	a.fw.SetupContent(layout)
 	a.fw.SetupWidgetColor(30, 30, 30)

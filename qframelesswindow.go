@@ -2,7 +2,6 @@ package qframelesswindow
 
 import (
 	"fmt"
-	"math"
 	"runtime"
 
 	"github.com/therecipe/qt/core"
@@ -231,7 +230,7 @@ func NewQToolButtonForNotDarwin(parent widgets.QWidget_ITF) *QToolButtonForNotDa
 	marginLR := 1
 	if runtime.GOOS == "linux" {
 		iconSize = 18
-		marginLR = int(float64(iconSize) / float64(3.5))
+		marginLR = int(float64(iconSize) / float64(8))
 	} else {
 		marginLR = int(float64(iconSize) / float64(2.5))
 	}
@@ -368,6 +367,10 @@ func (f *QFramelessWindow) SetupWindowFlags() {
 	f.SetWindowFlag(core.Qt__Window, true)
 	f.SetWindowFlag(core.Qt__FramelessWindowHint, true)
 	f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, true)
+	if runtime.GOOS == "linux" {
+		f.SetWindowFlag(core.Qt__Window, false)
+		f.SetWindowFlag(core.Qt__WindowStaysOnTopHint, true)
+	}
 	f.SetStyleMask()
 }
 
@@ -386,9 +389,11 @@ func (f *QFramelessWindow) SetupTitleColor(red uint16, green uint16, blue uint16
 
 func (f *QFramelessWindow) SetupTitleBarColor() {
 	var color, labelColor *RGB
+	brendRatio := 0.65
 	if f.IsActiveWindow() {
 		color = f.TitleColor
 	} else {
+		brendRatio = 0.8
 		color = nil
 	}
 	labelColor = color
@@ -401,52 +406,23 @@ func (f *QFramelessWindow) SetupTitleBarColor() {
 	}
 	if runtime.GOOS != "darwin" {
 		f.TitleLabel.SetStyleSheet(fmt.Sprintf(" *{padding-left: 60px; color: rgb(%d, %d, %d); }", labelColor.R, labelColor.G, labelColor.B))
-		f.SetupTitleBarColorForNotDarwin(color)
+		f.SetupTitleBarColorForNotDarwin(
+			&RGB{
+				R: uint16((float64(f.WindowColor.R) * brendRatio + float64(labelColor.R) * (1.0 - brendRatio))),
+				G: uint16((float64(f.WindowColor.G) * brendRatio + float64(labelColor.G) * (1.0 - brendRatio))),
+				B: uint16((float64(f.WindowColor.B) * brendRatio + float64(labelColor.B) * (1.0 - brendRatio))),
+			},
+		)
 	} else {
 		f.TitleLabel.SetStyleSheet(fmt.Sprintf(" *{padding-right: 60px; color: rgb(%d, %d, %d); }", labelColor.R, labelColor.G, labelColor.B))
 		f.SetupTitleBarColorForDarwin(color)
 	}
-}
-
-func (c *RGB) fade() *RGB {
-	r := (float64)(c.R)
-	g := (float64)(c.G)
-	b := (float64)(c.B)
-	disp := (math.Abs(128-r) + math.Abs(128-g) + math.Abs(128-b)) / 3 * 1 / 4
-	var newColor [3]float64
-	for i, color := range []float64{
-		r, g, b,
-	} {
-		if color > 128 {
-			newColor[i] = color - disp
-		} else {
-			newColor[i] = color + disp
-		}
-		if newColor[i] < 0 {
-			newColor[i] = 0
-		} else if newColor[i] > 255 {
-			newColor[i] = 255
-		}
-	}
-
-	return &RGB{
-		R: (uint16)(newColor[0]),
-		G: (uint16)(newColor[1]),
-		B: (uint16)(newColor[2]),
-	}
+	f.SetupTitleBarActions()
 }
 
 func (f *QFramelessWindow) SetupTitleBarColorForNotDarwin(color *RGB) {
-	if color == nil {
-		color = &RGB{
-			R: 128,
-			G: 128,
-			B: 128,
-		}
-	} else {
-		color = color.fade()
-	}
 	var SvgMinimize, SvgMaximize, SvgRestore, SvgClose string
+	var closeColor *RGB
 
 	if runtime.GOOS == "windows" {
 		SvgMinimize = fmt.Sprintf(`
@@ -473,6 +449,16 @@ func (f *QFramelessWindow) SetupTitleBarColorForNotDarwin(color *RGB) {
 		</svg>
 		`, color.Hex())
 	} else {
+		if f.IsActiveWindow() {
+			closeColor = &RGB{
+				R: 232,
+				G: 96,
+				B: 50,
+			}
+		} else {
+			closeColor = color
+		}
+
 		SvgMinimize = fmt.Sprintf(`
 		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
 		<path fill="%s" d="M17,13H7V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
@@ -481,21 +467,27 @@ func (f *QFramelessWindow) SetupTitleBarColorForNotDarwin(color *RGB) {
 
 		SvgMaximize = fmt.Sprintf(`
 		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-		<path fill="%s" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M9,9H15V15H9" />
+		<path fill="%s" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
+		<g transform="scale(0.6) translate(8,8)">
+			<path fill="%s" d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z" />
+		</g>
 		</svg>
-		`, color.Hex())
+		`, color.Hex(), f.WindowColor.Hex())
 
 		SvgRestore = fmt.Sprintf(`
 		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-		<path fill="%s" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M9,9H15V15H9" />
+		<path fill="%s" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
+		<g transform="scale(0.6) translate(8,8)">
+			<path fill="%s" d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z" />
+		</g>
 		</svg>
-		`, color.Hex())
+		`, color.Hex(), f.WindowColor.Hex())
 
 		SvgClose = fmt.Sprintf(`
 		<svg style="width:24px;height:24px" viewBox="0 0 24 24">
 		<g transform="translate(0,1)">
 		<path fill="%s" d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/><path d="M0 0h24v24H0z" fill="none"/></g></svg>
-		`, "#e86032")
+		`, closeColor.Hex())
 	}
 
 	f.IconMinimize.IconBtn.Load2(core.NewQByteArray2(SvgMinimize, len(SvgMinimize)))
