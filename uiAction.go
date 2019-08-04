@@ -104,6 +104,28 @@ func (f *QFramelessWindow) SetupTitleBarActions() {
 			closeColor = color
 		}
 
+
+		f.IconMinimize.Widget.DisconnectEnterEvent()
+		f.IconMaximize.Widget.DisconnectEnterEvent()
+		f.IconRestore.Widget.DisconnectEnterEvent()
+		f.IconClose.Widget.DisconnectEnterEvent()
+		f.IconMinimize.Widget.DisconnectLeaveEvent()
+		f.IconMaximize.Widget.DisconnectLeaveEvent()
+		f.IconRestore.Widget.DisconnectLeaveEvent()
+		f.IconClose.Widget.DisconnectLeaveEvent()
+		f.IconMinimize.Widget.DisconnectMousePressEvent()
+		f.IconMaximize.Widget.DisconnectMousePressEvent()
+		f.IconRestore.Widget.DisconnectMousePressEvent()
+		f.IconClose.Widget.DisconnectMousePressEvent()
+		f.IconMinimize.Widget.DisconnectMouseReleaseEvent()
+		f.IconMaximize.Widget.DisconnectMouseReleaseEvent()
+		f.IconRestore.Widget.DisconnectMouseReleaseEvent()
+		f.IconClose.Widget.DisconnectMouseReleaseEvent()
+		t.DisconnectMousePressEvent()
+		t.DisconnectMouseReleaseEvent()
+		t.DisconnectMouseMoveEvent()
+		t.DisconnectMouseDoubleClickEvent()
+
 		f.IconMinimize.Widget.ConnectEnterEvent(func(event *core.QEvent) {
 			f.IconMinimize.buttonColorChangeForLinux(hoverColor, "minimize")
 		})

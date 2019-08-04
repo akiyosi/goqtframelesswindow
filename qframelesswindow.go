@@ -417,7 +417,10 @@ func (f *QFramelessWindow) SetupTitleBarColor() {
 		f.TitleLabel.SetStyleSheet(fmt.Sprintf(" *{padding-right: 60px; color: rgb(%d, %d, %d); }", labelColor.R, labelColor.G, labelColor.B))
 		f.SetupTitleBarColorForDarwin(color)
 	}
-	f.SetupTitleBarActions()
+
+	if runtime.GOOS == "linux" {
+		f.SetupTitleBarActions()
+	}
 }
 
 func (f *QFramelessWindow) SetupTitleBarColorForNotDarwin(color *RGB) {
