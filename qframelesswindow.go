@@ -56,7 +56,10 @@ type QFramelessWindow struct {
 
 	TitleBar          *widgets.QWidget
 	TitleBarLayout    *widgets.QHBoxLayout
-	TitleLabel        *widgets.QLabel
+	// TitleLabel        *widgets.QLabel
+	TitleIconLabel    *widgets.QLabel
+	TitleStringLabel  *widgets.QLabel
+	TitleLabel        *widgets.QWidget
 	TitleBarBtnWidget *widgets.QWidget
 	TitleBarBtnLayout *widgets.QHBoxLayout
 	TitleColor        *RGB
@@ -174,9 +177,34 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	f.TitleBarLayout = widgets.NewQHBoxLayout2(f.TitleBar)
 	f.TitleBarLayout.SetContentsMargins(0, 0, 0, 0)
 
-	f.TitleLabel = widgets.NewQLabel(nil, 0)
-	f.TitleLabel.SetObjectName("TitleLabel")
-	f.TitleLabel.SetAlignment(core.Qt__AlignCenter)
+	f.TitleBarBtnWidget = widgets.NewQWidget(nil, 0)
+	f.TitleBarBtnLayout = widgets.NewQHBoxLayout2(nil)
+	f.TitleBarBtnLayout.SetContentsMargins(0, 0, 0, 0)
+	f.TitleBarBtnLayout.SetSpacing(0)
+	f.TitleBarBtnWidget.SetLayout(f.TitleBarBtnLayout)
+
+	// f.TitleLabel = widgets.NewQLabel(nil, 0)
+	// f.TitleLabel.SetObjectName("TitleLabel")
+	// f.TitleLabel.SetAlignment(core.Qt__AlignCenter)
+
+	f.TitleLabel = widgets.NewQWidget(nil, 0)
+	titleLabelLayout := widgets.NewQHBoxLayout2(nil)
+	titleLabelLayout.SetContentsMargins(0, 0, 0, 0)
+	titleLabelLayout.SetSpacing(f.borderSize)
+	f.TitleLabel.SetLayout(titleLabelLayout)
+
+	f.TitleIconLabel = widgets.NewQLabel(nil, 0)
+	f.TitleIconLabel.SetContentsMargins(0, 0, 0, 0)
+	f.TitleStringLabel = widgets.NewQLabel(nil, 0)
+	f.TitleStringLabel.SetContentsMargins(0, 0, 0, 0)
+
+
+	titleLabelLayout.AddWidget(f.TitleIconLabel, 0, 0)
+	titleLabelLayout.AddWidget(f.TitleStringLabel, 0, 0)
+
+	titleLabelLayout.SetAlignment(f.TitleIconLabel, core.Qt__AlignCenter)
+	titleLabelLayout.SetAlignment(f.TitleStringLabel, core.Qt__AlignCenter)
+
 
 	if runtime.GOOS == "darwin" {
 		f.SetTitleBarButtonsForDarwin()
@@ -308,12 +336,21 @@ func (f *QFramelessWindow) SetTitleBarButtons() {
 	f.IconRestore.Hide()
 	f.IconClose.Hide()
 
+	dummyWidget := widgets.NewQLabel(nil, 0)
+	dummyWidget.SetFixedWidth(20 * 3)
+
+	f.TitleBarLayout.AddWidget(dummyWidget, 0, 0)
+	f.TitleBarLayout.AddWidget(f.TitleLabel, 3, 0)
+	f.TitleBarLayout.AddWidget(f.TitleBarBtnWidget, 0, 0)
+
+	f.TitleBarBtnLayout.AddWidget(f.IconMinimize.Widget, 0, 0)
+	f.TitleBarBtnLayout.AddWidget(f.IconMaximize.Widget, 0, 0)
+	f.TitleBarBtnLayout.AddWidget(f.IconRestore.Widget, 0, 0)
+	f.TitleBarBtnLayout.AddWidget(f.IconClose.Widget, 0, 0)
+
+	f.TitleBarBtnWidget.SetFixedWidth(30 * 3)
 	f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignRight)
-	f.TitleBarLayout.AddWidget(f.TitleLabel, 0, 0)
-	f.TitleBarLayout.AddWidget(f.IconMinimize.Widget, 0, 0)
-	f.TitleBarLayout.AddWidget(f.IconMaximize.Widget, 0, 0)
-	f.TitleBarLayout.AddWidget(f.IconRestore.Widget, 0, 0)
-	f.TitleBarLayout.AddWidget(f.IconClose.Widget, 0, 0)
+	f.TitleBarLayout.SetAlignment(f.TitleLabel, core.Qt__AlignCenter)
 }
 
 func (f *QFramelessWindow) SetIconsStyle(color *RGB) {
@@ -330,30 +367,39 @@ func (f *QFramelessWindow) SetIconsStyle(color *RGB) {
 func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
 	f.TitleBarLayout.SetContentsMargins(5, 5, 0, 5)
 	btnSizePolicy := widgets.NewQSizePolicy2(widgets.QSizePolicy__Fixed, widgets.QSizePolicy__Fixed, widgets.QSizePolicy__ToolButton)
-	f.BtnMinimize = widgets.NewQToolButton(f.TitleBar)
+	f.BtnMinimize = widgets.NewQToolButton(f.TitleBarBtnWidget)
 	f.BtnMinimize.SetObjectName("BtnMinimize")
 	f.BtnMinimize.SetSizePolicy(btnSizePolicy)
 
-	f.BtnMaximize = widgets.NewQToolButton(f.TitleBar)
+	f.BtnMaximize = widgets.NewQToolButton(f.TitleBarBtnWidget)
 	f.BtnMaximize.SetObjectName("BtnMaximize")
 	f.BtnMaximize.SetSizePolicy(btnSizePolicy)
 
-	f.BtnRestore = widgets.NewQToolButton(f.TitleBar)
+	f.BtnRestore = widgets.NewQToolButton(f.TitleBarBtnWidget)
 	f.BtnRestore.SetObjectName("BtnRestore")
 	f.BtnRestore.SetSizePolicy(btnSizePolicy)
 	f.BtnRestore.SetVisible(false)
 
-	f.BtnClose = widgets.NewQToolButton(f.TitleBar)
+	f.BtnClose = widgets.NewQToolButton(f.TitleBarBtnWidget)
 	f.BtnClose.SetObjectName("BtnClose")
 	f.BtnClose.SetSizePolicy(btnSizePolicy)
 
+	dummyWidget := widgets.NewQLabel(nil, 0)
+	dummyWidget.SetFixedWidth(20 * 3)
+
 	f.TitleBarLayout.SetSpacing(0)
+	f.TitleBarLayout.AddWidget(f.TitleBarBtnWidget, 0, 0)
+	f.TitleBarLayout.AddWidget(f.TitleLabel, 3, 0)
+	f.TitleBarLayout.AddWidget(dummyWidget, 0, 0)
+
+	f.TitleBarBtnLayout.AddWidget(f.BtnClose, 0, 0)
+	f.TitleBarBtnLayout.AddWidget(f.BtnMinimize, 0, 0)
+	f.TitleBarBtnLayout.AddWidget(f.BtnMaximize, 0, 0)
+	f.TitleBarBtnLayout.AddWidget(f.BtnRestore, 0, 0)
+
+	f.TitleBarBtnWidget.SetFixedWidth(20 * 3)
 	f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignLeft)
-	f.TitleBarLayout.AddWidget(f.BtnClose, 0, 0)
-	f.TitleBarLayout.AddWidget(f.BtnMinimize, 0, 0)
-	f.TitleBarLayout.AddWidget(f.BtnMaximize, 0, 0)
-	f.TitleBarLayout.AddWidget(f.BtnRestore, 0, 0)
-	f.TitleBarLayout.AddWidget(f.TitleLabel, 0, 0)
+	f.TitleBarLayout.SetAlignment(f.TitleLabel, core.Qt__AlignCenter)
 }
 
 func (f *QFramelessWindow) SetupAttributes() {
@@ -374,8 +420,21 @@ func (f *QFramelessWindow) SetupWindowFlags() {
 	f.SetStyleMask()
 }
 
+func (f *QFramelessWindow) SetupTitleIcon(filename string) {
+	s := 14
+	f.TitleIconLabel.SetMaximumWidth(s)
+	f.TitleIconLabel.SetMinimumWidth(s)
+	pic := gui.NewQPixmap3(filename, "", core.Qt__AutoColor)
+	pic = pic.Scaled2(s, s, core.Qt__KeepAspectRatio, core.Qt__SmoothTransformation)
+	f.TitleIconLabel.SetPixmap(pic)
+	f.TitleLabel.SetFixedWidth(f.TitleStringLabel.FontMetrics().BoundingRect2(f.TitleStringLabel.Text()).Width()+f.TitleIconLabel.Width())
+}
+
 func (f *QFramelessWindow) SetupTitle(title string) {
-	f.TitleLabel.SetText(title)
+	f.TitleStringLabel.SetText(title)
+	f.TitleStringLabel.SetFixedWidth(f.TitleStringLabel.FontMetrics().BoundingRect2(title).Width())
+	f.TitleStringLabel.SetSizePolicy2(widgets.QSizePolicy__Minimum, widgets.QSizePolicy__Minimum)
+	f.TitleLabel.SetFixedWidth(f.TitleStringLabel.FontMetrics().BoundingRect2(title).Width()+f.TitleIconLabel.Width())
 }
 
 func (f *QFramelessWindow) SetupTitleColor(red uint16, green uint16, blue uint16) {
@@ -405,7 +464,7 @@ func (f *QFramelessWindow) SetupTitleBarColor() {
 		}
 	}
 	if runtime.GOOS != "darwin" {
-		f.TitleLabel.SetStyleSheet(fmt.Sprintf(" *{padding-left: 60px; color: rgb(%d, %d, %d); }", labelColor.R, labelColor.G, labelColor.B))
+		f.TitleLabel.SetStyleSheet(fmt.Sprintf(" * { color: rgb(%d, %d, %d); }", labelColor.R, labelColor.G, labelColor.B))
 		f.SetupTitleBarColorForNotDarwin(
 			&RGB{
 				R: uint16((float64(f.WindowColor.R) * brendRatio + float64(labelColor.R) * (1.0 - brendRatio))),
@@ -414,7 +473,7 @@ func (f *QFramelessWindow) SetupTitleBarColor() {
 			},
 		)
 	} else {
-		f.TitleLabel.SetStyleSheet(fmt.Sprintf(" *{padding-right: 60px; color: rgb(%d, %d, %d); }", labelColor.R, labelColor.G, labelColor.B))
+		f.TitleLabel.SetStyleSheet(fmt.Sprintf(" * { color: rgb(%d, %d, %d); }", labelColor.R, labelColor.G, labelColor.B))
 		f.SetupTitleBarColorForDarwin(color)
 	}
 
