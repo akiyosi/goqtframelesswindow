@@ -65,6 +65,7 @@ type QFramelessWindow struct {
 	TitleColor        *RGB
 	TitleBarMousePos  *core.QPoint
 	IsTitleBarPressed bool
+	IsTitleIconShown  bool
 
 	// for darwin
 	BtnMinimize *widgets.QToolButton
@@ -190,11 +191,11 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	f.TitleLabel = widgets.NewQWidget(nil, 0)
 	titleLabelLayout := widgets.NewQHBoxLayout2(nil)
 	titleLabelLayout.SetContentsMargins(0, 0, 0, 0)
-	titleLabelLayout.SetSpacing(f.borderSize)
+	titleLabelLayout.SetSpacing(int(float64(f.borderSize) * 2.5))
 	f.TitleLabel.SetLayout(titleLabelLayout)
 
 	f.TitleIconLabel = widgets.NewQLabel(nil, 0)
-	f.TitleIconLabel.SetContentsMargins(0, 0, 0, 0)
+	f.TitleIconLabel.SetContentsMargins(0, 2, 0, 0)
 	f.TitleStringLabel = widgets.NewQLabel(nil, 0)
 	f.TitleStringLabel.SetContentsMargins(0, 0, 0, 0)
 
@@ -205,6 +206,7 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	titleLabelLayout.SetAlignment(f.TitleIconLabel, core.Qt__AlignCenter)
 	titleLabelLayout.SetAlignment(f.TitleStringLabel, core.Qt__AlignCenter)
 
+	f.TitleIconLabel.Hide()
 
 	if runtime.GOOS == "darwin" {
 		f.SetTitleBarButtonsForDarwin()
@@ -428,13 +430,19 @@ func (f *QFramelessWindow) SetupTitleIcon(filename string) {
 	pic = pic.Scaled2(s, s, core.Qt__KeepAspectRatio, core.Qt__SmoothTransformation)
 	f.TitleIconLabel.SetPixmap(pic)
 	f.TitleLabel.SetFixedWidth(f.TitleStringLabel.FontMetrics().BoundingRect2(f.TitleStringLabel.Text()).Width()+f.TitleIconLabel.Width())
+	f.TitleIconLabel.Show()
+	f.IsTitleIconShown = true
 }
 
 func (f *QFramelessWindow) SetupTitle(title string) {
 	f.TitleStringLabel.SetText(title)
 	f.TitleStringLabel.SetFixedWidth(f.TitleStringLabel.FontMetrics().BoundingRect2(title).Width())
 	f.TitleStringLabel.SetSizePolicy2(widgets.QSizePolicy__Minimum, widgets.QSizePolicy__Minimum)
-	f.TitleLabel.SetFixedWidth(f.TitleStringLabel.FontMetrics().BoundingRect2(title).Width()+f.TitleIconLabel.Width())
+	if f.IsTitleIconShown {
+		f.TitleLabel.SetFixedWidth(f.TitleStringLabel.FontMetrics().BoundingRect2(title).Width()+f.TitleIconLabel.Width())
+	} else {
+		f.TitleLabel.SetFixedWidth(f.TitleStringLabel.FontMetrics().BoundingRect2(title).Width())
+	}
 }
 
 func (f *QFramelessWindow) SetupTitleColor(red uint16, green uint16, blue uint16) {
