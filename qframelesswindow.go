@@ -463,6 +463,9 @@ func (f *QFramelessWindow) SetupTitleBarColor() {
 		brendRatio = 0.8
 		color = nil
 	}
+	if runtime.GOOS != "windows" {
+		brendRatio -= 0.65
+	}
 	labelColor = color
 	if labelColor == nil {
 		labelColor = &RGB{
