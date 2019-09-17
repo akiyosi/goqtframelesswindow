@@ -423,15 +423,15 @@ func (f *QFramelessWindow) SetupWindowFlags() {
 }
 
 func (f *QFramelessWindow) SetupTitleIcon(filename string) {
-	s := 14
-	f.TitleIconLabel.SetMaximumWidth(s)
-	f.TitleIconLabel.SetMinimumWidth(s)
-	pic := gui.NewQPixmap3(filename, "", core.Qt__AutoColor)
-	pic = pic.Scaled2(s, s, core.Qt__KeepAspectRatio, core.Qt__SmoothTransformation)
-	f.TitleIconLabel.SetPixmap(pic)
-	f.TitleLabel.SetFixedWidth(f.TitleStringLabel.FontMetrics().BoundingRect2(f.TitleStringLabel.Text()).Width()+f.TitleIconLabel.Width())
-	f.TitleIconLabel.Show()
-	f.IsTitleIconShown = true
+	// s := 14
+	// f.TitleIconLabel.SetMaximumWidth(s)
+	// f.TitleIconLabel.SetMinimumWidth(s)
+	// pic := gui.NewQPixmap3(filename, "", core.Qt__AutoColor)
+	// pic = pic.Scaled2(s, s, core.Qt__KeepAspectRatio, core.Qt__SmoothTransformation)
+	// f.TitleIconLabel.SetPixmap(pic)
+	// f.TitleLabel.SetFixedWidth(f.TitleStringLabel.FontMetrics().BoundingRect2(f.TitleStringLabel.Text()).Width()+f.TitleIconLabel.Width())
+	// f.TitleIconLabel.Show()
+	// f.IsTitleIconShown = true
 }
 
 func (f *QFramelessWindow) SetupTitle(title string) {
@@ -456,15 +456,12 @@ func (f *QFramelessWindow) SetupTitleColor(red uint16, green uint16, blue uint16
 
 func (f *QFramelessWindow) SetupTitleBarColor() {
 	var color, labelColor *RGB
-	brendRatio := 0.65
+	brendRatio := 0.0
 	if f.IsActiveWindow() {
 		color = f.TitleColor
 	} else {
-		brendRatio = 0.8
+		brendRatio = 0.15
 		color = nil
-	}
-	if runtime.GOOS != "windows" {
-		brendRatio -= 0.65
 	}
 	labelColor = color
 	if labelColor == nil {

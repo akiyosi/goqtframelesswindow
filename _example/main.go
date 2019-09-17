@@ -18,12 +18,12 @@
 // 	a := &framelessTest{}
 // 	a.app = widgets.NewQApplication(0, nil)
 // 
-// 	a.fw = frameless.CreateQFramelessWindow(0.8)
+// 	a.fw = frameless.CreateQFramelessWindow(1.0)
 // 	layout := widgets.NewQVBoxLayout()
 // 	a.fw.SetupContent(layout)
 // 	a.fw.SetupWidgetColor(30, 30, 30)
 // 	a.fw.SetupTitle("frameless test")
-// 	a.fw.SetupTitleColor(200, 200, 200)
+// 	a.fw.SetupTitleColor(220, 220, 220)
 // 
 // 	label := widgets.NewQLabel(nil, 0)
 // 	label.SetStyleSheet(" * { color: #eee; }")
