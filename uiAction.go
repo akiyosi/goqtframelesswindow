@@ -38,9 +38,9 @@ func (f *QFramelessWindow) SetupTitleBarActions() {
 		})
 		f.IconClose.Widget.ConnectEnterEvent(func(event *core.QEvent) {
 			f.IconClose.SetStyle(&RGB{
-				R: 0,
-				G: 162,
-				B: 232,
+				R: 232,
+				G: 0,
+				B: 72,
 			})
 		})
 
