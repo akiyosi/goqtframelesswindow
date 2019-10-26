@@ -99,6 +99,7 @@ func CreateQFramelessWindow(alpha float64) *QFramelessWindow {
 		f.SetupNativeEvent2()
 	}
 	f.Widget = widgets.NewQWidget(nil, 0)
+	f.Widget.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0.0); color: rgba(0, 0, 0, 0); }")
 	f.SetCentralWidget(f.Widget)
 
 	f.shadowMargin = 0
@@ -233,8 +234,6 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 	}
 	color := f.WindowColor
 	style := fmt.Sprintf("background-color: rgba(%d, %d, %d, %f);", color.R, color.G, color.B, alpha)
-	f.Widget.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0.0); color: rgba(0, 0, 0, 0); }")
-
 	borderSizeString := fmt.Sprintf("%d", f.borderSize*2) + "px"
 
 	var roundSizeString string
