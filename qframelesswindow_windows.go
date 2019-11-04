@@ -63,6 +63,7 @@ func (f *QFramelessWindow) SetupNativeEvent() {
 			mm.PtMinTrackSize.X = int32(f.minimumWidth)
 			mm.PtMinTrackSize.Y = int32(f.minimumHeight)
 
+			*result = (int)(win.DefWindowProc(msg.Hwnd, win.WM_NCCALCSIZE, msg.WParam, msg.LParam))
 			return true
 
 		// case win.WM_STYLECHANGING:

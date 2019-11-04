@@ -710,7 +710,7 @@ func (f *QFramelessWindow) SetupWindowActions() {
 func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 	// https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341
 	window := f
-	margin := f.shadowMargin
+	// margin := f.shadowMargin
 
 	if f.isLeftButtonPressed {
 
@@ -724,10 +724,28 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 
 			f.MousePos[0] = X
 			f.MousePos[1] = Y
-			left := window.FrameGeometry().Left() + margin
-			top := window.FrameGeometry().Top() + margin
-			right := window.FrameGeometry().Right() - margin
-			bottom := window.FrameGeometry().Bottom() - margin
+
+			var left, top, right, bottom, frameWidth, frameHeight int
+			var topLeftPoint, rightBottomPoint *core.QPoint
+			if runtime.GOOS == "windows" {
+				// Use tricky workaround only on Windows due to the following issues
+				// https://github.com/therecipe/qt/issues/938
+				entireRect := f.WindowWidget.FrameGeometry()
+				innerRect := f.FrameGeometry()
+				frameWidth = entireRect.Width() - innerRect.Width()
+				frameHeight = entireRect.Height() - innerRect.Height()
+				left =   innerRect.Left() - frameWidth/2
+				top =    innerRect.Top()
+				right =  innerRect.Right() + frameWidth/2
+				bottom = innerRect.Bottom() + frameHeight
+			} else {
+				entireRect := window.FrameGeometry()
+				left =   entireRect.Left()
+				top =    entireRect.Top()
+				right =  entireRect.Right()
+				bottom = entireRect.Bottom()
+			}
+
 
 			switch f.hoverEdge {
 			case Top:
@@ -753,8 +771,8 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 			default:
 			}
 
-			topLeftPoint := core.NewQPoint2(left, top)
-			rightBottomPoint := core.NewQPoint2(right, bottom)
+			topLeftPoint = core.NewQPoint2(left, top)
+			rightBottomPoint = core.NewQPoint2(right, bottom)
 			rect := core.NewQRect2(topLeftPoint, rightBottomPoint)
 
 			// minimum size
@@ -799,8 +817,8 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 				bottom = bottom - 1
 			}
 
-			topLeftPoint = core.NewQPoint2(left-margin, top-margin)
-			rightBottomPoint = core.NewQPoint2(right+margin, bottom+margin)
+			topLeftPoint = core.NewQPoint2(left, top)
+			rightBottomPoint = core.NewQPoint2(right, bottom)
 			newRect := core.NewQRect2(topLeftPoint, rightBottomPoint)
 
 			window.SetGeometry(newRect)
@@ -856,10 +874,12 @@ func (f *QFramelessWindow) updateCursorShape(pos *core.QPoint) {
 }
 
 func (f *QFramelessWindow) calcCursorPos(pos *core.QPoint, rect *core.QRect) Edge {
-	rectX := rect.X()
-	rectY := rect.Y()
-	rectWidth := rect.Width()
-	rectHeight := rect.Height()
+	frameWidth :=  f.WindowWidget.Width() - rect.Width()
+	frameHeight := f.WindowWidget.Height() - rect.Height()
+	rectX := rect.X() - frameWidth/2 + 1
+	rectY := rect.Y() - frameHeight/2 + 1
+	rectWidth := rect.Width()   + frameWidth - 1
+	rectHeight := rect.Height() + frameHeight - 1
 	posX := pos.X()
 	posY := pos.Y()
 
@@ -872,12 +892,7 @@ func (f *QFramelessWindow) detectEdgeOnCursor(posX, posY, rectX, rectY, rectWidt
 	octupleBorderSize := f.borderSize * 8
 	topBorderSize := 2 - 1
 
-	margin := f.shadowMargin
-	rectX = rectX + margin
-	rectY = rectY + margin
-	rectWidth = rectWidth - (2 * margin)
-	rectHeight = rectHeight - (2 * margin)
-
+	// margin := f.shadowMargin
 	var onLeft, onRight, onBottom, onTop, onBottomLeft, onBottomRight, onTopRight, onTopLeft bool
 
 	onBottomLeft = (((posX <= (rectX + octupleBorderSize)) && posX >= rectX &&
