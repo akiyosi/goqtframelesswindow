@@ -32,9 +32,9 @@ func (f *QFramelessWindow) SetupTitleBarActions() {
 
 	t.ConnectMouseDoubleClickEvent(func(e *gui.QMouseEvent) {
 		if f.BtnMaximize.IsVisible() {
-			f.windowMaximize()
+			f.WindowMaximize()
 		} else {
-			f.windowRestore()
+			f.WindowRestore()
 		}
 	})
 
