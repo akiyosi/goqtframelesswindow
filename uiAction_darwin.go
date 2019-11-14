@@ -56,19 +56,19 @@ func (f *QFramelessWindow) SetupTitleBarActions() {
 	})
 
 	f.BtnMinimize.ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
-		f.SetWindowState(core.Qt__WindowMinimized)
+		f.WindowMinimize()
 		f.Widget.Hide()
 		f.Widget.Show()
 	})
 
 	f.BtnMaximize.ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
-		f.windowMaximize()
+		f.WindowMaximize()
 		f.Widget.Hide()
 		f.Widget.Show()
 	})
 
 	f.BtnRestore.ConnectMouseReleaseEvent(func(e *gui.QMouseEvent) {
-		f.windowRestore()
+		f.WindowRestore()
 		f.Widget.Hide()
 		f.Widget.Show()
 	})
@@ -78,14 +78,18 @@ func (f *QFramelessWindow) SetupTitleBarActions() {
 	})
 }
 
-func (f *QFramelessWindow) windowMaximize() {
+func (f *QFramelessWindow) WindowMinimize() {
+	f.SetWindowState(core.Qt__WindowMinimized)
+}
+
+func (f *QFramelessWindow) WindowMaximize() {
 	f.BtnMaximize.SetVisible(false)
 	f.BtnRestore.SetVisible(true)
 	f.Layout.SetContentsMargins(0, 0, 0, 0)
 	f.SetWindowState(core.Qt__WindowMaximized)
 }
 
-func (f *QFramelessWindow) windowRestore() {
+func (f *QFramelessWindow) WindowRestore() {
 	f.BtnMaximize.SetVisible(true)
 	f.BtnRestore.SetVisible(false)
 	f.Layout.SetContentsMargins(f.shadowMargin, f.shadowMargin, f.shadowMargin, f.shadowMargin)

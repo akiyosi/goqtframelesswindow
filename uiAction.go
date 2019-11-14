@@ -175,7 +175,7 @@ func (f *QFramelessWindow) SetupTitleBarActions() {
 		if !isContain {
 			return
 		}
-		f.SetWindowState(core.Qt__WindowMinimized)
+		f.WindowMinimize()
 		f.Widget.Hide()
 		f.Widget.Show()
 	})
@@ -185,7 +185,7 @@ func (f *QFramelessWindow) SetupTitleBarActions() {
 		if !isContain {
 			return
 		}
-		f.windowMaximize()
+		f.WindowMaximize()
 		f.Widget.Hide()
 		f.Widget.Show()
 	})
@@ -195,7 +195,7 @@ func (f *QFramelessWindow) SetupTitleBarActions() {
 		if !isContain {
 			return
 		}
-		f.windowRestore()
+		f.WindowRestore()
 		f.Widget.Hide()
 		f.Widget.Show()
 	})
@@ -232,9 +232,9 @@ func (f *QFramelessWindow) SetupTitleBarActions() {
 
 	t.ConnectMouseDoubleClickEvent(func(e *gui.QMouseEvent) {
 		if f.IconMaximize.Widget.IsVisible() {
-			f.windowMaximize()
+			f.WindowMaximize()
 		} else {
-			f.windowRestore()
+			f.WindowRestore()
 		}
 	})
 }
@@ -279,7 +279,11 @@ func (f *QToolButtonForNotDarwin) buttonColorChangeForLinux(color *RGB, buttonTy
 	f.IconBtn.Load2(core.NewQByteArray2(svg, len(svg)))
 }
 
-func (f *QFramelessWindow) windowMaximize() {
+func (f *QFramelessWindow) WindowMinimize() {
+		f.SetWindowState(core.Qt__WindowMinimized)
+}
+
+func (f *QFramelessWindow) WindowMaximize() {
 	f.IconMaximize.Widget.SetVisible(false)
 	f.IconRestore.Widget.SetVisible(true)
 	f.Layout.SetContentsMargins(0, 0, 0, 0)
@@ -287,7 +291,7 @@ func (f *QFramelessWindow) windowMaximize() {
 	f.IconRestore.SetStyle(nil)
 }
 
-func (f *QFramelessWindow) windowRestore() {
+func (f *QFramelessWindow) WindowRestore() {
 	f.IconMaximize.Widget.SetVisible(true)
 	f.IconRestore.Widget.SetVisible(false)
 	f.Layout.SetContentsMargins(f.shadowMargin, f.shadowMargin, f.shadowMargin, f.shadowMargin)
