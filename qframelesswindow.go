@@ -2,6 +2,7 @@ package qframelesswindow
 
 import (
 	"fmt"
+	"time"
 	"runtime"
 
 	"github.com/therecipe/qt/core"
@@ -681,6 +682,18 @@ func (f *QFramelessWindow) SetupWindowActions() {
 		case core.QEvent__ActivationChange:
 			f.SetupTitleBarColor()
 
+		case core.QEvent__WindowStateChange:
+			rect := f.WindowWidget.FrameGeometry()
+			// It is a workaround for https://github.com/akiyosi/goneovim/issues/91#issuecomment-587041657
+			if f.WindowState() == core.Qt__WindowMinimized {
+				if !(rect.Width() == f.minimumWidth && rect.Height() == f.minimumHeight) {
+					go func() {
+						time.Sleep(300 * time.Millisecond)
+						f.SetGeometry(f.FrameGeometry())
+					}()
+				}
+			}
+
 		case core.QEvent__HoverMove:
 			f.updateCursorShape(e.GlobalPos())
 
@@ -813,8 +826,8 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 				}
 			}
 			if rect.Width() <= minimumWidth || rect.Height() <= minimumHeight {
-				right = right - 1
-				bottom = bottom - 1
+				right = left + minimumWidth
+				bottom = top + minimumHeight
 			}
 
 			topLeftPoint = core.NewQPoint2(left, top)
