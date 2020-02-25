@@ -280,7 +280,7 @@ func (f *QToolButtonForNotDarwin) buttonColorChangeForLinux(color *RGB, buttonTy
 }
 
 func (f *QFramelessWindow) WindowMinimize() {
-	f.SetWindowState(f.WindowState() | core.Qt__WindowMinimized)
+	f.SetWindowState(core.Qt__WindowMinimized)
 }
 
 func (f *QFramelessWindow) WindowMaximize() {

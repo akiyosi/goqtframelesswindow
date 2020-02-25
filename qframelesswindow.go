@@ -2,7 +2,6 @@ package qframelesswindow
 
 import (
 	"fmt"
-	"time"
 	"runtime"
 
 	"github.com/therecipe/qt/core"
@@ -419,6 +418,9 @@ func (f *QFramelessWindow) SetupWindowFlags() {
 		f.SetWindowFlag(core.Qt__Window, false)
 		f.SetWindowFlag(core.Qt__WindowStaysOnTopHint, true)
 	}
+	if runtime.GOOS == "windows" {
+		f.SetWindowFlag(core.Qt__WindowMaximizeButtonHint, true)
+	}
 	f.SetStyleMask()
 }
 
@@ -682,17 +684,15 @@ func (f *QFramelessWindow) SetupWindowActions() {
 		case core.QEvent__ActivationChange:
 			f.SetupTitleBarColor()
 
-		case core.QEvent__WindowStateChange:
-			rect := f.WindowWidget.FrameGeometry()
-			// It is a workaround for https://github.com/akiyosi/goneovim/issues/91#issuecomment-587041657
-			if f.WindowState() == core.Qt__WindowMinimized {
-				if !(rect.Width() == f.minimumWidth && rect.Height() == f.minimumHeight) {
-					go func() {
-						time.Sleep(300 * time.Millisecond)
-						f.SetGeometry(f.FrameGeometry())
-					}()
-				}
-			}
+		// case core.QEvent__WindowStateChange:
+		// 	rect := f.WindowWidget.FrameGeometry()
+		// 	// It is a workaround for https://github.com/akiyosi/goneovim/issues/91#issuecomment-587041657
+		// 	if f.WindowState() == core.Qt__WindowMinimized {
+		// 		go func() {
+		// 			time.Sleep(300 * time.Millisecond)
+		// 			f.SetGeometry(f.FrameGeometry())
+		// 		}()
+		// 	}
 
 		case core.QEvent__HoverMove:
 			f.updateCursorShape(e.GlobalPos())

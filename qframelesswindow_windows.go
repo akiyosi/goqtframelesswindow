@@ -83,7 +83,7 @@ func (f *QFramelessWindow) putShadow(hwnd win.HWND) {
 	}
 	// style
 	style := win.GetWindowLong(hwnd, win.GWL_STYLE)
-	style = style | win.WS_THICKFRAME ^ win.WS_CAPTION
+	style = style | win.WS_THICKFRAME | win.WS_MAXIMIZEBOX | win.WS_CAPTION
 	win.SetWindowLong(hwnd, win.GWL_STYLE, uint32(style))
 
 	// shadow
