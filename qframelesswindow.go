@@ -3,6 +3,7 @@ package qframelesswindow
 import (
 	"fmt"
 	"runtime"
+	"time"
 
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/gui"
@@ -679,22 +680,56 @@ func (f *QFramelessWindow) UpdateWidget() {
 func (f *QFramelessWindow) SetupWindowActions() {
 	// Ref: https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341#37507341
 	f.ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
-		e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 		switch event.Type() {
 		case core.QEvent__ActivationChange:
 			f.SetupTitleBarColor()
 
-		// case core.QEvent__WindowStateChange:
-		// 	rect := f.WindowWidget.FrameGeometry()
-		// 	// It is a workaround for https://github.com/akiyosi/goneovim/issues/91#issuecomment-587041657
-		// 	if f.WindowState() == core.Qt__WindowMinimized {
-		// 		go func() {
-		// 			time.Sleep(300 * time.Millisecond)
-		// 			f.SetGeometry(f.FrameGeometry())
-		// 		}()
-		// 	}
+		case core.QEvent__WindowStateChange:
+			if runtime.GOOS == "windows" {
+				// It is a workaround for https://github.com/akiyosi/goneovim/issues/91#issuecomment-587041657
+				// e := gui.NewQWindowStateChangeEventFromPointer(core.PointerFromQEvent(event))
+				// if e.OldState() == core.Qt__WindowMinimized {
+				if f.WindowState() == core.Qt__WindowMinimized {
+					go func() {
+						time.Sleep(300 * time.Millisecond)
+
+						frameRect := f.WindowWidget.FrameGeometry()
+
+						left             := 0
+						top              := 0
+						right            := frameRect.Width()
+						bottom           := frameRect.Height()
+						topLeftPoint     := core.NewQPoint2(left, top)
+						rightBottomPoint := core.NewQPoint2(right, bottom)
+						f.WindowWidget.SetGeometry(
+							core.NewQRect2(
+								topLeftPoint,
+								rightBottomPoint,
+							),
+						)
+
+						rect := f.FrameGeometry()
+
+						left             = rect.Left() - 5
+						top              = rect.Top()
+						right            = rect.Right() + 10
+						bottom           = rect.Bottom() + 5
+						topLeftPoint     = core.NewQPoint2(left, top)
+						rightBottomPoint = core.NewQPoint2(right, bottom)
+						f.SetGeometry(
+							core.NewQRect2(
+								topLeftPoint,
+								rightBottomPoint,
+							),
+						)
+
+						// f.SetGeometry(frameRect)
+					}()
+				}
+			}
 
 		case core.QEvent__HoverMove:
+			e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 			f.updateCursorShape(e.GlobalPos())
 
 		case core.QEvent__Leave:
@@ -703,9 +738,11 @@ func (f *QFramelessWindow) SetupWindowActions() {
 			f.SetCursor(cursor)
 
 		case core.QEvent__MouseMove:
+			e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 			f.mouseMove(e)
 
 		case core.QEvent__MouseButtonPress:
+			e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 			f.mouseButtonPressed(e)
 
 		case core.QEvent__MouseButtonRelease:
@@ -738,15 +775,16 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 			f.MousePos[0] = X
 			f.MousePos[1] = Y
 
-			var left, top, right, bottom, frameWidth, frameHeight int
+			var left, top, right, bottom int
 			var topLeftPoint, rightBottomPoint *core.QPoint
+
 			if runtime.GOOS == "windows" {
 				// Use tricky workaround only on Windows due to the following issues
 				// https://github.com/therecipe/qt/issues/938
 				entireRect := f.WindowWidget.FrameGeometry()
 				innerRect := f.FrameGeometry()
-				frameWidth = entireRect.Width() - innerRect.Width()
-				frameHeight = entireRect.Height() - innerRect.Height()
+				frameWidth := entireRect.Width() - innerRect.Width()
+				frameHeight := entireRect.Height() - innerRect.Height()
 				left =   innerRect.Left() - frameWidth/2
 				top =    innerRect.Top()
 				right =  innerRect.Right() + frameWidth/2
