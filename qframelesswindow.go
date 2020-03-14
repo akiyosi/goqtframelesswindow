@@ -688,6 +688,10 @@ func (f *QFramelessWindow) SetupWindowActions() {
 		case core.QEvent__ActivationChange:
 			f.SetupTitleBarColor()
 
+		case core.QEvent__Resize:
+			if runtime.GOOS == "darwin" {
+				f.SetStyleMask()
+			}
 		case core.QEvent__WindowStateChange:
 			if runtime.GOOS == "darwin" {
 				e := gui.NewQWindowStateChangeEventFromPointer(core.PointerFromQEvent(event))
