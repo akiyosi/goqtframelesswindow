@@ -386,18 +386,22 @@ func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
 	f.BtnClose.SetObjectName("BtnClose")
 	f.BtnClose.SetSizePolicy(btnSizePolicy)
 
-	dummyWidget := widgets.NewQLabel(nil, 0)
-	dummyWidget.SetFixedWidth(20 * 3)
+	// NOTE: We use native buttons
+	// dummyWidget := widgets.NewQLabel(nil, 0)
+	// dummyWidget.SetFixedWidth(20 * 3)
 
 	f.TitleBarLayout.SetSpacing(0)
-	f.TitleBarLayout.AddWidget(f.TitleBarBtnWidget, 0, 0)
-	f.TitleBarLayout.AddWidget(f.TitleLabel, 3, 0)
-	f.TitleBarLayout.AddWidget(dummyWidget, 0, 0)
 
-	f.TitleBarBtnLayout.AddWidget(f.BtnClose, 0, 0)
-	f.TitleBarBtnLayout.AddWidget(f.BtnMinimize, 0, 0)
-	f.TitleBarBtnLayout.AddWidget(f.BtnMaximize, 0, 0)
-	f.TitleBarBtnLayout.AddWidget(f.BtnRestore, 0, 0)
+	// NOTE: We use native buttons
+	// f.TitleBarLayout.AddWidget(f.TitleBarBtnWidget, 0, 0)
+	// f.TitleBarBtnLayout.AddWidget(f.BtnClose, 0, 0)
+	// f.TitleBarBtnLayout.AddWidget(f.BtnMinimize, 0, 0)
+	// f.TitleBarBtnLayout.AddWidget(f.BtnMaximize, 0, 0)
+	// f.TitleBarBtnLayout.AddWidget(f.BtnRestore, 0, 0)
+
+	f.TitleBarLayout.AddWidget(f.TitleLabel, 2, 0)
+	// f.TitleBarLayout.AddWidget(dummyWidget, 0, 0)
+
 
 	f.TitleBarBtnWidget.SetFixedWidth(20 * 3)
 	f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignLeft)
@@ -685,6 +689,18 @@ func (f *QFramelessWindow) SetupWindowActions() {
 			f.SetupTitleBarColor()
 
 		case core.QEvent__WindowStateChange:
+			if runtime.GOOS == "darwin" {
+				e := gui.NewQWindowStateChangeEventFromPointer(core.PointerFromQEvent(event))
+				if e.OldState() == core.Qt__WindowFullScreen {
+					f.SetStyleMask()
+					f.TitleBar.Show()
+					f.ActivateWindow()
+				}
+				if f.WindowState() == core.Qt__WindowFullScreen {
+					f.SetStyleMask()
+					f.TitleBar.Hide()
+				}
+			}
 			if runtime.GOOS == "windows" {
 				// It is a workaround for https://github.com/akiyosi/goneovim/issues/91#issuecomment-587041657
 				// e := gui.NewQWindowStateChangeEventFromPointer(core.PointerFromQEvent(event))
