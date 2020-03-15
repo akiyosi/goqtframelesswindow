@@ -733,7 +733,6 @@ func (f *QFramelessWindow) SetupWindowActions() {
 						rect := f.FrameGeometry()
 						frameWidth  := frameRect.Width()  - rect.Width()
 						frameHeight := frameRect.Height() - rect.Height()
-						fmt.Println("debug", frameWidth, frameHeight)
 
 						left             = rect.Left() - frameWidth/2
 						top              = rect.Top()
