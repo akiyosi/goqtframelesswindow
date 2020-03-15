@@ -287,7 +287,7 @@ func (f *QFramelessWindow) WindowMaximize() {
 	f.IconMaximize.Widget.SetVisible(false)
 	f.IconRestore.Widget.SetVisible(true)
 	f.Layout.SetContentsMargins(0, 0, 0, 0)
-	f.SetWindowState(core.Qt__WindowMaximized)
+	f.SetWindowState(core.Qt__WindowFullScreen)
 	f.IconRestore.SetStyle(nil)
 }
 

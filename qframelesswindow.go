@@ -728,12 +728,17 @@ func (f *QFramelessWindow) SetupWindowActions() {
 							),
 						)
 
-						rect := f.FrameGeometry()
 
-						left             = rect.Left() - 5
+						frameRect = f.WindowWidget.FrameGeometry()
+						rect := f.FrameGeometry()
+						frameWidth  := frameRect.Width()  - rect.Width()
+						frameHeight := frameRect.Height() - rect.Height()
+						fmt.Println("debug", frameWidth, frameHeight)
+
+						left             = rect.Left() - frameWidth/2
 						top              = rect.Top()
-						right            = rect.Right() + 10
-						bottom           = rect.Bottom() + 5
+						right            = rect.Right() + frameWidth/2
+						bottom           = rect.Bottom() + frameHeight
 						topLeftPoint     = core.NewQPoint2(left, top)
 						rightBottomPoint = core.NewQPoint2(right, bottom)
 						f.SetGeometry(
@@ -742,8 +747,6 @@ func (f *QFramelessWindow) SetupWindowActions() {
 								rightBottomPoint,
 							),
 						)
-
-						// f.SetGeometry(frameRect)
 					}()
 				}
 			}
@@ -779,7 +782,6 @@ func (f *QFramelessWindow) SetupWindowActions() {
 
 func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 	// https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341
-	window := f
 	// margin := f.shadowMargin
 
 	if f.isLeftButtonPressed {
@@ -801,20 +803,20 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 			if runtime.GOOS == "windows" {
 				// Use tricky workaround only on Windows due to the following issues
 				// https://github.com/therecipe/qt/issues/938
-				entireRect := f.WindowWidget.FrameGeometry()
-				innerRect := f.FrameGeometry()
-				frameWidth := entireRect.Width() - innerRect.Width()
-				frameHeight := entireRect.Height() - innerRect.Height()
-				left =   innerRect.Left() - frameWidth/2
-				top =    innerRect.Top()
-				right =  innerRect.Right() + frameWidth/2
-				bottom = innerRect.Bottom() + frameHeight
+				frameRect := f.WindowWidget.FrameGeometry()
+				rect := f.FrameGeometry()
+				frameWidth  := frameRect.Width()  - rect.Width()
+				frameHeight := frameRect.Height() - rect.Height()
+				left =   rect.Left() - frameWidth/2
+				top =    rect.Top()
+				right =  rect.Right() + frameWidth/2
+				bottom = rect.Bottom() + frameHeight
 			} else {
-				entireRect := window.FrameGeometry()
-				left =   entireRect.Left()
-				top =    entireRect.Top()
-				right =  entireRect.Right()
-				bottom = entireRect.Bottom()
+				rect := f.FrameGeometry()
+				left =   rect.Left()
+				top =    rect.Top()
+				right =  rect.Right()
+				bottom = rect.Bottom()
 			}
 
 
@@ -892,7 +894,7 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 			rightBottomPoint = core.NewQPoint2(right, bottom)
 			newRect := core.NewQRect2(topLeftPoint, rightBottomPoint)
 
-			window.SetGeometry(newRect)
+			f.SetGeometry(newRect)
 		}
 	}
 }
