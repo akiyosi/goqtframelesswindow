@@ -111,6 +111,7 @@ func CreateQFramelessWindow(alpha float64) *QFramelessWindow {
 	f.SetupWindowActions()
 	f.SetupTitleBarActions()
 	f.SetupMinimumSize(400, 300)
+	f.ShowButtons()
 
 	return f
 }
@@ -332,11 +333,7 @@ func (f *QFramelessWindow) SetTitleBarButtons() {
 	f.IconClose.SetObjectName("IconClose")
 
 	f.SetIconsStyle(nil)
-
-	f.IconMinimize.Hide()
-	f.IconMaximize.Hide()
-	f.IconRestore.Hide()
-	f.IconClose.Hide()
+	f.HideButtons()
 
 	dummyWidget := widgets.NewQLabel(nil, 0)
 	dummyWidget.SetFixedWidth(20 * 3)
@@ -353,6 +350,20 @@ func (f *QFramelessWindow) SetTitleBarButtons() {
 	f.TitleBarBtnWidget.SetFixedWidth(30 * 3)
 	f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignRight)
 	f.TitleBarLayout.SetAlignment(f.TitleLabel, core.Qt__AlignCenter)
+}
+
+func (f *QFramelessWindow) ShowButtons() {
+	f.IconMinimize.Show()
+	f.IconMaximize.Show()
+	f.IconRestore.Show()
+	f.IconClose.Show()
+}
+
+func (f *QFramelessWindow) HideButtons() {
+	f.IconMinimize.Hide()
+	f.IconMaximize.Hide()
+	f.IconRestore.Hide()
+	f.IconClose.Hide()
 }
 
 func (f *QFramelessWindow) SetIconsStyle(color *RGB) {
@@ -572,11 +583,7 @@ func (f *QFramelessWindow) SetupTitleBarColorForNotDarwin(color *RGB) {
 	f.IconRestore.IconBtn.Load2(core.NewQByteArray2(SvgRestore, len(SvgRestore)))
 	f.IconClose.IconBtn.Load2(core.NewQByteArray2(SvgClose, len(SvgClose)))
 
-	f.IconMinimize.Show()
-	f.IconMaximize.Show()
-	f.IconRestore.Show()
 	f.IconRestore.Widget.SetVisible(false)
-	f.IconClose.Show()
 }
 
 func (f *QFramelessWindow) SetupTitleBarColorForDarwin(color *RGB) {
