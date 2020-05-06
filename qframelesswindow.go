@@ -283,14 +283,23 @@ func NewQToolButtonForNotDarwin(parent widgets.QWidget_ITF) *QToolButtonForNotDa
 }
 
 func (b *QToolButtonForNotDarwin) SetObjectName(name string) {
+	if runtime.GOOS == "darwin" {
+		return
+	}
 	b.IconBtn.SetObjectName(name)
 }
 
 func (b *QToolButtonForNotDarwin) Hide() {
+	if runtime.GOOS == "darwin" {
+		return
+	}
 	b.Widget.Hide()
 }
 
 func (b *QToolButtonForNotDarwin) Show() {
+	if runtime.GOOS == "darwin" {
+		return
+	}
 	b.Widget.Show()
 }
 
