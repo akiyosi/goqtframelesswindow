@@ -41,6 +41,8 @@ type QToolButtonForNotDarwin struct {
 type QFramelessWindow struct {
 	widgets.QMainWindow
 
+	IsBorderless     bool
+
 	WindowColor      *RGB
 	WindowColorAlpha float64
 
@@ -50,7 +52,6 @@ type QFramelessWindow struct {
 
 	WindowWidget  *widgets.QFrame
 	WindowVLayout *widgets.QVBoxLayout
-	shadowMargin  int
 	borderSize    int
 	minimumWidth  int
 	minimumHeight int
@@ -67,12 +68,6 @@ type QFramelessWindow struct {
 	TitleBarMousePos  *core.QPoint
 	IsTitleBarPressed bool
 	IsTitleIconShown  bool
-
-	// for darwin
-	BtnMinimize *widgets.QToolButton
-	BtnMaximize *widgets.QToolButton
-	BtnRestore  *widgets.QToolButton
-	BtnClose    *widgets.QToolButton
 
 	// for windows, linux
 	IconMinimize *QToolButtonForNotDarwin
@@ -91,36 +86,58 @@ type QFramelessWindow struct {
 	borderless bool
 }
 
-func CreateQFramelessWindow(alpha float64) *QFramelessWindow {
+func CreateQFramelessWindow(a ...interface{}) *QFramelessWindow {
+	alpha := 1.0
+	isBorderless := true
+	for _, vITF := range a {
+		switch vITF.(type) {
+		case float64:
+			v := vITF.(float64)
+			if v >= 0.0 && v <= 1.0 {
+				alpha = v
+			}
+		case bool:
+			isBorderless = vITF.(bool)
+		default:
+		}
+	}
+
 	f := NewQFramelessWindow(nil, 0)
+	f.SetupBorderSize(3)
 	f.WindowColorAlpha = alpha
-	if f.WindowColorAlpha == 1.0 {
+	f.IsBorderless = isBorderless
+
+	// for windows
+	if f.WindowColorAlpha == 1.0 && f.IsBorderless {
 		f.SetupNativeEvent()
-	} else {
+	} else if f.WindowColorAlpha < 1.0 && f.IsBorderless {
 		f.SetupNativeEvent2()
 	}
+
 	f.Widget = widgets.NewQWidget(nil, 0)
 	f.Widget.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0.0); color: rgba(0, 0, 0, 0); }")
 	f.SetCentralWidget(f.Widget)
-
-	f.shadowMargin = 0
-	f.SetupBorderSize(3)
 	f.SetupUI(f.Widget)
+	f.SetupMinimumSize(400, 300)
+
+	// if isBorderless is false, then we return normal window
+	if !f.IsBorderless {
+		f.TitleBar.Hide()
+		return f
+	}
+
 	f.SetupWindowFlags()
 	f.SetupAttributes()
 	f.SetupWindowActions()
 	f.SetupTitleBarActions()
-	f.SetupMinimumSize(400, 300)
 	f.ShowButtons()
 
 	return f
 }
 
 func (f *QFramelessWindow) SetupMinimumSize(w int, h int) {
-	W := w + (2 * f.shadowMargin)
-	H := h + (2 * f.shadowMargin)
-	f.SetMinimumSize2(W, H)
-	f.Widget.SetMinimumSize2(W, H)
+	f.SetMinimumSize2(w, h)
+	f.Widget.SetMinimumSize2(w, h)
 	f.WindowWidget.SetMinimumSize2(w, h)
 	f.minimumWidth = w
 	f.minimumHeight = h
@@ -153,7 +170,7 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	f.WindowWidget.SetObjectName("QFramelessWidget")
 	f.WindowWidget.SetSizePolicy2(widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum, widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum)
 
-	f.Layout.SetContentsMargins(f.shadowMargin, f.shadowMargin, f.shadowMargin, f.shadowMargin)
+	f.Layout.SetContentsMargins(0, 0, 0, 0)
 
 	// windowVLayout is the following structure layout
 	// +-----------+
@@ -245,6 +262,10 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 		roundSizeString = "0px"
 	}
 
+	if !f.IsBorderless {
+		roundSizeString = "0px"
+	}
+
 	f.WindowWidget.SetStyleSheet(fmt.Sprintf(`
 	#QFramelessWidget {
 		border: 0px solid %s; 
@@ -252,7 +273,10 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 		border-radius: %s;
 		%s; 
 	}`, color.Hex(), borderSizeString, borderSizeString, borderSizeString, roundSizeString, style))
-	f.SetStyleMask()
+
+	if f.IsBorderless {
+		f.SetStyleMask()
+	}
 }
 
 func NewQToolButtonForNotDarwin(parent widgets.QWidget_ITF) *QToolButtonForNotDarwin {
@@ -362,6 +386,9 @@ func (f *QFramelessWindow) SetTitleBarButtons() {
 }
 
 func (f *QFramelessWindow) ShowButtons() {
+	if runtime.GOOS == "darwin" {
+		return
+	}
 	f.IconMinimize.Show()
 	f.IconMaximize.Show()
 	f.IconRestore.Show()
@@ -369,6 +396,9 @@ func (f *QFramelessWindow) ShowButtons() {
 }
 
 func (f *QFramelessWindow) HideButtons() {
+	if runtime.GOOS == "darwin" {
+		return
+	}
 	f.IconMinimize.Hide()
 	f.IconMaximize.Hide()
 	f.IconRestore.Hide()
@@ -388,23 +418,24 @@ func (f *QFramelessWindow) SetIconsStyle(color *RGB) {
 
 func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
 	f.TitleBarLayout.SetContentsMargins(5, 5, 0, 5)
-	btnSizePolicy := widgets.NewQSizePolicy2(widgets.QSizePolicy__Fixed, widgets.QSizePolicy__Fixed, widgets.QSizePolicy__ToolButton)
-	f.BtnMinimize = widgets.NewQToolButton(f.TitleBarBtnWidget)
-	f.BtnMinimize.SetObjectName("BtnMinimize")
-	f.BtnMinimize.SetSizePolicy(btnSizePolicy)
 
-	f.BtnMaximize = widgets.NewQToolButton(f.TitleBarBtnWidget)
-	f.BtnMaximize.SetObjectName("BtnMaximize")
-	f.BtnMaximize.SetSizePolicy(btnSizePolicy)
+	// btnSizePolicy := widgets.NewQSizePolicy2(widgets.QSizePolicy__Fixed, widgets.QSizePolicy__Fixed, widgets.QSizePolicy__ToolButton)
+	// f.BtnMinimize = widgets.NewQToolButton(f.TitleBarBtnWidget)
+	// f.BtnMinimize.SetObjectName("BtnMinimize")
+	// f.BtnMinimize.SetSizePolicy(btnSizePolicy)
 
-	f.BtnRestore = widgets.NewQToolButton(f.TitleBarBtnWidget)
-	f.BtnRestore.SetObjectName("BtnRestore")
-	f.BtnRestore.SetSizePolicy(btnSizePolicy)
-	f.BtnRestore.SetVisible(false)
+	// f.BtnMaximize = widgets.NewQToolButton(f.TitleBarBtnWidget)
+	// f.BtnMaximize.SetObjectName("BtnMaximize")
+	// f.BtnMaximize.SetSizePolicy(btnSizePolicy)
 
-	f.BtnClose = widgets.NewQToolButton(f.TitleBarBtnWidget)
-	f.BtnClose.SetObjectName("BtnClose")
-	f.BtnClose.SetSizePolicy(btnSizePolicy)
+	// f.BtnRestore = widgets.NewQToolButton(f.TitleBarBtnWidget)
+	// f.BtnRestore.SetObjectName("BtnRestore")
+	// f.BtnRestore.SetSizePolicy(btnSizePolicy)
+	// f.BtnRestore.SetVisible(false)
+
+	// f.BtnClose = widgets.NewQToolButton(f.TitleBarBtnWidget)
+	// f.BtnClose.SetObjectName("BtnClose")
+	// f.BtnClose.SetSizePolicy(btnSizePolicy)
 
 	// NOTE: We use native buttons
 	// dummyWidget := widgets.NewQLabel(nil, 0)
@@ -423,9 +454,9 @@ func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
 	// f.TitleBarLayout.AddWidget(dummyWidget, 0, 0)
 
 
-	f.TitleBarBtnWidget.SetFixedWidth(20 * 3)
-	f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignLeft)
-	f.TitleBarLayout.SetAlignment(f.TitleLabel, core.Qt__AlignCenter)
+	// f.TitleBarBtnWidget.SetFixedWidth(20 * 3)
+	// f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignLeft)
+	// f.TitleBarLayout.SetAlignment(f.TitleLabel, core.Qt__AlignCenter)
 }
 
 func (f *QFramelessWindow) SetupAttributes() {
@@ -462,6 +493,10 @@ func (f *QFramelessWindow) SetupTitleIcon(filename string) {
 }
 
 func (f *QFramelessWindow) SetupTitle(title string) {
+	if !f.IsBorderless {
+		f.SetWindowTitle(title)
+		return
+	}
 	f.TitleStringLabel.SetText(title)
 	f.TitleStringLabel.SetFixedWidth(f.TitleStringLabel.FontMetrics().BoundingRect2(title).Width())
 	f.TitleStringLabel.SetSizePolicy2(widgets.QSizePolicy__Minimum, widgets.QSizePolicy__Minimum)
@@ -473,6 +508,9 @@ func (f *QFramelessWindow) SetupTitle(title string) {
 }
 
 func (f *QFramelessWindow) SetupTitleColor(red uint16, green uint16, blue uint16) {
+	if !f.IsBorderless {
+		return
+	}
 	f.TitleColor = &RGB{
 		R: red,
 		G: green,
@@ -482,6 +520,9 @@ func (f *QFramelessWindow) SetupTitleColor(red uint16, green uint16, blue uint16
 }
 
 func (f *QFramelessWindow) SetupTitleBarColor() {
+	if !f.IsBorderless {
+		return
+	}
 	var color, labelColor *RGB
 	brendRatio := 0.0
 	if f.IsActiveWindow() {
@@ -509,7 +550,6 @@ func (f *QFramelessWindow) SetupTitleBarColor() {
 		)
 	} else {
 		f.TitleLabel.SetStyleSheet(fmt.Sprintf(" * { color: rgb(%d, %d, %d); }", labelColor.R, labelColor.G, labelColor.B))
-		f.SetupTitleBarColorForDarwin(color)
 	}
 
 	if runtime.GOOS == "linux" {
@@ -595,99 +635,6 @@ func (f *QFramelessWindow) SetupTitleBarColorForNotDarwin(color *RGB) {
 	f.IconRestore.Widget.SetVisible(false)
 }
 
-func (f *QFramelessWindow) SetupTitleBarColorForDarwin(color *RGB) {
-	var baseStyle, restoreAndMaximizeColor, minimizeColor, closeColor string
-	baseStyle = ` #BtnMinimize, #BtnMaximize, #BtnRestore, #BtnClose {
-		min-width: 12px;
-		min-height: 12px;
-		max-width: 12px;
-		max-height: 12px;
-		border-radius: 6px;
-		border-width: 0px;
-		border-style: solid;
-		margin: 4px;
-	}`
-	if color != nil {
-		restoreAndMaximizeColor = `
-			#BtnRestore, #BtnMaximize {
-				background-color: rgb(53, 202, 74);
-				border-color: rgb(34, 182, 52);
-			}
-		`
-		minimizeColor = `
-			#BtnMinimize {
-				background-color: rgb(253, 190, 65);
-				border-color: rgb(239, 170, 47);
-			}
-		`
-		closeColor = `
-			#BtnClose {
-				background-color: rgb(252, 98, 93);
-				border-color: rgb(239, 75, 71);
-			}
-		`
-	} else {
-		restoreAndMaximizeColor = `
-			#BtnRestore, #BtnMaximize {
-				background-color: rgba(128, 128, 128, 0.3);
-				border-color: rgba(128, 128, 128, 0.2);
-			}
-		`
-		minimizeColor = `
-			#BtnMinimize {
-				background-color: rgba(128, 128, 128, 0.3);
-				border-color: rgba(128, 128, 128, 0.2);
-			}
-		`
-		closeColor = `
-			#BtnClose {
-				background-color: rgba(128, 128, 128, 0.3);
-				border-color: rgba(128, 128, 128, 0.2);
-			}
-		`
-	}
-	MaximizeColorHover := `
-		#BtnMaximize:hover {
-			background-color: rgb(53, 202, 74);
-			border-color: rgb(34, 182, 52);
-			background-image: url(":/icons/MaximizeHoverDarwin.png");
-			background-repeat: no-repeat;
-			background-position: center center; 
-		}
-	`
-	RestoreColorHover := `
-		#BtnRestore:hover {
-			background-color: rgb(53, 202, 74);
-			border-color: rgb(34, 182, 52);
-			background-image: url(":/icons/RestoreHoverDarwin.png");
-			background-repeat: no-repeat;
-			background-position: center center; 
-		}
-	`
-	minimizeColorHover := `
-		#BtnMinimize:hover {
-			background-color: rgb(253, 190, 65);
-			border-color: rgb(239, 170, 47);
-			background-image: url(":/icons/MinimizeHoverDarwin.png");
-			background-repeat: no-repeat;
-			background-position: center center; 
-		}
-	`
-	closeColorHover := `
-		#BtnClose:hover {
-			background-color: rgb(252, 98, 93);
-			border-color: rgb(239, 75, 71);
-			background-image: url(":/icons/CloseHoverDarwin.png");
-			background-repeat: no-repeat;
-			background-position: center center; 
-		}
-	`
-	f.BtnMinimize.SetStyleSheet(baseStyle + minimizeColor + minimizeColorHover)
-	f.BtnMaximize.SetStyleSheet(baseStyle + restoreAndMaximizeColor + MaximizeColorHover)
-	f.BtnRestore.SetStyleSheet(baseStyle + restoreAndMaximizeColor + RestoreColorHover)
-	f.BtnClose.SetStyleSheet(baseStyle + closeColor + closeColorHover)
-}
-
 func (f *QFramelessWindow) SetupContent(layout widgets.QLayout_ITF) {
 	f.Content.SetLayout(layout)
 }
@@ -767,23 +714,43 @@ func (f *QFramelessWindow) SetupWindowActions() {
 			}
 
 		case core.QEvent__HoverMove:
+			if runtime.GOOS == "darwin" {
+				return f.Widget.EventFilter(watched, event)
+			}
+
 			e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 			f.updateCursorShape(e.GlobalPos())
 
 		case core.QEvent__Leave:
+			if runtime.GOOS == "darwin" {
+				return f.Widget.EventFilter(watched, event)
+			}
+
 			cursor := gui.NewQCursor()
 			cursor.SetShape(core.Qt__ArrowCursor)
 			f.SetCursor(cursor)
 
 		case core.QEvent__MouseMove:
+			if runtime.GOOS == "darwin" {
+				return f.Widget.EventFilter(watched, event)
+			}
+
 			e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 			f.mouseMove(e)
 
 		case core.QEvent__MouseButtonPress:
+			if runtime.GOOS == "darwin" {
+				return f.Widget.EventFilter(watched, event)
+			}
+
 			e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 			f.mouseButtonPressed(e)
 
 		case core.QEvent__MouseButtonRelease:
+			if runtime.GOOS == "darwin" {
+				return f.Widget.EventFilter(watched, event)
+			}
+
 			f.isDragStart = false
 			f.isLeftButtonPressed = false
 			f.hoverEdge = None
@@ -797,7 +764,6 @@ func (f *QFramelessWindow) SetupWindowActions() {
 
 func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 	// https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341
-	// margin := f.shadowMargin
 
 	if f.isLeftButtonPressed {
 
@@ -980,7 +946,6 @@ func (f *QFramelessWindow) detectEdgeOnCursor(posX, posY, rectX, rectY, rectWidt
 	octupleBorderSize := f.borderSize * 8
 	topBorderSize := 2 - 1
 
-	// margin := f.shadowMargin
 	var onLeft, onRight, onBottom, onTop, onBottomLeft, onBottomRight, onTopRight, onTopLeft bool
 
 	onBottomLeft = (((posX <= (rectX + octupleBorderSize)) && posX >= rectX &&
