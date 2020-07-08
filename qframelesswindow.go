@@ -120,7 +120,7 @@ func CreateQFramelessWindow(a ...interface{}) *QFramelessWindow {
 	f.SetupUI(f.Widget)
 	f.SetupMinimumSize(400, 300)
 
-	// if isBorderless is false, then we return normal window
+	// if isBorderless is false, then we return normal qmainwindow
 	if !f.IsBorderless {
 		f.TitleBar.Hide()
 		return f
