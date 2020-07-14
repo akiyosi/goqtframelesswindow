@@ -256,7 +256,7 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 	borderSizeString := fmt.Sprintf("%d", f.borderSize*2) + "px"
 
 	var roundSizeString string
-	if runtime.GOOS != "windows" {
+	if runtime.GOOS == "linux" {
 		roundSizeString = fmt.Sprintf("%d", f.borderSize*2) + "px"
 	} else {
 		roundSizeString = "0px"
@@ -460,6 +460,9 @@ func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
 }
 
 func (f *QFramelessWindow) SetupAttributes() {
+	if runtime.GOOS == "darwin" && f.WindowColorAlpha == 1.0 {
+		return
+	}
 	f.SetAttribute(core.Qt__WA_TranslucentBackground, true)
 	f.SetAttribute(core.Qt__WA_NoSystemBackground, true)
 	f.SetAttribute(core.Qt__WA_Hover, true)
@@ -467,6 +470,10 @@ func (f *QFramelessWindow) SetupAttributes() {
 }
 
 func (f *QFramelessWindow) SetupWindowFlags() {
+	defer f.SetStyleMask()
+	if runtime.GOOS == "darwin" && f.WindowColorAlpha == 1.0 {
+		return
+	}
 	f.SetWindowFlag(core.Qt__Window, true)
 	f.SetWindowFlag(core.Qt__FramelessWindowHint, true)
 	f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, true)
@@ -477,7 +484,6 @@ func (f *QFramelessWindow) SetupWindowFlags() {
 	if runtime.GOOS == "windows" {
 		f.SetWindowFlag(core.Qt__WindowMaximizeButtonHint, true)
 	}
-	f.SetStyleMask()
 }
 
 func (f *QFramelessWindow) SetupTitleIcon(filename string) {
