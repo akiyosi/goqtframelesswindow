@@ -103,7 +103,7 @@ func CreateQFramelessWindow(a ...interface{}) *QFramelessWindow {
 	}
 
 	f := NewQFramelessWindow(nil, 0)
-	f.SetupBorderSize(3)
+	f.SetupBorderSize(2)
 	f.WindowColor = &RGB{255, 255, 255}
 	f.WindowColorAlpha = alpha
 	f.IsBorderless = isBorderless
@@ -142,6 +142,10 @@ func (f *QFramelessWindow) SetupMinimumSize(w int, h int) {
 	f.WindowWidget.SetMinimumSize2(w, h)
 	f.minimumWidth = w
 	f.minimumHeight = h
+}
+
+func (f *QFramelessWindow) BorderSize() int {
+	return f.borderSize
 }
 
 func (f *QFramelessWindow) SetupBorderSize(size int) {
@@ -270,10 +274,10 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 	f.WindowWidget.SetStyleSheet(fmt.Sprintf(`
 	#QFramelessWidget {
 		border: 0px solid %s; 
-		padding-top: 2px; padding-right: %s; padding-bottom: %s; padding-left: %s; 
+		padding-top: %s; padding-right: %s; padding-bottom: %s; padding-left: %s; 
 		border-radius: %s;
 		%s; 
-	}`, color.Hex(), borderSizeString, borderSizeString, borderSizeString, roundSizeString, style))
+	}`, color.Hex(), borderSizeString, borderSizeString, borderSizeString, borderSizeString, roundSizeString, style))
 
 	if f.IsBorderless {
 		f.SetStyleMask()
