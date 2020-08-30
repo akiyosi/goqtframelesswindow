@@ -484,7 +484,6 @@ func (f *QFramelessWindow) SetupWindowFlags() {
 	f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, true)
 	if runtime.GOOS == "linux" {
 		f.SetWindowFlag(core.Qt__Window, false)
-		f.SetWindowFlag(core.Qt__WindowStaysOnTopHint, true)
 	}
 	if runtime.GOOS == "windows" {
 		f.SetWindowFlag(core.Qt__WindowMaximizeButtonHint, true)
