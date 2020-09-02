@@ -11,24 +11,17 @@ func (f *QFramelessWindow) SetStyleMask() {
 }
 
 func (f *QFramelessWindow) SetupNativeEvent2() {
-	filterObj := core.NewQAbstractNativeEventFilter()
-	filterObj.ConnectNativeEventFilter(func(eventType *core.QByteArray, message unsafe.Pointer, result *int) bool {
+	f.ConnectNativeEvent(func(eventType *core.QByteArray, message unsafe.Pointer, result *int) bool {
 		msg := (*win.MSG)(message)
-		hwnd := msg.Hwnd
 
 		switch msg.Message {
-		case win.WM_CREATE:
-			style := win.GetWindowLong(hwnd, win.GWL_STYLE)
-			style = style | win.WS_THICKFRAME
-			win.SetWindowLong(hwnd, win.GWL_STYLE, uint32(style))
-
 		case win.WM_NCCALCSIZE:
 			if msg.WParam == 1 {
 				*result = 0
-				// win.SetWindowLong(hwnd, win.DWL_MSGRESULT, 0)
 				return true
 			}
-			return false
+			*result = (int)(win.DefWindowProc(msg.Hwnd, win.WM_NCCALCSIZE, msg.WParam, msg.LParam))
+			return true
 
 		case win.WM_GETMINMAXINFO:
 			mm := (*win.MINMAXINFO)((unsafe.Pointer)(msg.LParam))
@@ -37,10 +30,8 @@ func (f *QFramelessWindow) SetupNativeEvent2() {
 
 			return true
 		}
-
 		return false
 	})
-	core.QCoreApplication_Instance().InstallNativeEventFilter(filterObj)
 }
 
 func (f *QFramelessWindow) SetupNativeEvent() {
