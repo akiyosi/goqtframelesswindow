@@ -41,7 +41,7 @@ type QToolButtonForNotDarwin struct {
 type QFramelessWindow struct {
 	widgets.QMainWindow
 
-	IsBorderless     bool
+	IsBorderless bool
 
 	WindowColor      *RGB
 	WindowColorAlpha float64
@@ -56,8 +56,8 @@ type QFramelessWindow struct {
 	minimumWidth  int
 	minimumHeight int
 
-	TitleBar          *widgets.QWidget
-	TitleBarLayout    *widgets.QHBoxLayout
+	TitleBar       *widgets.QWidget
+	TitleBarLayout *widgets.QHBoxLayout
 	// TitleLabel        *widgets.QLabel
 	TitleIconLabel    *widgets.QLabel
 	TitleStringLabel  *widgets.QLabel
@@ -165,18 +165,24 @@ func (f *QFramelessWindow) RemoveWindowNativeShadow() {
 }
 
 func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
-	f.InstallEventFilter(f)
+	if f.IsBorderless {
+		f.InstallEventFilter(f)
+	}
 
 	widget.SetSizePolicy2(widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum, widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum)
 	f.Layout = widgets.NewQVBoxLayout2(widget)
 	f.Layout.SetSpacing(0)
+	f.Layout.SetContentsMargins(0, 0, 0, 0)
 
 	f.WindowWidget = widgets.NewQFrame(widget, 0)
 	f.WindowWidget.SetObjectName("QFramelessWidget")
 	f.WindowWidget.SetSizePolicy2(widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum, widgets.QSizePolicy__Expanding|widgets.QSizePolicy__Maximum)
 
-	f.Layout.SetContentsMargins(0, 0, 0, 0)
+	f.Layout.AddWidget(f.WindowWidget, 0, 0)
 
+	if !f.IsBorderless {
+		return
+	}
 	// windowVLayout is the following structure layout
 	// +-----------+
 	// |           |
@@ -186,11 +192,21 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	// |           |
 	// +-----------+
 	f.WindowVLayout = widgets.NewQVBoxLayout2(f.WindowWidget)
-	f.WindowVLayout.SetContentsMargins(f.borderSize, f.borderSize, f.borderSize, 0)
 	f.WindowVLayout.SetContentsMargins(0, 0, 0, 0)
 	f.WindowVLayout.SetSpacing(0)
-	f.WindowWidget.SetLayout(f.WindowVLayout)
 
+	f.newTitlebar()
+
+	// create window content
+	f.Content = widgets.NewQWidget(f.WindowWidget, 0)
+
+	// Set widget to layout
+	f.WindowVLayout.AddWidget(f.TitleBar, 0, 0)
+	f.WindowVLayout.AddWidget(f.Content, 0, 0)
+	f.WindowWidget.SetLayout(f.WindowVLayout)
+}
+
+func (f *QFramelessWindow) newTitlebar() {
 	// create titlebar widget
 	f.TitleBar = widgets.NewQWidget(f.WindowWidget, 0)
 	f.TitleBar.SetObjectName("titleBar")
@@ -224,7 +240,6 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	f.TitleStringLabel = widgets.NewQLabel(nil, 0)
 	f.TitleStringLabel.SetContentsMargins(0, 0, 0, 0)
 
-
 	titleLabelLayout.AddWidget(f.TitleIconLabel, 0, 0)
 	titleLabelLayout.AddWidget(f.TitleStringLabel, 0, 0)
 
@@ -238,15 +253,6 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	} else {
 		f.SetTitleBarButtons()
 	}
-
-	// create window content
-	f.Content = widgets.NewQWidget(f.WindowWidget, 0)
-
-	// Set widget to layout
-	f.WindowVLayout.AddWidget(f.TitleBar, 0, 0)
-	f.WindowVLayout.AddWidget(f.Content, 0, 0)
-
-	f.Layout.AddWidget(f.WindowWidget, 0, 0)
 }
 
 func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint16) {
@@ -458,7 +464,6 @@ func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
 	f.TitleBarLayout.AddWidget(f.TitleLabel, 2, 0)
 	// f.TitleBarLayout.AddWidget(dummyWidget, 0, 0)
 
-
 	// f.TitleBarBtnWidget.SetFixedWidth(20 * 3)
 	// f.TitleBarLayout.SetAlignment(f.TitleBarBtnWidget, core.Qt__AlignLeft)
 	// f.TitleBarLayout.SetAlignment(f.TitleLabel, core.Qt__AlignCenter)
@@ -511,7 +516,7 @@ func (f *QFramelessWindow) SetupTitle(title string) {
 	f.TitleStringLabel.SetFixedWidth(f.TitleStringLabel.FontMetrics().BoundingRect2(title).Width())
 	f.TitleStringLabel.SetSizePolicy2(widgets.QSizePolicy__Minimum, widgets.QSizePolicy__Minimum)
 	if f.IsTitleIconShown {
-		f.TitleLabel.SetFixedWidth(f.TitleStringLabel.FontMetrics().BoundingRect2(title).Width()+f.TitleIconLabel.Width())
+		f.TitleLabel.SetFixedWidth(f.TitleStringLabel.FontMetrics().BoundingRect2(title).Width() + f.TitleIconLabel.Width())
 	} else {
 		f.TitleLabel.SetFixedWidth(f.TitleStringLabel.FontMetrics().BoundingRect2(title).Width())
 	}
@@ -553,9 +558,9 @@ func (f *QFramelessWindow) SetupTitleBarColor() {
 		f.TitleLabel.SetStyleSheet(fmt.Sprintf(" * { color: rgb(%d, %d, %d); }", labelColor.R, labelColor.G, labelColor.B))
 		f.SetupTitleBarColorForNotDarwin(
 			&RGB{
-				R: uint16((float64(f.WindowColor.R) * brendRatio + float64(labelColor.R) * (1.0 - brendRatio))),
-				G: uint16((float64(f.WindowColor.G) * brendRatio + float64(labelColor.G) * (1.0 - brendRatio))),
-				B: uint16((float64(f.WindowColor.B) * brendRatio + float64(labelColor.B) * (1.0 - brendRatio))),
+				R: uint16((float64(f.WindowColor.R)*brendRatio + float64(labelColor.R)*(1.0-brendRatio))),
+				G: uint16((float64(f.WindowColor.G)*brendRatio + float64(labelColor.G)*(1.0-brendRatio))),
+				B: uint16((float64(f.WindowColor.B)*brendRatio + float64(labelColor.B)*(1.0-brendRatio))),
 			},
 		)
 	} else {
@@ -646,7 +651,11 @@ func (f *QFramelessWindow) SetupTitleBarColorForNotDarwin(color *RGB) {
 }
 
 func (f *QFramelessWindow) SetupContent(layout widgets.QLayout_ITF) {
-	f.Content.SetLayout(layout)
+	if f.Content != nil {
+		f.Content.SetLayout(layout)
+	} else {
+		f.WindowWidget.SetLayout(layout)
+	}
 }
 
 func (f *QFramelessWindow) UpdateWidget() {
@@ -688,11 +697,11 @@ func (f *QFramelessWindow) SetupWindowActions() {
 
 						frameRect := f.WindowWidget.FrameGeometry()
 
-						left             := 0
-						top              := 0
-						right            := frameRect.Width()
-						bottom           := frameRect.Height()
-						topLeftPoint     := core.NewQPoint2(left, top)
+						left := 0
+						top := 0
+						right := frameRect.Width()
+						bottom := frameRect.Height()
+						topLeftPoint := core.NewQPoint2(left, top)
 						rightBottomPoint := core.NewQPoint2(right, bottom)
 						f.WindowWidget.SetGeometry(
 							core.NewQRect2(
@@ -701,17 +710,16 @@ func (f *QFramelessWindow) SetupWindowActions() {
 							),
 						)
 
-
 						frameRect = f.WindowWidget.FrameGeometry()
 						rect := f.FrameGeometry()
-						frameWidth  := frameRect.Width()  - rect.Width()
+						frameWidth := frameRect.Width() - rect.Width()
 						frameHeight := frameRect.Height() - rect.Height()
 
-						left             = rect.Left() - frameWidth/2
-						top              = rect.Top()
-						right            = rect.Right() + frameWidth/2
-						bottom           = rect.Bottom() + frameHeight
-						topLeftPoint     = core.NewQPoint2(left, top)
+						left = rect.Left() - frameWidth/2
+						top = rect.Top()
+						right = rect.Right() + frameWidth/2
+						bottom = rect.Bottom() + frameHeight
+						topLeftPoint = core.NewQPoint2(left, top)
 						rightBottomPoint = core.NewQPoint2(right, bottom)
 						f.SetGeometry(
 							core.NewQRect2(
@@ -796,20 +804,19 @@ func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
 				// https://github.com/therecipe/qt/issues/938
 				frameRect := f.WindowWidget.FrameGeometry()
 				rect := f.FrameGeometry()
-				frameWidth  := frameRect.Width()  - rect.Width()
+				frameWidth := frameRect.Width() - rect.Width()
 				frameHeight := frameRect.Height() - rect.Height()
-				left =   rect.Left() - frameWidth/2
-				top =    rect.Top()
-				right =  rect.Right() + frameWidth/2
+				left = rect.Left() - frameWidth/2
+				top = rect.Top()
+				right = rect.Right() + frameWidth/2
 				bottom = rect.Bottom() + frameHeight
 			} else {
 				rect := f.FrameGeometry()
-				left =   rect.Left()
-				top =    rect.Top()
-				right =  rect.Right()
+				left = rect.Left()
+				top = rect.Top()
+				right = rect.Right()
 				bottom = rect.Bottom()
 			}
-
 
 			switch f.hoverEdge {
 			case Top:
@@ -938,11 +945,11 @@ func (f *QFramelessWindow) updateCursorShape(pos *core.QPoint) {
 }
 
 func (f *QFramelessWindow) calcCursorPos(pos *core.QPoint, rect *core.QRect) Edge {
-	frameWidth :=  f.WindowWidget.Width() - rect.Width()
+	frameWidth := f.WindowWidget.Width() - rect.Width()
 	frameHeight := f.WindowWidget.Height() - rect.Height()
 	rectX := rect.X() - frameWidth/2 + 1
 	rectY := rect.Y() - frameHeight/2 + 1
-	rectWidth := rect.Width()   + frameWidth - 1
+	rectWidth := rect.Width() + frameWidth - 1
 	rectHeight := rect.Height() + frameHeight - 1
 	posX := pos.X()
 	posY := pos.Y()
