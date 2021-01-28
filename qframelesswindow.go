@@ -53,6 +53,7 @@ type QFramelessWindow struct {
 	WindowWidget  *widgets.QFrame
 	WindowVLayout *widgets.QVBoxLayout
 	borderSize    int
+	windowgap     int
 	minimumWidth  int
 	minimumHeight int
 
@@ -150,6 +151,14 @@ func (f *QFramelessWindow) BorderSize() int {
 
 func (f *QFramelessWindow) SetupBorderSize(size int) {
 	f.borderSize = size
+}
+
+func (f *QFramelessWindow) WindowGap() int {
+	return f.windowgap
+}
+
+func (f *QFramelessWindow) SetupWindowGap(size int) {
+	f.windowgap = size
 }
 
 // For MacOS only
@@ -265,6 +274,7 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 	color := f.WindowColor
 	style := fmt.Sprintf("background-color: rgba(%d, %d, %d, %f);", color.R, color.G, color.B, alpha)
 	borderSizeString := fmt.Sprintf("%d", f.borderSize*2) + "px"
+	borderSizeString2 := fmt.Sprintf("%d", f.borderSize*2+f.windowgap) + "px"
 
 	var roundSizeString string
 	if runtime.GOOS == "linux" {
@@ -283,7 +293,7 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 		padding-top: %s; padding-right: %s; padding-bottom: %s; padding-left: %s; 
 		border-radius: %s;
 		%s; 
-	}`, color.Hex(), borderSizeString, borderSizeString, borderSizeString, borderSizeString, roundSizeString, style))
+	}`, color.Hex(), borderSizeString, borderSizeString2, borderSizeString, borderSizeString2, roundSizeString, style))
 
 	if f.IsBorderless {
 		f.SetStyleMask()
