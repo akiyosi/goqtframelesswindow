@@ -18,6 +18,7 @@
 // 	a := &framelessTest{}
 // 	a.app = widgets.NewQApplication(0, nil)
 // 
+// 	// a.fw = frameless.CreateQFramelessWindow(1.0, false)
 // 	a.fw = frameless.CreateQFramelessWindow(1.0)
 // 	layout := widgets.NewQVBoxLayout()
 // 	a.fw.SetupContent(layout)
@@ -42,6 +43,7 @@
 // 
 // 	a.fw.Show()
 // 	a.fw.Widget.SetFocus2()
+// 	// a.fw.WindowMaximize()
 // 	a.app.Exec()
 // 
 // }

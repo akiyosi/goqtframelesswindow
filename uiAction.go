@@ -284,16 +284,32 @@ func (f *QFramelessWindow) WindowMinimize() {
 }
 
 func (f *QFramelessWindow) WindowMaximize() {
-	f.IconMaximize.Widget.SetVisible(false)
-	f.IconRestore.Widget.SetVisible(true)
-	f.Layout.SetContentsMargins(0, 0, 0, 0)
-	f.SetWindowState(core.Qt__WindowFullScreen)
-	f.IconRestore.SetStyle(nil)
+	if f.IsBorderless {
+		f.IconMaximize.Widget.SetVisible(false)
+		f.IconRestore.Widget.SetVisible(true)
+		f.Layout.SetContentsMargins(0, 0, 0, 0)
+		f.IconRestore.SetStyle(nil)
+	}
+
+	f.ShowMaximized()
+}
+
+func (f *QFramelessWindow) WindowFullScreen() {
+	if f.IsBorderless {
+		f.IconMaximize.Widget.SetVisible(false)
+		f.IconRestore.Widget.SetVisible(true)
+		f.Layout.SetContentsMargins(0, 0, 0, 0)
+		f.IconRestore.SetStyle(nil)
+	}
+
+	f.ShowFullScreen()
 }
 
 func (f *QFramelessWindow) WindowRestore() {
-	f.IconMaximize.Widget.SetVisible(true)
-	f.IconRestore.Widget.SetVisible(false)
-	f.Layout.SetContentsMargins(0, 0, 0, 0)
+	if f.IsBorderless {
+		f.IconMaximize.Widget.SetVisible(true)
+		f.IconRestore.Widget.SetVisible(false)
+		f.Layout.SetContentsMargins(0, 0, 0, 0)
+	}
 	f.SetWindowState(core.Qt__WindowNoState)
 }
