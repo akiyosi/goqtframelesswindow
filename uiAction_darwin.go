@@ -78,6 +78,10 @@ func (f *QFramelessWindow) SetupTitleBarActions() {
 	// })
 }
 
+func (f *QFramelessWindow) WindowFullScreen() {
+	f.ShowFullScreen()
+}
+
 func (f *QFramelessWindow) WindowMinimize() {
 	f.SetWindowState(core.Qt__WindowMinimized)
 }
