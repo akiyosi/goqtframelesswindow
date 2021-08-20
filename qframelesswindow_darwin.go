@@ -30,6 +30,7 @@ void setStyleMaskAndShadow(long *wid) {
     window.styleMask |= NSWindowStyleMaskTitled;
     window.styleMask |= NSWindowStyleMaskResizable;
     window.styleMask |= NSWindowStyleMaskMiniaturizable;
+    window.styleMask |= NSWindowStyleMaskClosable;
     window.styleMask |= NSWindowStyleMaskFullSizeContentView;
 
     // Appearance
@@ -57,6 +58,7 @@ void setStyleMaskWithNativeButtons(long *wid) {
     window.styleMask |= NSWindowStyleMaskTitled;
     window.styleMask |= NSWindowStyleMaskResizable;
     window.styleMask |= NSWindowStyleMaskMiniaturizable;
+    window.styleMask |= NSWindowStyleMaskClosable;
     window.styleMask |= NSWindowStyleMaskFullSizeContentView;
 
     // Appearance
@@ -82,6 +84,7 @@ void setStyleMaskAndShadowWithNativeButtons(long *wid) {
     window.styleMask |= NSWindowStyleMaskTitled;
     window.styleMask |= NSWindowStyleMaskResizable;
     window.styleMask |= NSWindowStyleMaskMiniaturizable;
+    window.styleMask |= NSWindowStyleMaskClosable;
     window.styleMask |= NSWindowStyleMaskFullSizeContentView;
 
     // Appearance
@@ -107,6 +110,7 @@ void setStyleMaskWithNativeButtonsWithMove(long *wid) {
     window.styleMask |= NSWindowStyleMaskTitled;
     window.styleMask |= NSWindowStyleMaskResizable;
     window.styleMask |= NSWindowStyleMaskMiniaturizable;
+    window.styleMask |= NSWindowStyleMaskClosable;
     window.styleMask |= NSWindowStyleMaskFullSizeContentView;
 
     // Appearance
@@ -141,6 +145,7 @@ void setStyleMaskAndShadowWithNativeButtonsWithMove(long *wid) {
     window.styleMask |= NSWindowStyleMaskTitled;
     window.styleMask |= NSWindowStyleMaskResizable;
     window.styleMask |= NSWindowStyleMaskMiniaturizable;
+    window.styleMask |= NSWindowStyleMaskClosable;
     window.styleMask |= NSWindowStyleMaskFullSizeContentView;
 
     // Appearance
