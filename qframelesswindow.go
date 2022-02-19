@@ -104,7 +104,7 @@ func CreateQFramelessWindow(a ...interface{}) *QFramelessWindow {
 	}
 
 	f := NewQFramelessWindow(nil, 0)
-	f.SetupBorderSize(2)
+	// f.etupBorderSize(2)
 	f.WindowColor = &RGB{255, 255, 255}
 	f.WindowColorAlpha = alpha
 	f.IsBorderless = isBorderless
