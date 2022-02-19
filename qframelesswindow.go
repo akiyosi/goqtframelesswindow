@@ -104,7 +104,7 @@ func CreateQFramelessWindow(a ...interface{}) *QFramelessWindow {
 	}
 
 	f := NewQFramelessWindow(nil, 0)
-	// f.etupBorderSize(2)
+	// f.SetupBorderSize(2)
 	f.WindowColor = &RGB{255, 255, 255}
 	f.WindowColorAlpha = alpha
 	f.IsBorderless = isBorderless
@@ -676,6 +676,12 @@ func (f *QFramelessWindow) UpdateWidget() {
 func (f *QFramelessWindow) SetupWindowActions() {
 	// Ref: https://stackoverflow.com/questions/5752408/qt-resize-borderless-widget/37507341#37507341
 	f.ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
+		return f.QFramelessDefaultEventFilter(watched, event)
+	})
+}
+
+func (f *QFramelessWindow) QFramelessDefaultEventFilter(watched *core.QObject, event *core.QEvent) bool {
+	if f.IsBorderless {
 		switch event.Type() {
 		case core.QEvent__ActivationChange:
 			f.SetupTitleBarColor()
@@ -785,9 +791,9 @@ func (f *QFramelessWindow) SetupWindowActions() {
 
 		default:
 		}
+	}
 
-		return f.Widget.EventFilter(watched, event)
-	})
+	return f.Widget.EventFilter(watched, event)
 }
 
 func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
