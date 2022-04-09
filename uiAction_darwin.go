@@ -79,16 +79,26 @@ func (f *QFramelessWindow) SetupTitleBarActions() {
 }
 
 func (f *QFramelessWindow) WindowFullScreen() {
-	f.ShowFullScreen()
+	// f.ShowFullScreen()
+	f.SetWindowState(f.WindowState() | core.Qt__WindowFullScreen)
+}
+
+func (f *QFramelessWindow) WindowExitFullScreen() {
+	f.SetWindowState(f.WindowState() & ^core.Qt__WindowFullScreen)
 }
 
 func (f *QFramelessWindow) WindowMinimize() {
-	f.SetWindowState(core.Qt__WindowMinimized)
+	f.SetWindowState(f.WindowState() | core.Qt__WindowMinimized)
 }
 
 func (f *QFramelessWindow) WindowMaximize() {
 	f.Layout.SetContentsMargins(0, 0, 0, 0)
-	f.SetWindowState(core.Qt__WindowMaximized)
+	f.SetWindowState(f.WindowState() | core.Qt__WindowMaximized)
+}
+
+func (f *QFramelessWindow) WindowExitMaximize() {
+	f.Layout.SetContentsMargins(0, 0, 0, 0)
+	f.SetWindowState(f.WindowState() & ^core.Qt__WindowMaximized)
 }
 
 func (f *QFramelessWindow) WindowRestore() {

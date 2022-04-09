@@ -56,14 +56,14 @@ func (f *QFramelessWindow) SetupTitleBarActions() {
 		f.IconClose.Widget.ConnectLeaveEvent(func(event *core.QEvent) {
 			f.IconClose.SetStyle(nil)
 		})
-	} else {  // hover style for linux
+	} else { // hover style for linux
 		brendRatio := 0.65
 		hoverBrendRatio := 0.5
 		isActive := f.IsActiveWindow()
 		if !isActive {
 			brendRatio = 0.8
 		}
-		labelColor := f.TitleColor 
+		labelColor := f.TitleColor
 		if labelColor == nil {
 			labelColor = &RGB{
 				R: 128,
@@ -81,14 +81,14 @@ func (f *QFramelessWindow) SetupTitleBarActions() {
 
 		}
 		hoverColor := &RGB{
-				R: uint16((float64(backgroundColor.R) * hoverBrendRatio + float64(labelColor.R) * (1.0 - hoverBrendRatio))),
-				G: uint16((float64(backgroundColor.G) * hoverBrendRatio + float64(labelColor.G) * (1.0 - hoverBrendRatio))),
-				B: uint16((float64(backgroundColor.B) * hoverBrendRatio + float64(labelColor.B) * (1.0 - hoverBrendRatio))),
+			R: uint16((float64(backgroundColor.R)*hoverBrendRatio + float64(labelColor.R)*(1.0-hoverBrendRatio))),
+			G: uint16((float64(backgroundColor.G)*hoverBrendRatio + float64(labelColor.G)*(1.0-hoverBrendRatio))),
+			B: uint16((float64(backgroundColor.B)*hoverBrendRatio + float64(labelColor.B)*(1.0-hoverBrendRatio))),
 		}
 		color := &RGB{
-				R: uint16((float64(backgroundColor.R) * brendRatio + float64(labelColor.R) * (1.0 - brendRatio))),
-				G: uint16((float64(backgroundColor.G) * brendRatio + float64(labelColor.G) * (1.0 - brendRatio))),
-				B: uint16((float64(backgroundColor.B) * brendRatio + float64(labelColor.B) * (1.0 - brendRatio))),
+			R: uint16((float64(backgroundColor.R)*brendRatio + float64(labelColor.R)*(1.0-brendRatio))),
+			G: uint16((float64(backgroundColor.G)*brendRatio + float64(labelColor.G)*(1.0-brendRatio))),
+			B: uint16((float64(backgroundColor.B)*brendRatio + float64(labelColor.B)*(1.0-brendRatio))),
 		}
 		hoverCloseColor := &RGB{
 			R: 255,
@@ -103,7 +103,6 @@ func (f *QFramelessWindow) SetupTitleBarActions() {
 		if !isActive {
 			closeColor = color
 		}
-
 
 		f.IconMinimize.Widget.DisconnectEnterEvent()
 		f.IconMaximize.Widget.DisconnectEnterEvent()
@@ -239,7 +238,6 @@ func (f *QFramelessWindow) SetupTitleBarActions() {
 	})
 }
 
-
 func (f *QToolButtonForNotDarwin) buttonColorChangeForLinux(color *RGB, buttonType string) {
 	var svg string
 
@@ -280,7 +278,7 @@ func (f *QToolButtonForNotDarwin) buttonColorChangeForLinux(color *RGB, buttonTy
 }
 
 func (f *QFramelessWindow) WindowMinimize() {
-	f.SetWindowState(core.Qt__WindowMinimized)
+	f.SetWindowState(f.WindowState() | core.Qt__WindowMinimized)
 }
 
 func (f *QFramelessWindow) WindowMaximize() {
@@ -291,7 +289,17 @@ func (f *QFramelessWindow) WindowMaximize() {
 		f.IconRestore.SetStyle(nil)
 	}
 
-	f.ShowMaximized()
+	f.SetWindowState(f.WindowState() | core.Qt__WindowMaximized)
+}
+
+func (f *QFramelessWindow) WindowExitMaximize() {
+	if f.IsBorderless {
+		f.IconMaximize.Widget.SetVisible(true)
+		f.IconRestore.Widget.SetVisible(false)
+		f.Layout.SetContentsMargins(0, 0, 0, 0)
+	}
+
+	f.SetWindowState(f.WindowState() & ^core.Qt__WindowMaximized)
 }
 
 func (f *QFramelessWindow) WindowFullScreen() {
@@ -302,7 +310,18 @@ func (f *QFramelessWindow) WindowFullScreen() {
 		f.IconRestore.SetStyle(nil)
 	}
 
-	f.ShowFullScreen()
+	// f.ShowFullScreen()
+	f.SetWindowState(f.WindowState() | core.Qt__WindowFullScreen)
+}
+
+func (f *QFramelessWindow) WindowExitFullScreen() {
+	if f.IsBorderless {
+		f.IconMaximize.Widget.SetVisible(true)
+		f.IconRestore.Widget.SetVisible(false)
+		f.Layout.SetContentsMargins(0, 0, 0, 0)
+	}
+
+	f.SetWindowState(f.WindowState() & ^core.Qt__WindowFullScreen)
 }
 
 func (f *QFramelessWindow) WindowRestore() {
