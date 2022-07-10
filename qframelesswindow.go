@@ -67,6 +67,7 @@ type QFramelessWindow struct {
 	TitleBarBtnLayout *widgets.QHBoxLayout
 	TitleColor        *RGB
 	TitleBarMousePos  *core.QPoint
+	IsTitlebarHidden  bool
 	IsTitleBarPressed bool
 	IsTitleIconShown  bool
 
@@ -124,8 +125,11 @@ func CreateQFramelessWindow(a ...interface{}) *QFramelessWindow {
 
 	// if isBorderless is false, then we return normal qmainwindow
 	if !f.IsBorderless {
-		f.TitleBar.Hide()
+		f.HideTitlebar()
 		return f
+	}
+	if f.IsTitlebarHidden {
+		f.TitleBar.Hide()
 	}
 
 	f.SetupWindowFlags()
@@ -695,12 +699,12 @@ func (f *QFramelessWindow) QFramelessDefaultEventFilter(watched *core.QObject, e
 				e := gui.NewQWindowStateChangeEventFromPointer(core.PointerFromQEvent(event))
 				if e.OldState() == core.Qt__WindowFullScreen {
 					f.SetStyleMask()
-					f.TitleBar.Show()
+					f.ShowTitlebar()
 					f.ActivateWindow()
 				}
 				if f.WindowState() == core.Qt__WindowFullScreen {
 					f.SetStyleMask()
-					f.TitleBar.Hide()
+					f.HideTitlebar()
 				}
 			}
 			if runtime.GOOS == "windows" {
@@ -748,11 +752,12 @@ func (f *QFramelessWindow) QFramelessDefaultEventFilter(watched *core.QObject, e
 			}
 
 		case core.QEvent__HoverMove:
+			e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 			if runtime.GOOS == "darwin" {
+				f.showButtonsInDarwin(e.GlobalPos(), f.FrameGeometry())
 				return f.Widget.EventFilter(watched, event)
 			}
 
-			e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 			f.updateCursorShape(e.GlobalPos())
 
 		case core.QEvent__Leave:
@@ -794,6 +799,41 @@ func (f *QFramelessWindow) QFramelessDefaultEventFilter(watched *core.QObject, e
 	}
 
 	return f.Widget.EventFilter(watched, event)
+}
+
+func (f *QFramelessWindow) showButtonsInDarwin(pos *core.QPoint, rect *core.QRect) {
+	if !f.IsTitlebarHidden {
+		return
+	}
+	if f.WindowState() == core.Qt__WindowFullScreen {
+		f.SetNSWindowStyleMask(
+			true,
+			f.WindowColorAlpha != 1.0,
+			f.WindowState() == core.Qt__WindowFullScreen,
+		)
+
+		return
+	}
+
+	rectShowingButtons := core.NewQRect4(
+		rect.TopLeft().X(),
+		rect.TopLeft().Y()+5,
+		rect.Width(),
+		30,
+	)
+	if rectShowingButtons.Contains(pos, true) {
+		f.SetNSWindowStyleMask(
+			true,
+			f.WindowColorAlpha != 1.0,
+			f.WindowState() == core.Qt__WindowFullScreen,
+		)
+	} else {
+		f.SetNSWindowStyleMask(
+			false,
+			f.WindowColorAlpha != 1.0,
+			f.WindowState() == core.Qt__WindowFullScreen,
+		)
+	}
 }
 
 func (f *QFramelessWindow) mouseMove(e *gui.QMouseEvent) {
@@ -1038,6 +1078,18 @@ func (f *QFramelessWindow) detectEdgeOnCursor(posX, posY, rectX, rectY, rectWidt
 	}
 
 	return None
+}
+
+func (f *QFramelessWindow) HideTitlebar() {
+	f.TitleBar.Hide()
+}
+
+func (f *QFramelessWindow) ShowTitlebar() {
+	if f.IsTitlebarHidden {
+		f.TitleBar.Hide()
+		return
+	}
+	f.TitleBar.Show()
 }
 
 func (c *RGB) Hex() string {

@@ -7,6 +7,9 @@ import (
 	"github.com/therecipe/qt/core"
 )
 
+func (f *QFramelessWindow) SetNSWindowStyleMask(isVisibleTitlebarButtons, hasAlpha, isWindowFullscreen bool) {
+}
+
 func (f *QFramelessWindow) SetStyleMask() {
 }
 
@@ -60,7 +63,7 @@ func (f *QFramelessWindow) SetupNativeEvent() {
 		// case win.WM_STYLECHANGED:
 		// case win.WM_SHOWWINDOW:
 		case win.WM_ACTIVATEAPP:
-		// case win.WM_NCACTIVATE:
+			// case win.WM_NCACTIVATE:
 			f.putShadow(hwnd)
 
 		}
