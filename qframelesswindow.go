@@ -755,7 +755,9 @@ func (f *QFramelessWindow) QFramelessDefaultEventFilter(watched *core.QObject, e
 			e := gui.NewQMouseEventFromPointer(core.PointerFromQEvent(event))
 			if runtime.GOOS == "darwin" {
 				f.showButtonsInDarwin(e.GlobalPos(), f.FrameGeometry())
-				return f.Widget.EventFilter(watched, event)
+			}
+			if runtime.GOOS == "windows" {
+				f.showTitlebarInWindows(e.GlobalPos(), f.FrameGeometry())
 			}
 
 			f.updateCursorShape(e.GlobalPos())
@@ -799,6 +801,24 @@ func (f *QFramelessWindow) QFramelessDefaultEventFilter(watched *core.QObject, e
 	}
 
 	return f.Widget.EventFilter(watched, event)
+}
+
+func (f *QFramelessWindow) showTitlebarInWindows(pos *core.QPoint, rect *core.QRect) {
+	if !f.IsTitlebarHidden {
+		return
+	}
+
+	rectShowingButtons := core.NewQRect4(
+		rect.TopLeft().X(),
+		rect.TopLeft().Y()+5,
+		rect.Width(),
+		30,
+	)
+	if rectShowingButtons.Contains(pos, true) {
+		f.TitleBar.Show()
+	} else {
+		f.TitleBar.Hide()
+	}
 }
 
 func (f *QFramelessWindow) showButtonsInDarwin(pos *core.QPoint, rect *core.QRect) {
