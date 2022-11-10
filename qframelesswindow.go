@@ -484,7 +484,7 @@ func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
 }
 
 func (f *QFramelessWindow) SetupAttributes() {
-	if runtime.GOOS == "darwin" && f.WindowColorAlpha == 1.0 {
+	if runtime.GOOS == "darwin" {
 		return
 	}
 	f.SetAttribute(core.Qt__WA_TranslucentBackground, true)
@@ -495,7 +495,7 @@ func (f *QFramelessWindow) SetupAttributes() {
 
 func (f *QFramelessWindow) SetupWindowFlags() {
 	defer f.SetStyleMask()
-	if runtime.GOOS == "darwin" && f.WindowColorAlpha == 1.0 {
+	if runtime.GOOS == "darwin" {
 		return
 	}
 	f.SetWindowFlag(core.Qt__Window, true)
@@ -828,7 +828,8 @@ func (f *QFramelessWindow) showButtonsInDarwin(pos *core.QPoint, rect *core.QRec
 	if f.WindowState() == core.Qt__WindowFullScreen {
 		f.SetNSWindowStyleMask(
 			true,
-			f.WindowColorAlpha != 1.0,
+			f.WindowColor.R, f.WindowColor.G, f.WindowColor.B,
+			float32(f.WindowColorAlpha),
 			f.WindowState() == core.Qt__WindowFullScreen,
 		)
 
@@ -844,13 +845,15 @@ func (f *QFramelessWindow) showButtonsInDarwin(pos *core.QPoint, rect *core.QRec
 	if rectShowingButtons.Contains(pos, true) {
 		f.SetNSWindowStyleMask(
 			true,
-			f.WindowColorAlpha != 1.0,
+			f.WindowColor.R, f.WindowColor.G, f.WindowColor.B,
+			float32(f.WindowColorAlpha),
 			f.WindowState() == core.Qt__WindowFullScreen,
 		)
 	} else {
 		f.SetNSWindowStyleMask(
 			false,
-			f.WindowColorAlpha != 1.0,
+			f.WindowColor.R, f.WindowColor.G, f.WindowColor.B,
+			float32(f.WindowColorAlpha),
 			f.WindowState() == core.Qt__WindowFullScreen,
 		)
 	}

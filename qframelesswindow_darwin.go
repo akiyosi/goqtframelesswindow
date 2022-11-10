@@ -5,7 +5,7 @@ package qframelesswindow
 #cgo LDFLAGS: -framework Cocoa
 #import <Cocoa/Cocoa.h>
 
-void setNSWindowStyle(long *wid, bool isVisibleTitlebar, bool isTransparent, bool isFullscreen) {
+void setNSWindowStyle(long *wid, bool isVisibleTitlebar, short unsigned int red, short unsigned int green, short unsigned int blue, float alpha, bool isFullscreen) {
     NSView* view = (NSView*)wid;
     NSWindow *window = view.window;
 
@@ -34,13 +34,17 @@ void setNSWindowStyle(long *wid, bool isVisibleTitlebar, bool isTransparent, boo
 
     // Appearance
     window.opaque = NO;
-    window.backgroundColor = [NSColor clearColor];
+    CGFloat cgalpha = alpha;
+    window.alphaValue = cgalpha;
+    NSColor *bgColor = [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:cgalpha];
+    window.backgroundColor = bgColor;
 
-    if (!isTransparent) {
-        window.hasShadow = YES;
-    } else {
-        window.hasShadow = NO;
-    }
+    // if (!isTransparent) {
+    //     window.hasShadow = YES;
+    // } else {
+    //     window.hasShadow = NO;
+    // }
+    window.hasShadow = YES;
 
     // Move buttons position when fullscreen
     if (!isFullscreen) {
@@ -67,17 +71,19 @@ import (
 func (f *QFramelessWindow) SetStyleMask() {
 	f.SetNSWindowStyleMask(
 		!f.IsTitlebarHidden,
-		f.WindowColorAlpha != 1.0,
+		f.WindowColor.R, f.WindowColor.G, f.WindowColor.B,
+		float32(f.WindowColorAlpha),
 		f.WindowState() == core.Qt__WindowFullScreen,
 	)
 }
 
-func (f *QFramelessWindow) SetNSWindowStyleMask(isVisibleTitlebarButtons, hasAlpha, isWindowFullscreen bool) {
+func (f *QFramelessWindow) SetNSWindowStyleMask(isVisibleTitlebarButtons bool, R, G, B uint16, alpha float32, isWindowFullscreen bool) {
 	wid := f.WinId()
 	C.setNSWindowStyle(
 		(*C.long)(unsafe.Pointer(wid)),
 		C.bool(isVisibleTitlebarButtons),
-		C.bool(hasAlpha),
+		C.ushort(R), C.ushort(G), C.ushort(B),
+		C.float(alpha),
 		C.bool(isWindowFullscreen),
 	)
 }
