@@ -4,7 +4,7 @@ package qframelesswindow
 // 	"fmt"
 // )
 
-func (f *QFramelessWindow) SetNSWindowStyleMask(isVisibleTitlebarButtons, hasAlpha, isWindowFullscreen bool) {
+func (f *QFramelessWindow) SetNSWindowStyleMask(isVisibleTitlebarButtons bool, R, G, B uint16, alpha float32, isWindowFullscreen bool) {
 }
 
 func (f *QFramelessWindow) SetStyleMask() {
