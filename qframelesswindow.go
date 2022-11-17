@@ -277,6 +277,10 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 	}
 	color := f.WindowColor
 	style := fmt.Sprintf("background-color: rgba(%d, %d, %d, %f);", color.R, color.G, color.B, alpha)
+	if runtime.GOOS == "darwin" && f.WindowColorAlpha < 1.0 {
+		style = "background-color: rgba(0, 0, 0, 0);"
+	}
+
 	borderSizeString := fmt.Sprintf("%d", f.borderSize*2) + "px"
 	borderSizeString2 := fmt.Sprintf("%d", f.borderSize*2+f.windowgap) + "px"
 
@@ -292,12 +296,13 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 	}
 
 	f.WindowWidget.SetStyleSheet(fmt.Sprintf(`
-	#QFramelessWidget {
-		border: 0px solid %s; 
-		padding-top: %s; padding-right: %s; padding-bottom: %s; padding-left: %s; 
-		border-radius: %s;
-		%s; 
-	}`, color.Hex(), borderSizeString, borderSizeString2, borderSizeString, borderSizeString2, roundSizeString, style))
+			#QFramelessWidget {
+				border: 0px solid %s; 
+				padding-top: %s; padding-right: %s; padding-bottom: %s; padding-left: %s; 
+				border-radius: %s;
+				%s; 
+			}`, color.Hex(), borderSizeString, borderSizeString2, borderSizeString, borderSizeString2, roundSizeString, style),
+	)
 
 	if f.IsBorderless {
 		f.SetStyleMask()
@@ -485,6 +490,7 @@ func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
 
 func (f *QFramelessWindow) SetupAttributes() {
 	if runtime.GOOS == "darwin" {
+		f.SetAttribute(core.Qt__WA_TranslucentBackground, true)
 		return
 	}
 	f.SetAttribute(core.Qt__WA_TranslucentBackground, true)
