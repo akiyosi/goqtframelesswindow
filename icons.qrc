@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>icons/CloseHoverDarwin.png</file>
-        <file>icons/MinimizeHoverDarwin.png</file>
-        <file>icons/RestoreHoverDarwin.png</file>
-        <file>icons/MaximizeHoverDarwin.png</file>
-    </qresource>
-</RCC>
