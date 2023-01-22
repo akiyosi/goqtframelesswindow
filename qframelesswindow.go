@@ -111,10 +111,13 @@ func CreateQFramelessWindow(a ...interface{}) *QFramelessWindow {
 	f.IsBorderless = isBorderless
 
 	// for windows
-	if f.WindowColorAlpha == 1.0 && f.IsBorderless {
+	// if f.WindowColorAlpha == 1.0 && f.IsBorderless {
+	// 	f.SetupNativeEvent()
+	// } else if f.WindowColorAlpha < 1.0 && f.IsBorderless {
+	// 	f.SetupNativeEvent2()
+	// }
+	if f.IsBorderless {
 		f.SetupNativeEvent()
-	} else if f.WindowColorAlpha < 1.0 && f.IsBorderless {
-		f.SetupNativeEvent2()
 	}
 
 	f.Widget = widgets.NewQWidget(nil, 0)
@@ -132,8 +135,11 @@ func CreateQFramelessWindow(a ...interface{}) *QFramelessWindow {
 		f.TitleBar.Hide()
 	}
 
-	f.SetupWindowFlags()
-	f.SetupAttributes()
+	if f.WindowColorAlpha < 1.0 {
+		f.SetupWindowFlags()
+		f.SetupAttributes()
+	}
+
 	f.SetupWindowActions()
 	f.SetupTitleBarActions()
 	f.ShowButtons()
@@ -163,18 +169,6 @@ func (f *QFramelessWindow) WindowGap() int {
 
 func (f *QFramelessWindow) SetupWindowGap(size int) {
 	f.windowgap = size
-}
-
-// For MacOS only
-func (f *QFramelessWindow) AddWindowNativeShadow() {
-	f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, false)
-	f.SetStyleMask()
-}
-
-// For MacOS only
-func (f *QFramelessWindow) RemoveWindowNativeShadow() {
-	f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, true)
-	f.SetStyleMask()
 }
 
 func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
@@ -494,7 +488,7 @@ func (f *QFramelessWindow) SetupAttributes() {
 		return
 	}
 	f.SetAttribute(core.Qt__WA_TranslucentBackground, true)
-	f.SetAttribute(core.Qt__WA_NoSystemBackground, true)
+	// f.SetAttribute(core.Qt__WA_NoSystemBackground, true)
 	f.SetAttribute(core.Qt__WA_Hover, true)
 	f.SetMouseTracking(true)
 }
@@ -504,15 +498,20 @@ func (f *QFramelessWindow) SetupWindowFlags() {
 	if runtime.GOOS == "darwin" {
 		return
 	}
-	f.SetWindowFlag(core.Qt__Window, true)
+	// if runtime.GOOS == "windows" {
+	// 	f.SetWindowFlag(core.Qt__Window, true)
+	// } else {
+	// 	f.SetWindowFlag(core.Qt__Window, false)
+	// }
+
 	f.SetWindowFlag(core.Qt__FramelessWindowHint, true)
-	f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, true)
-	if runtime.GOOS == "linux" {
-		f.SetWindowFlag(core.Qt__Window, false)
-	}
-	if runtime.GOOS == "windows" {
-		f.SetWindowFlag(core.Qt__WindowMaximizeButtonHint, true)
-	}
+	// f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, true)
+	// f.SetWindowFlag(core.Qt__CustomizeWindowHint, true)
+	// f.SetWindowFlag(core.Qt__WindowTitleHint, false)
+
+	// if runtime.GOOS == "windows" {
+	// 	f.SetWindowFlag(core.Qt__WindowMaximizeButtonHint, true)
+	// }
 }
 
 func (f *QFramelessWindow) SetupTitleIcon(filename string) {
@@ -1134,4 +1133,12 @@ func (c *RGB) Brend(color *RGB, alpha float64) *RGB {
 		G: uint16((float64(c.G) * float64(1-alpha)) + (float64(color.G) * float64(alpha))),
 		B: uint16((float64(c.B) * float64(1-alpha)) + (float64(color.B) * float64(alpha))),
 	}
+}
+
+func (c *RGB) toColorref() uint32 {
+	b := uint32(c.B) << 16
+	g := uint32(c.G) << 8
+	r := uint32(c.R)
+
+	return b + g + r
 }
