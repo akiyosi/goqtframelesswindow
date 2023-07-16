@@ -63,7 +63,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/therecipe/qt/core"
+	"github.com/akiyosi/qt/core"
 )
 
 func (f *QFramelessWindow) SetStyleMask() {

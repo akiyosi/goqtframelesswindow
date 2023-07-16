@@ -1,3 +1,4 @@
+//go:build !darwin
 // +build !darwin
 
 package qframelesswindow
@@ -6,8 +7,8 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/therecipe/qt/core"
-	"github.com/therecipe/qt/gui"
+	"github.com/akiyosi/qt/core"
+	"github.com/akiyosi/qt/gui"
 )
 
 func (f *QFramelessWindow) SetupTitleBarActions() {

@@ -3,8 +3,8 @@ package main
 import (
 	"time"
 
-	frameless "github.com/akiyosi/goqtframelesswindow"
-	"github.com/therecipe/qt/widgets"
+	frameless "github.com/akiyosi/gocuteframelesswindow"
+	"github.com/akiyosi/qt/widgets"
 )
 
 type framelessTest struct {

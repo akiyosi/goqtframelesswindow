@@ -3,8 +3,8 @@ package qframelesswindow
 import (
 	"unsafe"
 
+	"github.com/akiyosi/qt/core"
 	win "github.com/akiyosi/w32"
-	"github.com/therecipe/qt/core"
 )
 
 func (f *QFramelessWindow) SetNSWindowStyleMask(isVisibleTitlebarButtons bool, R, G, B uint16, alpha float32, isWindowFullscreen bool) {
