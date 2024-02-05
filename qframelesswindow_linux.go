@@ -10,6 +10,12 @@ func (f *QFramelessWindow) SetNSWindowStyleMask(isVisibleTitlebarButtons bool, R
 func (f *QFramelessWindow) SetStyleMask() {
 }
 
+func (f *QFramelessWindow) SetBlurEffectForMacOS(isLight bool) {
+}
+
+func (f *QFramelessWindow) SetBlurEffectForWin(hwnd uintptr) {
+}
+
 func (f *QFramelessWindow) SetupNativeEvent() {
 	// filterObj := core.NewQAbstractNativeEventFilter()
 	// filterObj.ConnectNativeEventFilter(func(eventType *core.QByteArray, message unsafe.Pointer, result int) bool {

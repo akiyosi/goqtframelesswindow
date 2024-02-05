@@ -6,3 +6,4 @@ moc*
 deploy/*
 deploy*
 rcc*
+./_example/vendor/*
