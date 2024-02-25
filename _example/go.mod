@@ -3,8 +3,8 @@ module github.com/akiyosi/framelessexample
 go 1.21.4
 
 require (
-	github.com/akiyosi/goqtframelesswindow v0.0.0-20240208131937-3979b8824055
-	github.com/akiyosi/qt v0.0.0-20230719061055-7747cdc680f3
+	github.com/akiyosi/goqtframelesswindow v0.0.0-20240222071727-593e283fef92
+	github.com/akiyosi/qt v0.0.0-20240222123055-9c99603bbb9a
 )
 
 require (

@@ -2,10 +2,14 @@ github.com/akiyosi/goqtframelesswindow v0.0.0-20230716140237-a341d42df3c8 h1:yOq
 github.com/akiyosi/goqtframelesswindow v0.0.0-20230716140237-a341d42df3c8/go.mod h1:739mXLJTAy19GBfA3Z2gitVRHX5NVqrVqygAMPVB21E=
 github.com/akiyosi/goqtframelesswindow v0.0.0-20240208131937-3979b8824055 h1:wtAd74HDnkFex08XQyvXOsf/V0SSY0YAJOAxB6RA/3g=
 github.com/akiyosi/goqtframelesswindow v0.0.0-20240208131937-3979b8824055/go.mod h1:739mXLJTAy19GBfA3Z2gitVRHX5NVqrVqygAMPVB21E=
+github.com/akiyosi/goqtframelesswindow v0.0.0-20240222071727-593e283fef92 h1:xz2X8F9iT01j/9hGihRFBSO+OdXK241izLWxVS6RQEk=
+github.com/akiyosi/goqtframelesswindow v0.0.0-20240222071727-593e283fef92/go.mod h1:739mXLJTAy19GBfA3Z2gitVRHX5NVqrVqygAMPVB21E=
 github.com/akiyosi/qt v0.0.0-20230719061055-7747cdc680f3 h1:S1QcbpgrpaJ0XbcNEMhJthmqrqtc7sEfYCqOA5UoVrs=
 github.com/akiyosi/qt v0.0.0-20230719061055-7747cdc680f3/go.mod h1:/M/wktam+Uyed7ahwhO+8zsEAe3FWZGA8eq5Sh+QePA=
 github.com/akiyosi/qt v0.0.0-20240201144258-bb6c025d926e h1:kpGg+ZGWKEasEkZ+iyIGti4HRgouHKXuZQ3FqMrr/v4=
 github.com/akiyosi/qt v0.0.0-20240201144258-bb6c025d926e/go.mod h1:/M/wktam+Uyed7ahwhO+8zsEAe3FWZGA8eq5Sh+QePA=
+github.com/akiyosi/qt v0.0.0-20240222123055-9c99603bbb9a h1:69JsQo6bkAT+b5asiHZQcnCSzAQRr3o2gFyUMl4o+V0=
+github.com/akiyosi/qt v0.0.0-20240222123055-9c99603bbb9a/go.mod h1:/M/wktam+Uyed7ahwhO+8zsEAe3FWZGA8eq5Sh+QePA=
 github.com/akiyosi/qt/internal/binding/files/docs/5.12.0 v0.0.0-20240201144258-bb6c025d926e h1:pZwL6t9Jp28y6i9YPTr/jcrqoTZHBnHJjawRVmgZoSc=
 github.com/akiyosi/qt/internal/binding/files/docs/5.12.0 v0.0.0-20240201144258-bb6c025d926e/go.mod h1:o1Ta8fcOD7ED+UFh1S2sJGmMYyZgY/0Nhqkayiw9EOI=
 github.com/akiyosi/qt/internal/binding/files/docs/5.13.0 v0.0.0-20240201144258-bb6c025d926e h1:6MITw2dvkzF3SJCNgT4t8cfdCGoDNX6J79SZYrvJ6lU=
