@@ -38,13 +38,23 @@ type QToolButtonForNotDarwin struct {
 	isHover bool
 }
 
+type FramelessConfig struct {
+	IsBorderless    bool
+	Alpha           float64
+	ApplyBlurEffect bool
+}
+
 type QFramelessWindow struct {
 	widgets.QMainWindow
+
+	hwnd uintptr
 
 	IsBorderless bool
 
 	WindowColor      *RGB
 	WindowColorAlpha float64
+
+	ApplyBlurEffect bool
 
 	Widget  *widgets.QWidget
 	Layout  *widgets.QVBoxLayout
@@ -90,38 +100,42 @@ type QFramelessWindow struct {
 
 func CreateQFramelessWindow(a ...interface{}) *QFramelessWindow {
 	alpha := 1.0
-	isBorderless := true
+	isBorderless := false
+	applyBlurEffect := false
+
 	for _, vITF := range a {
-		switch vITF.(type) {
+		switch v := vITF.(type) {
 		case float64:
-			v := vITF.(float64)
 			if v >= 0.0 && v <= 1.0 {
 				alpha = v
 			}
 		case bool:
-			isBorderless = vITF.(bool)
+			isBorderless = v
+		case FramelessConfig:
+			c := vITF.(FramelessConfig)
+			isBorderless = c.IsBorderless
+			alpha = c.Alpha
+			applyBlurEffect = c.ApplyBlurEffect
 		default:
 		}
 	}
 
+	if applyBlurEffect && runtime.GOOS == "darwin" {
+		isBorderless = true
+		alpha = 0.9
+	}
+	if applyBlurEffect && runtime.GOOS == "windows" {
+		isBorderless = true
+	}
+
 	f := NewQFramelessWindow(nil, 0)
-	// f.SetupBorderSize(2)
 	f.WindowColor = &RGB{255, 255, 255}
 	f.WindowColorAlpha = alpha
 	f.IsBorderless = isBorderless
-
-	// for windows
-	// if f.WindowColorAlpha == 1.0 && f.IsBorderless {
-	// 	f.SetupNativeEvent()
-	// } else if f.WindowColorAlpha < 1.0 && f.IsBorderless {
-	// 	f.SetupNativeEvent2()
-	// }
-	if f.IsBorderless {
-		f.SetupNativeEvent()
-	}
+	f.ApplyBlurEffect = applyBlurEffect
 
 	f.Widget = widgets.NewQWidget(nil, 0)
-	f.Widget.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0.0); color: rgba(0, 0, 0, 0); }")
+	f.Widget.SetStyleSheet(" * { background-color: rgba(0, 0, 0, 0.0); }")
 	f.SetCentralWidget(f.Widget)
 	f.SetupUI(f.Widget)
 	f.SetupMinimumSize(400, 300)
@@ -129,15 +143,22 @@ func CreateQFramelessWindow(a ...interface{}) *QFramelessWindow {
 	// if isBorderless is false, then we return normal qmainwindow
 	if !f.IsBorderless {
 		f.HideTitlebar()
+
 		return f
 	}
 	if f.IsTitlebarHidden {
 		f.TitleBar.Hide()
 	}
 
-	if f.WindowColorAlpha < 1.0 {
-		f.SetupWindowFlags()
-		f.SetupAttributes()
+	f.SetupWindowFlags()
+	f.SetupAttributes()
+
+	if f.IsBorderless {
+		f.SetupNativeEvent()
+	}
+
+	if f.ApplyBlurEffect {
+		f.SetBlurEffectForWin(uintptr(f.WinId()))
 	}
 
 	f.SetupWindowActions()
@@ -190,6 +211,10 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	if !f.IsBorderless {
 		return
 	}
+
+	// create window content
+	f.Content = widgets.NewQWidget(f.WindowWidget, 0)
+
 	// windowVLayout is the following structure layout
 	// +-----------+
 	// |           |
@@ -203,9 +228,6 @@ func (f *QFramelessWindow) SetupUI(widget *widgets.QWidget) {
 	f.WindowVLayout.SetSpacing(0)
 
 	f.newTitlebar()
-
-	// create window content
-	f.Content = widgets.NewQWidget(f.WindowWidget, 0)
 
 	// Set widget to layout
 	f.WindowVLayout.AddWidget(f.TitleBar, 0, 0)
@@ -270,11 +292,17 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 		B: blue,
 	}
 	color := f.WindowColor
+
+	// create background-color style text
 	style := fmt.Sprintf("background-color: rgba(%d, %d, %d, %f);", color.R, color.G, color.B, alpha)
 	if runtime.GOOS == "darwin" && f.WindowColorAlpha < 1.0 {
 		style = "background-color: rgba(0, 0, 0, 0);"
 	}
+	if runtime.GOOS == "windows" && f.ApplyBlurEffect {
+		style = "background-color: rgba(0, 0, 0, 0.01);"
+	}
 
+	// create border style text
 	borderSizeString := fmt.Sprintf("%d", f.borderSize*2) + "px"
 	borderSizeString2 := fmt.Sprintf("%d", f.borderSize*2+f.windowgap) + "px"
 
@@ -289,6 +317,7 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 		roundSizeString = "0px"
 	}
 
+	// apply style
 	f.WindowWidget.SetStyleSheet(fmt.Sprintf(`
 			#QFramelessWidget {
 				border: 0px solid %s; 
@@ -300,6 +329,10 @@ func (f *QFramelessWindow) SetupWidgetColor(red uint16, green uint16, blue uint1
 
 	if f.IsBorderless {
 		f.SetStyleMask()
+	}
+
+	if f.ApplyBlurEffect {
+		f.SetBlurEffectForWin(uintptr(f.WinId()))
 	}
 }
 
@@ -483,11 +516,16 @@ func (f *QFramelessWindow) SetTitleBarButtonsForDarwin() {
 }
 
 func (f *QFramelessWindow) SetupAttributes() {
-	if runtime.GOOS == "darwin" {
-		f.SetAttribute(core.Qt__WA_TranslucentBackground, true)
+	if !(f.WindowColorAlpha < 1.0 || f.ApplyBlurEffect) {
 		return
 	}
+
 	f.SetAttribute(core.Qt__WA_TranslucentBackground, true)
+
+	if runtime.GOOS == "darwin" {
+		return
+	}
+
 	// f.SetAttribute(core.Qt__WA_NoSystemBackground, true)
 	f.SetAttribute(core.Qt__WA_Hover, true)
 	f.SetMouseTracking(true)
@@ -504,7 +542,9 @@ func (f *QFramelessWindow) SetupWindowFlags() {
 	// 	f.SetWindowFlag(core.Qt__Window, false)
 	// }
 
-	f.SetWindowFlag(core.Qt__FramelessWindowHint, true)
+	if f.IsBorderless || f.ApplyBlurEffect {
+		f.SetWindowFlag(core.Qt__FramelessWindowHint, true)
+	}
 	// f.SetWindowFlag(core.Qt__NoDropShadowWindowHint, true)
 	// f.SetWindowFlag(core.Qt__CustomizeWindowHint, true)
 	// f.SetWindowFlag(core.Qt__WindowTitleHint, false)
@@ -666,7 +706,9 @@ func (f *QFramelessWindow) SetupTitleBarColorForNotDarwin(color *RGB) {
 	f.IconRestore.IconBtn.Load2(core.NewQByteArray2(SvgRestore, len(SvgRestore)))
 	f.IconClose.IconBtn.Load2(core.NewQByteArray2(SvgClose, len(SvgClose)))
 
-	f.IconRestore.Widget.SetVisible(false)
+	if !f.IsMaximized() {
+		f.IconRestore.Widget.SetVisible(false)
+	}
 }
 
 func (f *QFramelessWindow) SetupContent(layout widgets.QLayout_ITF) {

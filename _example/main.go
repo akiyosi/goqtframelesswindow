@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 
-	frameless "github.com/akiyosi/gocuteframelesswindow"
+	frameless "github.com/akiyosi/goqtframelesswindow"
 	"github.com/akiyosi/qt/widgets"
 )
 
@@ -19,14 +19,21 @@ func main() {
 	a.app = widgets.NewQApplication(0, nil)
 
 	// a.fw = frameless.CreateQFramelessWindow(1.0, false)
-	a.fw = frameless.CreateQFramelessWindow(1.0)
+	a.fw = frameless.CreateQFramelessWindow(frameless.FramelessConfig{
+		IsBorderless:    true,
+		Alpha:           1.0,
+		ApplyBlurEffect: true,
+	})
 	layout := widgets.NewQVBoxLayout()
 	a.fw.SetupContent(layout)
+
+	a.fw.SetBlurEffectForMacOS(false)
+
 	a.fw.SetupWidgetColor(30, 30, 30)
 	a.fw.SetupTitle("frameless test")
 	a.fw.SetupTitleColor(220, 220, 220)
 
-	label := widgets.NewQLabel(nil, 0)
+	label := widgets.NewQLabel(a.fw.Content, 0)
 	label.SetStyleSheet(" * { color: #eee; }")
 	label.SetText(`	General relativity (GR, also known as the general theory of relativity or GTR) is
 	the geometric theory of gravitation published by Albert Einstein in 1915 and
