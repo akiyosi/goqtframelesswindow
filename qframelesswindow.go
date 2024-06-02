@@ -168,6 +168,28 @@ func CreateQFramelessWindow(a ...interface{}) *QFramelessWindow {
 	return f
 }
 
+func (f *QFramelessWindow) RestoreFramelessState(state core.QByteArray_ITF, version int) {
+	f.RestoreState(state, version)
+
+	if !f.IsBorderless {
+		return
+	}
+	if runtime.GOOS == "darwin" {
+		return
+	}
+
+	switch f.WindowState() {
+	case core.Qt__WindowMaximized:
+		f.IconMaximize.Widget.SetVisible(false)
+		f.IconRestore.Widget.SetVisible(true)
+	default:
+		f.IconMaximize.Widget.SetVisible(true)
+		f.IconRestore.Widget.SetVisible(false)
+	}
+	f.Layout.SetContentsMargins(0, 0, 0, 0)
+	f.IconRestore.SetStyle(nil)
+}
+
 func (f *QFramelessWindow) SetupMinimumSize(w int, h int) {
 	f.SetMinimumSize2(w, h)
 	f.Widget.SetMinimumSize2(w, h)
